@@ -4,7 +4,7 @@ Godot 4.7 (Mobile renderer) project for DIVIRUSH, a capstone quick-tap division 
 
 ## Primary sources
 
-The project's requirements, scope and manuscript live in the Obsidian vault at `D:\LAMBERTO\DiviRush-Sources\DiviRush`. Before deciding anything about game design, scope, levels, platform or the capstone manuscript, read the vault's `AGENTS.md`: it maps the vault, explains note status (`final`, `unrevised`, `revised`, `reference`), and lists known conflicts between sources that need the user's call.
+The project's requirements, scope and manuscript live in the Obsidian vault at `D:\LAMBERTO\DiviRush-Sources\DiviRush`. Before deciding anything about game design, scope, levels, platform or the capstone manuscript, read the vault's `AGENTS.md`: it maps the vault and explains note status. Build game behaviour from the vault's `Design/Game Spec.md`; values marked OPEN there are not decided, so ask instead of inventing them. Open decisions that need the user's call are in the vault's `Decisions/` folder.
 
 ## Commits
 
