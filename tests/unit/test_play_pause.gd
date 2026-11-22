@@ -69,3 +69,31 @@ func test_finished_level_does_not_pause() -> void:
 	screen._state = screen.State.FINISHED  # The Level has ended.
 	screen.pause_level()  # The app leaves the screen.
 	assert_false(screen.is_paused())  # Nothing to pause.
+
+
+# Returns the text of every button on the "Paused" card, top to bottom.
+func _card_buttons() -> Array[String]:
+	var names: Array[String] = []  # The list to fill.
+	for node in screen._pause_card.find_children("*", "Button", true, false):  # Every button inside the card ...
+		names.append((node as Button).text)  # ... adds its words.
+	return names  # Hand back the list.
+
+
+# The "Paused" card offers Resume, Restart and Levels, in that order (D-015 amendment).
+func test_pause_card_has_three_choices() -> void:
+	assert_eq(_card_buttons(), ["Resume", "Restart", "Levels"] as Array[String])  # The three choices.
+
+
+# Restart and Levels stop this play at once, so no timer or feedback wait runs while the screen changes.
+# Game's screen change is held for the test, so the test runner's scene stays in place.
+func test_restart_and_levels_stop_the_play() -> void:
+	for choice: String in ["restart_level", "leave_level"]:  # Each way out.
+		screen._state = screen.State.ASKING  # An item is waiting.
+		screen.pause_level()  # The card shows.
+		screen._wait.start(0.9)  # A wait is running.
+		Game._changing = true  # Hold Game.go_to(), so no real screen change happens.
+		screen.call(choice)  # Tap the button.
+		Game._changing = false  # Let screen changes happen again.
+		assert_eq(screen._state, screen.State.FINISHED, choice)  # The play has stopped.
+		assert_true(screen._wait.is_stopped(), choice)  # No next item will start.
+		screen.resume_level()  # Clear the pause for the next round of the loop.

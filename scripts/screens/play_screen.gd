@@ -333,7 +333,8 @@ func _finish() -> void:
 
 
 # Builds the "Paused" card: a dark veil over the whole screen with a white card, the word
-# "Paused" and a "Go on" button. It starts hidden and blocks taps on the item while it shows (D-015).
+# "Paused" and three buttons: Resume, Restart and Levels, styled like the Level end buttons.
+# It starts hidden and blocks taps on the item while it shows (D-015).
 func _build_pause_card() -> void:
 	_pause_card = Control.new()  # Holder that fills the screen.
 	_pause_card.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)  # Cover everything.
@@ -357,9 +358,15 @@ func _build_pause_card() -> void:
 	lines.add_theme_constant_override("separation", 40)  # Space between them.
 	panel.add_child(lines)  # Add it.
 	lines.add_child(UiKit.label("Paused", 110, Palette.INK))  # Big word.
-	var go_on := UiKit.button("Go on", Palette.GREEN, Vector2(560, 150))  # Big green button.
-	go_on.pressed.connect(resume_level)  # Tapping it goes back to the item.
-	lines.add_child(go_on)  # Add it.
+	var resume := UiKit.button("Resume", Palette.GREEN, Vector2(600, 150))  # Big green button.
+	resume.pressed.connect(resume_level)  # Back to the item, with the time it had left.
+	lines.add_child(resume)  # Add it.
+	var restart := UiKit.button("Restart", Palette.YELLOW, Vector2(600, 140), 60)  # Yellow, like "Play again".
+	restart.pressed.connect(restart_level)  # Start this Level again from item 1.
+	lines.add_child(restart)  # Add it.
+	var levels := UiKit.button("Levels", Palette.WHITE, Vector2(600, 140), 60)  # White, like on the Level end screen.
+	levels.pressed.connect(leave_level)  # Back to Level select.
+	lines.add_child(levels)  # Add it.
 	add_child(_pause_card)  # Added last, so it draws on top of the screen.
 
 
@@ -383,7 +390,7 @@ func pause_level() -> void:
 
 
 # Goes on with the Level: hides the card, shows the item and bubbles again, and lets the timer run
-# on from the seconds it had left. Runs when "Go on" is tapped.
+# on from the seconds it had left. Runs when "Resume" is tapped.
 func resume_level() -> void:
 	if not _paused:  # Not paused ...
 		return  # ... nothing to do.
@@ -394,6 +401,24 @@ func resume_level() -> void:
 	_pause_card.visible = false  # Hide the card.
 
 
+# Starts this Level again from item 1 with a new shuffle. Nothing from the stopped play is saved,
+# the same as leaving with Back. Runs when "Restart" is tapped on the "Paused" card.
+func restart_level() -> void:
+	_stop_play()  # Stop the timer and any wait first.
+	Game.go_to("play_screen")  # A fresh Play screen for the same Level.
+
+
+# Leaves the Level without saving this play, back to Level select. Runs when "Levels" is tapped.
+func leave_level() -> void:
+	go_back()  # The same as the Back button.
+
+
+# Stops this play at once, so no timer or next item runs while the screen fades out.
+func _stop_play() -> void:
+	_state = State.FINISHED  # Stop the timer.
+	_wait.stop()  # Cancel a feedback pause.
+
+
 # Returns true while the Level is paused. Used by the tests.
 func is_paused() -> bool:
 	return _paused  # The pause flag.
@@ -401,6 +426,5 @@ func is_paused() -> bool:
 
 # Back leaves the Level without saving this play, and returns to Level select.
 func go_back() -> void:
-	_state = State.FINISHED  # Stop the timer.
-	_wait.stop()  # Cancel a feedback pause, so no next item starts while the screen fades out.
+	_stop_play()  # Stop the timer and cancel a feedback pause, so no next item starts while the screen fades out.
 	Game.go_to("level_select")  # Level select.
