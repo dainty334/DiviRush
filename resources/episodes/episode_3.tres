@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EpisodeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/level_data.gd" id="1_sry75"]
+[ext_resource type="Script" path="res://scripts/resources/episode_data.gd" id="2_a0rxd"]
+
+[resource]
+script = ExtResource("2_a0rxd")
+number = 3
+title = "Hard Facts"
+facts = "÷6, ÷7, ÷8, ÷9"
