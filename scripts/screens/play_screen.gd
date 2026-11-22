@@ -1,6 +1,7 @@
 # Play screen: one Level of 10 items, laid out like the approved style sample (D-009):
 # top bar, progress dots, timer bar, streak badge, item card and answer bubbles.
 # The rules live in LevelRun; this screen only shows them and moves between three states.
+# When the app leaves the screen, the Level pauses with its time kept, under a "Paused" card (D-015).
 extends ScreenBase  # Shared background, margins and column.
 
 enum State { ASKING, FEEDBACK, FINISHED }  # Waiting for a tap; showing the result; Level over.
@@ -32,6 +33,8 @@ var _answer_label: Label  # Small "= ?" (or "= 7" after an answer).
 var _card: PanelContainer  # The white item card.
 var _bubble_area: Control  # Where the bubbles sit.
 var _wait: Timer  # Waits while feedback shows.
+var _paused := false  # true while the app has left the screen and the "Paused" card shows (D-015).
+var _pause_card: Control  # The "Paused" card that covers the screen while paused.
 
 
 # Builds the screen and starts the first item. Called once by ScreenBase when the screen opens.
@@ -53,6 +56,7 @@ func _build() -> void:
 	_wait.one_shot = true  # Runs once each time it is started.
 	_wait.timeout.connect(_on_feedback_done)  # When it ends, move on.
 	add_child(_wait)  # Add it (it is freed with the screen).
+	_build_pause_card()  # The hidden "Paused" card, on top of everything (D-015).
 	_show_item()  # Start with the first item.
 
 
@@ -196,7 +200,7 @@ func _bubble_area_height(count: int) -> float:
 
 # Runs every frame: counts the timer down while waiting for a tap.
 func _process(delta: float) -> void:
-	if _state != State.ASKING:  # Only while asking ...
+	if _state != State.ASKING or _paused:  # Only while asking, and not paused (D-015) ...
 		return  # ... does the timer run.
 	_time_left = maxf(0.0, _time_left - delta)  # Count down, never below 0.
 	_update_timer()  # Show it.
@@ -326,6 +330,73 @@ func _finish() -> void:
 		"new_best": flags.new_stars or flags.new_score or flags.new_time,  # Any new record?
 	}  # End of the list.
 	Game.go_to("level_end")  # Show the result.
+
+
+# Builds the "Paused" card: a dark veil over the whole screen with a white card, the word
+# "Paused" and a "Go on" button. It starts hidden and blocks taps on the item while it shows (D-015).
+func _build_pause_card() -> void:
+	_pause_card = Control.new()  # Holder that fills the screen.
+	_pause_card.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)  # Cover everything.
+	_pause_card.mouse_filter = Control.MOUSE_FILTER_STOP  # Taps stop here, so no bubble can be tapped.
+	_pause_card.visible = false  # Hidden until the app leaves the screen.
+	var veil := ColorRect.new()  # Dark see-through layer.
+	veil.color = Color(Palette.INK, 0.7)  # Dark ink, 70% strong.
+	veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)  # Fill the screen.
+	veil.mouse_filter = Control.MOUSE_FILTER_IGNORE  # The holder already stops taps.
+	_pause_card.add_child(veil)  # Add it.
+	var centre := CenterContainer.new()  # Puts the card in the middle.
+	centre.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)  # Fill the screen.
+	centre.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go to the button.
+	_pause_card.add_child(centre)  # Add it.
+	var panel := PanelContainer.new()  # The white card.
+	var style := UiKit.box(Palette.WHITE, 70)  # Rounded and outlined, like the item card.
+	style.set_content_margin_all(60)  # Room inside the card.
+	panel.add_theme_stylebox_override("panel", style)  # Use this look.
+	centre.add_child(panel)  # Add it.
+	var lines := VBoxContainer.new()  # Word above button.
+	lines.add_theme_constant_override("separation", 40)  # Space between them.
+	panel.add_child(lines)  # Add it.
+	lines.add_child(UiKit.label("Paused", 110, Palette.INK))  # Big word.
+	var go_on := UiKit.button("Go on", Palette.GREEN, Vector2(560, 150))  # Big green button.
+	go_on.pressed.connect(resume_level)  # Tapping it goes back to the item.
+	lines.add_child(go_on)  # Add it.
+	add_child(_pause_card)  # Added last, so it draws on top of the screen.
+
+
+# Runs when Godot or Android sends the screen a notice. Leaving the app pauses the Level (D-015).
+# ScreenBase's own _notification still runs too, so the Android Back button keeps working.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT or what == NOTIFICATION_APPLICATION_PAUSED:  # The app left the screen ...
+		pause_level()  # ... so pause.
+
+
+# Pauses the Level: stops the timer and the feedback wait, hides the item and bubbles, and shows
+# the "Paused" card. Runs when the app leaves the screen. Does nothing after the Level ends.
+func pause_level() -> void:
+	if _paused or _state == State.FINISHED or _pause_card == null:  # Already paused, over, or not built yet ...
+		return  # ... nothing to do.
+	_paused = true  # The timer in _process() stops counting.
+	_wait.paused = true  # Hold the feedback wait between items, too.
+	_card.visible = false  # Hide the item, so leaving the app gives no extra thinking time.
+	_bubble_area.visible = false  # Hide the bubbles as well.
+	_pause_card.visible = true  # Show the "Paused" card.
+
+
+# Goes on with the Level: hides the card, shows the item and bubbles again, and lets the timer run
+# on from the seconds it had left. Runs when "Go on" is tapped.
+func resume_level() -> void:
+	if not _paused:  # Not paused ...
+		return  # ... nothing to do.
+	_paused = false  # The timer counts again.
+	_wait.paused = false  # The feedback wait goes on.
+	_card.visible = true  # Show the item.
+	_bubble_area.visible = true  # Show the bubbles.
+	_pause_card.visible = false  # Hide the card.
+
+
+# Returns true while the Level is paused. Used by the tests.
+func is_paused() -> bool:
+	return _paused  # The pause flag.
 
 
 # Back leaves the Level without saving this play, and returns to Level select.
