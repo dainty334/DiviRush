@@ -1,2 +1,7 @@
 # Normalize EOL for all files that Git considers text files.
 * text=auto eol=lf
+
+# Binary assets: no text diff, no line-ending change.
+*.png binary
+*.ttf binary
+*.wav binary
