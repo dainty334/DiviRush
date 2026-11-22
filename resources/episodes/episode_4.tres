@@ -1,10 +1,524 @@
 [gd_resource type="Resource" script_class="EpisodeData" format=3]
 
-[ext_resource type="Script" path="res://scripts/resources/level_data.gd" id="1_hcev6"]
-[ext_resource type="Script" path="res://scripts/resources/episode_data.gd" id="2_h8a6n"]
+[ext_resource type="Script" path="res://scripts/resources/level_data.gd" id="1_h8a6n"]
+[ext_resource type="Script" path="res://scripts/resources/division_item.gd" id="2_bsxbl"]
+[ext_resource type="Script" path="res://scripts/resources/episode_data.gd" id="3_462se"]
+
+[sub_resource type="Resource" id="Resource_43clb"]
+script = ExtResource("2_bsxbl")
+dividend = 3
+quotient = 3
+wrong_easy = Array[int]([7, 9])
+wrong_medium = Array[int]([4, 2, 1])
+wrong_hard = Array[int]([1, 2, 4])
+
+[sub_resource type="Resource" id="Resource_fju2p"]
+script = ExtResource("2_bsxbl")
+dividend = 8
+divisor = 2
+quotient = 4
+wrong_easy = Array[int]([1, 16])
+wrong_medium = Array[int]([3, 5, 6])
+wrong_hard = Array[int]([2, 5, 3])
+
+[sub_resource type="Resource" id="Resource_3ppf4"]
+script = ExtResource("2_bsxbl")
+dividend = 27
+divisor = 3
+quotient = 9
+wrong_easy = Array[int]([19, 5])
+wrong_medium = Array[int]([10, 8, 7])
+wrong_hard = Array[int]([3, 10, 8])
+
+[sub_resource type="Resource" id="Resource_u1nh2"]
+script = ExtResource("2_bsxbl")
+dividend = 36
+divisor = 4
+quotient = 9
+wrong_easy = Array[int]([20, 13])
+wrong_medium = Array[int]([8, 10, 11])
+wrong_hard = Array[int]([4, 8, 10])
+
+[sub_resource type="Resource" id="Resource_14nmq"]
+script = ExtResource("2_bsxbl")
+dividend = 20
+divisor = 5
+quotient = 4
+wrong_easy = Array[int]([13, 12])
+wrong_medium = Array[int]([3, 5, 6])
+wrong_hard = Array[int]([5, 3, 2])
+
+[sub_resource type="Resource" id="Resource_wcrq8"]
+script = ExtResource("2_bsxbl")
+dividend = 54
+divisor = 6
+quotient = 9
+wrong_easy = Array[int]([14, 20])
+wrong_medium = Array[int]([8, 10, 7])
+wrong_hard = Array[int]([6, 8, 10])
+
+[sub_resource type="Resource" id="Resource_vjes8"]
+script = ExtResource("2_bsxbl")
+dividend = 70
+divisor = 7
+quotient = 10
+wrong_easy = Array[int]([13, 7])
+wrong_medium = Array[int]([9, 11, 8])
+wrong_hard = Array[int]([7, 9, 11])
+
+[sub_resource type="Resource" id="Resource_bomdq"]
+script = ExtResource("2_bsxbl")
+dividend = 40
+divisor = 8
+quotient = 5
+wrong_easy = Array[int]([9, 16])
+wrong_medium = Array[int]([4, 6, 3])
+wrong_hard = Array[int]([8, 6, 4])
+
+[sub_resource type="Resource" id="Resource_m1pwp"]
+script = ExtResource("2_bsxbl")
+dividend = 81
+divisor = 9
+quotient = 9
+wrong_easy = Array[int]([6, 2])
+wrong_medium = Array[int]([10, 8, 7])
+wrong_hard = Array[int]([10, 8, 7])
+
+[sub_resource type="Resource" id="Resource_oox5x"]
+script = ExtResource("2_bsxbl")
+dividend = 100
+divisor = 10
+quotient = 10
+wrong_easy = Array[int]([14, 18])
+wrong_medium = Array[int]([9, 11, 12])
+wrong_hard = Array[int]([9, 11, 12])
+
+[sub_resource type="Resource" id="Resource_reaae"]
+script = ExtResource("1_h8a6n")
+items = Array[ExtResource("2_bsxbl")]([SubResource("Resource_43clb"), SubResource("Resource_fju2p"), SubResource("Resource_3ppf4"), SubResource("Resource_u1nh2"), SubResource("Resource_14nmq"), SubResource("Resource_wcrq8"), SubResource("Resource_vjes8"), SubResource("Resource_bomdq"), SubResource("Resource_m1pwp"), SubResource("Resource_oox5x")])
+label = "÷ ?"
+
+[sub_resource type="Resource" id="Resource_aw7ky"]
+script = ExtResource("2_bsxbl")
+dividend = 6
+quotient = 6
+hidden = 1
+wrong_easy = Array[int]([9, 20])
+wrong_medium = Array[int]([2, 3, 4])
+wrong_hard = Array[int]([6, 2, 3])
+
+[sub_resource type="Resource" id="Resource_tqm4l"]
+script = ExtResource("2_bsxbl")
+dividend = 14
+divisor = 2
+quotient = 7
+hidden = 1
+wrong_easy = Array[int]([16, 11])
+wrong_medium = Array[int]([3, 1, 4])
+wrong_hard = Array[int]([7, 3, 1])
+
+[sub_resource type="Resource" id="Resource_q1pq0"]
+script = ExtResource("2_bsxbl")
+dividend = 9
+divisor = 3
+quotient = 3
+hidden = 1
+wrong_easy = Array[int]([15, 10])
+wrong_medium = Array[int]([2, 4, 5])
+wrong_hard = Array[int]([2, 4, 5])
+
+[sub_resource type="Resource" id="Resource_skvsx"]
+script = ExtResource("2_bsxbl")
+dividend = 12
+divisor = 4
+quotient = 3
+hidden = 1
+wrong_easy = Array[int]([15, 13])
+wrong_medium = Array[int]([3, 5, 2])
+wrong_hard = Array[int]([3, 5, 2])
+
+[sub_resource type="Resource" id="Resource_2ibry"]
+script = ExtResource("2_bsxbl")
+dividend = 25
+divisor = 5
+quotient = 5
+hidden = 1
+wrong_easy = Array[int]([20, 13])
+wrong_medium = Array[int]([4, 6, 3])
+wrong_hard = Array[int]([4, 6, 7])
+
+[sub_resource type="Resource" id="Resource_45ukw"]
+script = ExtResource("2_bsxbl")
+dividend = 36
+divisor = 6
+quotient = 6
+hidden = 1
+wrong_easy = Array[int]([17, 18])
+wrong_medium = Array[int]([7, 5, 8])
+wrong_hard = Array[int]([5, 7, 4])
+
+[sub_resource type="Resource" id="Resource_fr4y7"]
+script = ExtResource("2_bsxbl")
+dividend = 14
+divisor = 7
+quotient = 2
+hidden = 1
+wrong_easy = Array[int]([12, 3])
+wrong_medium = Array[int]([6, 8, 9])
+wrong_hard = Array[int]([2, 8, 6])
+
+[sub_resource type="Resource" id="Resource_f8im4"]
+script = ExtResource("2_bsxbl")
+dividend = 48
+divisor = 8
+quotient = 6
+hidden = 1
+wrong_easy = Array[int]([3, 11])
+wrong_medium = Array[int]([7, 9, 6])
+wrong_hard = Array[int]([6, 7, 9])
+
+[sub_resource type="Resource" id="Resource_hxbhi"]
+script = ExtResource("2_bsxbl")
+dividend = 36
+divisor = 9
+quotient = 4
+hidden = 1
+wrong_easy = Array[int]([12, 6])
+wrong_medium = Array[int]([8, 10, 11])
+wrong_hard = Array[int]([4, 8, 10])
+
+[sub_resource type="Resource" id="Resource_qiqjt"]
+script = ExtResource("2_bsxbl")
+dividend = 90
+divisor = 10
+quotient = 9
+hidden = 1
+wrong_easy = Array[int]([7, 3])
+wrong_medium = Array[int]([11, 9, 12])
+wrong_hard = Array[int]([9, 11, 8])
+
+[sub_resource type="Resource" id="Resource_csf3q"]
+script = ExtResource("1_h8a6n")
+number = 2
+items = Array[ExtResource("2_bsxbl")]([SubResource("Resource_aw7ky"), SubResource("Resource_tqm4l"), SubResource("Resource_q1pq0"), SubResource("Resource_skvsx"), SubResource("Resource_2ibry"), SubResource("Resource_45ukw"), SubResource("Resource_fr4y7"), SubResource("Resource_f8im4"), SubResource("Resource_hxbhi"), SubResource("Resource_qiqjt")])
+label = "÷ ☐"
+
+[sub_resource type="Resource" id="Resource_p5s2c"]
+script = ExtResource("2_bsxbl")
+dividend = 9
+quotient = 9
+hidden = 2
+wrong_easy = Array[int]([82, 19])
+wrong_medium = Array[int]([10, 8, 7])
+wrong_hard = Array[int]([18, 10, 8])
+
+[sub_resource type="Resource" id="Resource_q33fv"]
+script = ExtResource("2_bsxbl")
+dividend = 18
+divisor = 2
+quotient = 9
+hidden = 2
+wrong_easy = Array[int]([78, 72])
+wrong_medium = Array[int]([20, 16, 14])
+wrong_hard = Array[int]([9, 27, 16])
+
+[sub_resource type="Resource" id="Resource_btl46"]
+script = ExtResource("2_bsxbl")
+dividend = 6
+divisor = 3
+quotient = 2
+hidden = 2
+wrong_easy = Array[int]([27, 72])
+wrong_medium = Array[int]([3, 9, 12])
+wrong_hard = Array[int]([4, 8, 3])
+
+[sub_resource type="Resource" id="Resource_12rnf"]
+script = ExtResource("2_bsxbl")
+dividend = 8
+divisor = 4
+quotient = 2
+hidden = 2
+wrong_easy = Array[int]([84, 28])
+wrong_medium = Array[int]([12, 4, 16])
+wrong_hard = Array[int]([6, 10, 4])
+
+[sub_resource type="Resource" id="Resource_n3qcw"]
+script = ExtResource("2_bsxbl")
+dividend = 35
+divisor = 5
+quotient = 7
+hidden = 2
+wrong_easy = Array[int]([70, 5])
+wrong_medium = Array[int]([40, 30, 25])
+wrong_hard = Array[int]([28, 42, 30])
+
+[sub_resource type="Resource" id="Resource_0k4cb"]
+script = ExtResource("2_bsxbl")
+dividend = 18
+divisor = 6
+quotient = 3
+hidden = 2
+wrong_easy = Array[int]([78, 66])
+wrong_medium = Array[int]([12, 24, 30])
+wrong_hard = Array[int]([15, 21, 24])
+
+[sub_resource type="Resource" id="Resource_jh68h"]
+script = ExtResource("2_bsxbl")
+dividend = 63
+divisor = 7
+quotient = 9
+hidden = 2
+wrong_easy = Array[int]([28, 84])
+wrong_medium = Array[int]([70, 56, 49])
+wrong_hard = Array[int]([54, 72, 56])
+
+[sub_resource type="Resource" id="Resource_vyhd5"]
+script = ExtResource("2_bsxbl")
+dividend = 64
+divisor = 8
+quotient = 8
+hidden = 2
+wrong_easy = Array[int]([16, 8])
+wrong_medium = Array[int]([72, 56, 48])
+wrong_hard = Array[int]([56, 72, 80])
+
+[sub_resource type="Resource" id="Resource_7y113"]
+script = ExtResource("2_bsxbl")
+dividend = 27
+divisor = 9
+quotient = 3
+hidden = 2
+wrong_easy = Array[int]([90, 54])
+wrong_medium = Array[int]([18, 36, 9])
+wrong_hard = Array[int]([24, 30, 18])
+
+[sub_resource type="Resource" id="Resource_6lftl"]
+script = ExtResource("2_bsxbl")
+dividend = 40
+divisor = 10
+quotient = 4
+hidden = 2
+wrong_easy = Array[int]([70, 100])
+wrong_medium = Array[int]([50, 30, 20])
+wrong_hard = Array[int]([36, 44, 30])
+
+[sub_resource type="Resource" id="Resource_hm1m6"]
+script = ExtResource("1_h8a6n")
+number = 3
+items = Array[ExtResource("2_bsxbl")]([SubResource("Resource_p5s2c"), SubResource("Resource_q33fv"), SubResource("Resource_btl46"), SubResource("Resource_12rnf"), SubResource("Resource_n3qcw"), SubResource("Resource_0k4cb"), SubResource("Resource_jh68h"), SubResource("Resource_vyhd5"), SubResource("Resource_7y113"), SubResource("Resource_6lftl")])
+label = "☐ ÷"
+
+[sub_resource type="Resource" id="Resource_w01j8"]
+script = ExtResource("2_bsxbl")
+dividend = 8
+quotient = 8
+hidden = 2
+wrong_easy = Array[int]([2, 82])
+wrong_medium = Array[int]([7, 9, 10])
+wrong_hard = Array[int]([16, 9, 7])
+
+[sub_resource type="Resource" id="Resource_7gpnq"]
+script = ExtResource("2_bsxbl")
+dividend = 12
+divisor = 2
+quotient = 6
+hidden = 1
+wrong_easy = Array[int]([14, 12])
+wrong_medium = Array[int]([3, 1, 4])
+wrong_hard = Array[int]([6, 3, 1])
+
+[sub_resource type="Resource" id="Resource_h462x"]
+script = ExtResource("2_bsxbl")
+dividend = 30
+divisor = 3
+quotient = 10
+hidden = 1
+wrong_easy = Array[int]([8, 12])
+wrong_medium = Array[int]([4, 2, 5])
+wrong_hard = Array[int]([10, 2, 4])
+
+[sub_resource type="Resource" id="Resource_cnnps"]
+script = ExtResource("2_bsxbl")
+dividend = 16
+divisor = 4
+quotient = 4
+hidden = 1
+wrong_easy = Array[int]([19, 20])
+wrong_medium = Array[int]([3, 5, 2])
+wrong_hard = Array[int]([3, 5, 6])
+
+[sub_resource type="Resource" id="Resource_k64o5"]
+script = ExtResource("2_bsxbl")
+dividend = 50
+divisor = 5
+quotient = 10
+hidden = 1
+wrong_easy = Array[int]([14, 17])
+wrong_medium = Array[int]([4, 6, 7])
+wrong_hard = Array[int]([10, 6, 4])
+
+[sub_resource type="Resource" id="Resource_47d20"]
+script = ExtResource("2_bsxbl")
+dividend = 60
+divisor = 6
+quotient = 10
+hidden = 2
+wrong_easy = Array[int]([24, 90])
+wrong_medium = Array[int]([54, 66, 48])
+wrong_hard = Array[int]([50, 70, 66])
+
+[sub_resource type="Resource" id="Resource_m6oqe"]
+script = ExtResource("2_bsxbl")
+dividend = 35
+divisor = 7
+quotient = 5
+hidden = 2
+wrong_easy = Array[int]([77, 56])
+wrong_medium = Array[int]([42, 28, 21])
+wrong_hard = Array[int]([30, 40, 28])
+
+[sub_resource type="Resource" id="Resource_j0psh"]
+script = ExtResource("2_bsxbl")
+dividend = 56
+divisor = 8
+quotient = 7
+hidden = 2
+wrong_easy = Array[int]([80, 24])
+wrong_medium = Array[int]([48, 64, 40])
+wrong_hard = Array[int]([49, 63, 48])
+
+[sub_resource type="Resource" id="Resource_4mip1"]
+script = ExtResource("2_bsxbl")
+dividend = 72
+divisor = 9
+quotient = 8
+hidden = 2
+wrong_easy = Array[int]([27, 99])
+wrong_medium = Array[int]([63, 81, 90])
+wrong_hard = Array[int]([64, 80, 81])
+
+[sub_resource type="Resource" id="Resource_1vukp"]
+script = ExtResource("2_bsxbl")
+dividend = 50
+divisor = 10
+quotient = 5
+hidden = 1
+wrong_easy = Array[int]([1, 17])
+wrong_medium = Array[int]([11, 9, 8])
+wrong_hard = Array[int]([5, 9, 11])
+
+[sub_resource type="Resource" id="Resource_n3yvg"]
+script = ExtResource("1_h8a6n")
+number = 4
+items = Array[ExtResource("2_bsxbl")]([SubResource("Resource_w01j8"), SubResource("Resource_7gpnq"), SubResource("Resource_h462x"), SubResource("Resource_cnnps"), SubResource("Resource_k64o5"), SubResource("Resource_47d20"), SubResource("Resource_m6oqe"), SubResource("Resource_j0psh"), SubResource("Resource_4mip1"), SubResource("Resource_1vukp")])
+label = "Mix ☐"
+
+[sub_resource type="Resource" id="Resource_vwopm"]
+script = ExtResource("2_bsxbl")
+dividend = 7
+quotient = 7
+hidden = 2
+wrong_easy = Array[int]([60, 27])
+wrong_medium = Array[int]([8, 6, 5])
+wrong_hard = Array[int]([14, 8, 6])
+
+[sub_resource type="Resource" id="Resource_ic5yc"]
+script = ExtResource("2_bsxbl")
+dividend = 10
+divisor = 2
+quotient = 5
+wrong_easy = Array[int]([19, 15])
+wrong_medium = Array[int]([4, 6, 7])
+wrong_hard = Array[int]([2, 6, 4])
+
+[sub_resource type="Resource" id="Resource_rgnxq"]
+script = ExtResource("2_bsxbl")
+dividend = 24
+divisor = 3
+quotient = 8
+hidden = 2
+wrong_easy = Array[int]([45, 63])
+wrong_medium = Array[int]([21, 27, 30])
+wrong_hard = Array[int]([16, 32, 21])
+
+[sub_resource type="Resource" id="Resource_ew8o4"]
+script = ExtResource("2_bsxbl")
+dividend = 28
+divisor = 4
+quotient = 7
+hidden = 1
+wrong_easy = Array[int]([10, 1])
+wrong_medium = Array[int]([5, 3, 6])
+wrong_hard = Array[int]([7, 5, 3])
+
+[sub_resource type="Resource" id="Resource_b37pi"]
+script = ExtResource("2_bsxbl")
+dividend = 30
+divisor = 5
+quotient = 6
+hidden = 2
+wrong_easy = Array[int]([80, 10])
+wrong_medium = Array[int]([35, 25, 40])
+wrong_hard = Array[int]([24, 36, 25])
+
+[sub_resource type="Resource" id="Resource_jupyo"]
+script = ExtResource("2_bsxbl")
+dividend = 30
+divisor = 6
+quotient = 5
+hidden = 2
+wrong_easy = Array[int]([90, 12])
+wrong_medium = Array[int]([24, 36, 42])
+wrong_hard = Array[int]([25, 35, 24])
+
+[sub_resource type="Resource" id="Resource_6vybq"]
+script = ExtResource("2_bsxbl")
+dividend = 56
+divisor = 7
+quotient = 8
+hidden = 1
+wrong_easy = Array[int]([2, 3])
+wrong_medium = Array[int]([8, 6, 9])
+wrong_hard = Array[int]([8, 6, 9])
+
+[sub_resource type="Resource" id="Resource_gui53"]
+script = ExtResource("2_bsxbl")
+dividend = 16
+divisor = 8
+quotient = 2
+wrong_easy = Array[int]([18, 17])
+wrong_medium = Array[int]([1, 3, 4])
+wrong_hard = Array[int]([8, 3, 1])
+
+[sub_resource type="Resource" id="Resource_hnph5"]
+script = ExtResource("2_bsxbl")
+dividend = 18
+divisor = 9
+quotient = 2
+hidden = 1
+wrong_easy = Array[int]([6, 20])
+wrong_medium = Array[int]([10, 8, 11])
+wrong_hard = Array[int]([2, 8, 10])
+
+[sub_resource type="Resource" id="Resource_pvbls"]
+script = ExtResource("2_bsxbl")
+dividend = 70
+divisor = 10
+quotient = 7
+hidden = 1
+wrong_easy = Array[int]([3, 2])
+wrong_medium = Array[int]([11, 9, 12])
+wrong_hard = Array[int]([7, 11, 9])
+
+[sub_resource type="Resource" id="Resource_4qhme"]
+script = ExtResource("1_h8a6n")
+number = 5
+items = Array[ExtResource("2_bsxbl")]([SubResource("Resource_vwopm"), SubResource("Resource_ic5yc"), SubResource("Resource_rgnxq"), SubResource("Resource_ew8o4"), SubResource("Resource_b37pi"), SubResource("Resource_jupyo"), SubResource("Resource_6vybq"), SubResource("Resource_gui53"), SubResource("Resource_hnph5"), SubResource("Resource_pvbls")])
+label = "Mix"
 
 [resource]
-script = ExtResource("2_h8a6n")
+script = ExtResource("3_462se")
 number = 4
 title = "Fact Families"
 facts = "÷1 to ÷10, missing numbers"
+levels = Array[ExtResource("1_h8a6n")]([SubResource("Resource_reaae"), SubResource("Resource_csf3q"), SubResource("Resource_hm1m6"), SubResource("Resource_n3yvg"), SubResource("Resource_4qhme")])

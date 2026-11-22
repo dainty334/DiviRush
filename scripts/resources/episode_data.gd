@@ -11,4 +11,4 @@ extends Resource  # A data file Godot can save and edit in the Inspector.
 
 # Returns true when this Episode has playable Levels in its item bank.
 func is_built() -> bool:
-	return not levels.is_empty()  # Episodes 2-4 have no Levels in this first slice.
+	return not levels.is_empty()  # An Episode with no Levels yet cannot be played.
