@@ -27,6 +27,8 @@ func _set_display() -> void:
 	ProjectSettings.set_setting("display/window/handheld/orientation", 1)  # 1 = portrait only on phones (D-009).
 	ProjectSettings.set_setting("application/config/quit_on_go_back", false)  # Android Back goes to the previous screen instead of closing the game.
 	ProjectSettings.set_setting("rendering/textures/vram_compression/import_etc2_astc", true)  # Texture compression that Android phones support.
+	ProjectSettings.set_setting("rendering/renderer/rendering_method", "gl_compatibility")  # Compatibility renderer (OpenGL ES 3), for low-cost phones (D-016).
+	ProjectSettings.set_setting("rendering/renderer/rendering_method.mobile", "gl_compatibility")  # The same on phones, so no Vulkan is needed (D-016).
 
 
 # Sets the start scene, the start-up colours and turns on the GUT test addon.

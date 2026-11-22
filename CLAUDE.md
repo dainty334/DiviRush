@@ -1,6 +1,6 @@
 # DiviRush
 
-Godot 4.7 (Mobile renderer) project for DIVIRUSH, a capstone quick-tap division game for Grade 4 learners. All game code is GDScript.
+Godot 4.7 (Compatibility renderer, D-016) project for DIVIRUSH, a capstone quick-tap division game for Grade 4 learners. All game code is GDScript.
 
 ## Primary sources
 
