@@ -33,10 +33,20 @@ func setup(number: int, colour: String) -> void:
 	value = number  # Remember the number.
 	_frames = SpriteSheet.bubble(colour)  # Load this colour's frames.
 	_bob_phase = randf() * TAU  # Random bob start.
-	_label = UiKit.label(str(number), 140 if number < 10 else 120, Palette.INK)  # Big dark number, a little smaller for two digits.
+	_label = UiKit.label(str(number), font_size_for(number), Palette.INK)  # Big dark number, smaller when it has more digits.
 	_label.set_anchors_preset(Control.PRESET_FULL_RECT)  # Fill the bubble so the number is centred.
 	_label.position.y -= 6.0  # Nudge up a little, since the bubble's outline is thicker at the bottom.
 	add_child(_label)  # Show the number.
+
+
+# Returns the font size for a number, so one, two and three digits all fit inside the bubble.
+# Episode 4 bubbles can show numbers up to 100 (D-013).
+static func font_size_for(number: int) -> int:
+	if number < 10:  # One digit ...
+		return 140  # ... the biggest.
+	if number < 100:  # Two digits ...
+		return 120  # ... a little smaller.
+	return 96  # Three digits (only 100) ... smaller again, so it stays inside the round part.
 
 
 # Places the bubble. Called by the Play screen with the top-left corner.

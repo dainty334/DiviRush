@@ -32,7 +32,9 @@ func _level_card(number: int, level: LevelData) -> Button:
 	stack.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go to the card.
 	stack.add_theme_constant_override("separation", 0)  # Tight stack.
 	stack.add_child(UiKit.label(str(number), 120, Palette.INK))  # Big Level number.
-	stack.add_child(UiKit.label(_facts_of(level), 40, Palette.BLUE))  # Which facts it practises.
+	var facts := MathText.new(40, Palette.BLUE)  # Which facts it practises; a ☐ is drawn as a box.
+	facts.set_text(_facts_of(level))  # For example "÷2", "Mix" or "☐ ÷".
+	stack.add_child(facts)  # Add it.
 	if is_open:  # Open ...
 		stack.add_child(_star_row(Save.progress.best(Game.episode, Game.difficulty, number).stars))  # ... best Stars.
 	else:  # Locked ...
@@ -57,15 +59,25 @@ func _facts_of(level: LevelData) -> String:
 	return "Mix"  # Mixed review Level.
 
 
-# Makes a row of 3 Star icons: gold for earned, grey for not yet.
-func _star_row(earned: int) -> HBoxContainer:
+# Makes a row of 3 Star icons on a small white pill: gold for earned, grey for not yet.
+# The white pill makes the gold Stars stand out on the yellow card.
+func _star_row(earned: int) -> PanelContainer:
+	var pill := PanelContainer.new()  # The white pill behind the Stars.
+	var style := UiKit.box(Palette.WHITE, 40, 5)  # White, round, with a thin dark outline.
+	style.set_content_margin_all(4)  # Little space around the Stars.
+	style.content_margin_left = 10  # A bit more at the ends ...
+	style.content_margin_right = 10  # ... so the pill looks round.
+	pill.add_theme_stylebox_override("panel", style)  # Use this look.
+	pill.size_flags_horizontal = Control.SIZE_SHRINK_CENTER  # Only as wide as the Stars, centred.
+	pill.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go to the card.
 	var row := HBoxContainer.new()  # Stars side by side.
 	row.alignment = BoxContainer.ALIGNMENT_CENTER  # Centred.
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go to the card.
 	row.add_theme_constant_override("separation", 2)  # Close together.
 	for i in range(3):  # Three Stars ...
-		row.add_child(UiKit.icon(UiKit.Icon.STAR if i < earned else UiKit.Icon.STAR_EMPTY, 64))  # ... gold or grey.
-	return row  # Hand back the row.
+		row.add_child(UiKit.icon(UiKit.Icon.STAR if i < earned else UiKit.Icon.STAR_EMPTY, 56))  # ... gold or grey, a little smaller to fit the pill.
+	pill.add_child(row)  # Put the Stars on the pill.
+	return pill  # Hand back the pill.
 
 
 # Runs when a Level card is tapped.

@@ -27,7 +27,7 @@ var _timer_bar: TimerBar  # The shrinking coloured bar.
 var _seconds_label: Label  # "10 s".
 var _streak_badge: PanelContainer  # "×3 Streak!" badge.
 var _streak_label: Label  # Text inside the badge.
-var _question_label: Label  # Big "56 ÷ 8".
+var _question_label: MathText  # Big "56 ÷ 8", or "56 ÷ ☐" with a drawn box.
 var _answer_label: Label  # Small "= ?" (or "= 7" after an answer).
 var _card: PanelContainer  # The white item card.
 var _bubble_area: Control  # Where the bubbles sit.
@@ -131,7 +131,7 @@ func _build_card() -> void:
 	var lines := VBoxContainer.new()  # Question above answer.
 	lines.alignment = BoxContainer.ALIGNMENT_CENTER  # Centred up and down.
 	lines.add_theme_constant_override("separation", -10)  # Lines close together.
-	_question_label = UiKit.label("", 170, Palette.INK)  # Big "56 ÷ 8".
+	_question_label = MathText.new(170, Palette.INK)  # Big "56 ÷ 8"; a ☐ is drawn as a thick box.
 	lines.add_child(_question_label)  # Add it.
 	_answer_label = UiKit.label("", 64, Palette.BLUE)  # Small "= ?".
 	lines.add_child(_answer_label)  # Add it.
@@ -157,7 +157,7 @@ func _show_item() -> void:
 # Splits "56 ÷ 8 = ?" into the big part "56 ÷ 8" and the small part "= ?", and colours the small part.
 func _set_card_text(text: String, answer_colour: Color) -> void:
 	var parts := text.split(" = ")  # Two parts around the equals sign.
-	_question_label.text = parts[0]  # Big part.
+	_question_label.set_text(parts[0])  # Big part.
 	_answer_label.text = "= " + parts[1] if parts.size() > 1 else ""  # Small part.
 	_answer_label.label_settings.font_color = answer_colour  # Blue while asking; green or pink after.
 
