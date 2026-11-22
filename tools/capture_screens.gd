@@ -52,6 +52,7 @@ func _capture_all() -> void:
 	await _capture_medium_and_hard(save, game)  # Medium and Hard screens with 4 bubbles.
 	await _capture_episode_two(save, game)  # Episode 2 screens.
 	await _capture_episode_three(save, game)  # Episode 3 screens.
+	await _capture_episode_four(save, game)  # Episode 4 screens with missing-number items.
 	quit()  # Close when done.
 
 
@@ -88,6 +89,29 @@ func _capture_episode_three(save: Node, game: Node) -> void:
 	game.difficulty = 2  # Hard chosen (2 = Difficulty.Kind.HARD).
 	game.level = 3  # Hard Level 3 (÷8) chosen.
 	await _shot("play_screen", "23_play_episode_3_hard")  # An Episode 3 item with 4 Hard bubbles and a 7 s timer.
+
+
+# Saves the Episode 4 screens (D-013): Episode select with every Episode open, its Level select
+# with the "÷ ?", "÷ ☐", "☐ ÷", "Mix ☐" and "Mix" cards, an Easy Play screen of Level 2 (missing
+# divisor), and a Hard Play screen of Level 3 (missing dividend, with bubbles up to 100).
+# Episode 4 is already open here, because every Episode 3 Easy Level was passed for the Hard shot.
+func _capture_episode_four(save: Node, game: Node) -> void:
+	await _shot("episode_select", "24_episode_select_episode_4_open")  # All four Episodes open.
+	game.episode = 4  # Episode 4 chosen.
+	game.difficulty = 0  # Easy chosen (0 = Difficulty.Kind.EASY).
+	save.progress.record(4, 0, 1, 3, 240, 52.0)  # Episode 4 Level 1 passed with 3 Stars.
+	save.progress.record(4, 0, 2, 1, 150, 85.0)  # Episode 4 Level 2 passed with 1 Star.
+	await _shot("level_select", "25_level_select_episode_4")  # Levels 1-3 open, with their labels.
+	game.level = 2  # Level 2 (missing divisor) chosen.
+	await _shot("play_screen", "26_play_episode_4_missing_divisor")  # 56 ÷ ☐ = 7 style item with 3 Easy bubbles.
+	for difficulty: int in range(2):  # Easy and then Medium ...
+		for level: int in range(1, 6):  # ... Levels 1 to 5 ...
+			save.progress.record(4, difficulty, level, 2, 200, 60.0)  # ... passed, which opens Episode 4 Hard.
+	save.progress.record(4, 2, 1, 2, 170, 50.0)  # Hard Level 1 passed.
+	save.progress.record(4, 2, 2, 2, 170, 50.0)  # Hard Level 2 passed, which opens Hard Level 3.
+	game.difficulty = 2  # Hard chosen (2 = Difficulty.Kind.HARD).
+	game.level = 3  # Hard Level 3 (missing dividend) chosen.
+	await _shot("play_screen", "27_play_episode_4_missing_dividend_hard")  # ☐ ÷ 8 = 7 style item with 4 Hard bubbles.
 
 
 # Opens Medium and then Hard, as a learner would by passing Easy and Medium Level 5,
