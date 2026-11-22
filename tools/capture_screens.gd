@@ -112,6 +112,9 @@ func _capture_episode_four(save: Node, game: Node) -> void:
 	game.difficulty = 2  # Hard chosen (2 = Difficulty.Kind.HARD).
 	game.level = 3  # Hard Level 3 (missing dividend) chosen.
 	await _shot("play_screen", "27_play_episode_4_missing_dividend_hard")  # ☐ ÷ 8 = 7 style item with 4 Hard bubbles.
+	current_scene.pause_level()  # As if the learner left the app (D-015).
+	await _wait(0.4)  # Let the card draw.
+	_save_picture("28_play_paused")  # The "Paused" card covering the item.
 
 
 # Opens Medium and then Hard, as a learner would by passing Easy and Medium Level 5,
