@@ -1,0 +1,10 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/screens/episode_select.gd" id="1_4xcvm"]
+
+[node name="EpisodeSelect" type="Control" unique_id=1608763732]
+layout_mode = 3
+anchors_preset = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_4xcvm")
