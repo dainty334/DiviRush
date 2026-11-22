@@ -1,14 +1,15 @@
 # Builds the Episode item banks as .tres files, so Godot itself writes them.
 # Run from the project folder with:
 #   godot --headless --script res://tools/build_item_banks.gd
-# Episodes 1 and 2 get their 5 Levels (D-010, D-011). Episodes 3 and 4 get only their name
-# and facts for now, because their Level contents are built in a later slice.
+# Episodes 1, 2 and 3 get their 5 Levels (D-010, D-011, D-012). Episode 4 gets only its name
+# and facts for now, because its Level contents are built in a later slice.
 extends SceneTree  # A SceneTree script runs on its own, without opening a scene.
 
 const OUT_DIR := "res://resources/episodes/"  # Where the item banks are saved.
 const SEED := 2026  # Fixed seed, so running the tool again gives the same items.
 const LEVEL_5_MIX := {1: 2, 2: 3, 5: 3, 10: 2}  # Episode 1 Level 5 review: divisor -> how many facts (D-010).
 const EPISODE_2_MIX := {3: 5, 4: 5}  # Episode 2 Level 5 review: 5 ÷3 and 5 ÷4 facts (D-011).
+const EPISODE_3_MIX := {6: 2, 7: 3, 8: 3, 9: 2}  # Episode 3 Level 5 review: more ÷7 and ÷8, the hardest tables (D-012).
 
 var rng := RandomNumberGenerator.new()  # Random number maker for Easy wrong answers and the Level 5 mix.
 var near_rng := RandomNumberGenerator.new()  # A second maker for Medium and Hard, so adding them left Easy unchanged.
@@ -18,7 +19,7 @@ var near_rng := RandomNumberGenerator.new()  # A second maker for Medium and Har
 func _init() -> void:
 	_save(_episode_one())  # Episode 1 with its Levels.
 	_save(_episode_two())  # Episode 2 with its Levels.
-	_save(_episode_stub(3, "Hard Facts", "÷6, ÷7, ÷8, ÷9"))  # Episode 3: name only for now.
+	_save(_episode_three())  # Episode 3 with its Levels.
 	_save(_episode_stub(4, "Fact Families", "÷1 to ÷10, missing numbers"))  # Episode 4: name only for now.
 	quit()  # Close the tool when done.
 
@@ -50,6 +51,19 @@ func _episode_two() -> EpisodeData:
 	high.label = "Mix 6–10"  # Card label.
 	episode.levels.append(high)  # Add it.
 	episode.levels.append(_mixed_level(5, EPISODE_2_MIX))  # Level 5: mixed review.
+	return episode  # Hand back the finished Episode.
+
+
+# Builds Episode 3 (D-012): Levels 1-4 use ÷6, ÷7, ÷8, ÷9 in counting order with quotients 1-10;
+# Level 5 is a mixed review of 2 ÷6, 3 ÷7, 3 ÷8 and 2 ÷9 facts.
+func _episode_three() -> EpisodeData:
+	rng.seed = SEED + 4  # Episode 3's own seeds, so it never changes Episodes 1 and 2.
+	near_rng.seed = SEED + 5  # Its own fixed seed for Medium and Hard.
+	var episode := _episode_stub(3, "Hard Facts", "÷6, ÷7, ÷8, ÷9")  # Name and facts.
+	var divisors := [6, 7, 8, 9]  # One divisor per Level 1-4.
+	for i in range(divisors.size()):  # Levels 1 to 4.
+		episode.levels.append(_table_level(i + 1, [divisors[i]], range(1, 11)))  # Every fact for this divisor, 1 to 10.
+	episode.levels.append(_mixed_level(5, EPISODE_3_MIX))  # Level 5: mixed review.
 	return episode  # Hand back the finished Episode.
 
 
