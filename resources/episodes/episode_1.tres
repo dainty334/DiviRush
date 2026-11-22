@@ -7,60 +7,80 @@
 [sub_resource type="Resource" id="Resource_qlqw5"]
 script = ExtResource("2_7v8q3")
 wrong_easy = Array[int]([6, 11])
+wrong_medium = Array[int]([2, 3, 4])
+wrong_hard = Array[int]([2, 3, 4])
 
 [sub_resource type="Resource" id="Resource_20fqu"]
 script = ExtResource("2_7v8q3")
 dividend = 2
 quotient = 2
 wrong_easy = Array[int]([5, 7])
+wrong_medium = Array[int]([3, 1, 4])
+wrong_hard = Array[int]([1, 3, 4])
 
 [sub_resource type="Resource" id="Resource_qns6d"]
 script = ExtResource("2_7v8q3")
 dividend = 3
 quotient = 3
 wrong_easy = Array[int]([20, 16])
+wrong_medium = Array[int]([2, 4, 1])
+wrong_hard = Array[int]([1, 4, 2])
 
 [sub_resource type="Resource" id="Resource_o6434"]
 script = ExtResource("2_7v8q3")
 dividend = 4
 quotient = 4
 wrong_easy = Array[int]([15, 9])
+wrong_medium = Array[int]([5, 3, 6])
+wrong_hard = Array[int]([1, 5, 3])
 
 [sub_resource type="Resource" id="Resource_ask4b"]
 script = ExtResource("2_7v8q3")
 dividend = 5
 quotient = 5
 wrong_easy = Array[int]([18, 9])
+wrong_medium = Array[int]([4, 6, 3])
+wrong_hard = Array[int]([1, 6, 4])
 
 [sub_resource type="Resource" id="Resource_2u7rp"]
 script = ExtResource("2_7v8q3")
 dividend = 6
 quotient = 6
 wrong_easy = Array[int]([1, 9])
+wrong_medium = Array[int]([5, 7, 8])
+wrong_hard = Array[int]([1, 7, 5])
 
 [sub_resource type="Resource" id="Resource_e16gn"]
 script = ExtResource("2_7v8q3")
 dividend = 7
 quotient = 7
 wrong_easy = Array[int]([3, 1])
+wrong_medium = Array[int]([8, 6, 5])
+wrong_hard = Array[int]([1, 6, 8])
 
 [sub_resource type="Resource" id="Resource_gjk7p"]
 script = ExtResource("2_7v8q3")
 dividend = 8
 quotient = 8
 wrong_easy = Array[int]([15, 2])
+wrong_medium = Array[int]([9, 7, 10])
+wrong_hard = Array[int]([1, 9, 7])
 
 [sub_resource type="Resource" id="Resource_xnjuo"]
 script = ExtResource("2_7v8q3")
 dividend = 9
 quotient = 9
 wrong_easy = Array[int]([5, 13])
+wrong_medium = Array[int]([10, 8, 11])
+wrong_hard = Array[int]([1, 8, 10])
 
 [sub_resource type="Resource" id="Resource_1qrb1"]
 script = ExtResource("2_7v8q3")
 dividend = 10
 quotient = 10
 wrong_easy = Array[int]([15, 5])
+wrong_medium = Array[int]([9, 11, 8])
+wrong_hard = Array[int]([1, 9, 11])
 
 [sub_resource type="Resource" id="Resource_gcyah"]
 script = ExtResource("1_1d2t0")
@@ -71,6 +91,8 @@ script = ExtResource("2_7v8q3")
 dividend = 2
 divisor = 2
 wrong_easy = Array[int]([16, 10])
+wrong_medium = Array[int]([2, 3, 4])
+wrong_hard = Array[int]([2, 3, 4])
 
 [sub_resource type="Resource" id="Resource_nhrfv"]
 script = ExtResource("2_7v8q3")
@@ -78,6 +100,8 @@ dividend = 4
 divisor = 2
 quotient = 2
 wrong_easy = Array[int]([12, 14])
+wrong_medium = Array[int]([3, 1, 4])
+wrong_hard = Array[int]([1, 3, 4])
 
 [sub_resource type="Resource" id="Resource_pig4s"]
 script = ExtResource("2_7v8q3")
@@ -85,6 +109,8 @@ dividend = 6
 divisor = 2
 quotient = 3
 wrong_easy = Array[int]([6, 12])
+wrong_medium = Array[int]([2, 4, 1])
+wrong_hard = Array[int]([2, 4, 5])
 
 [sub_resource type="Resource" id="Resource_mh5di"]
 script = ExtResource("2_7v8q3")
@@ -92,6 +118,8 @@ dividend = 8
 divisor = 2
 quotient = 4
 wrong_easy = Array[int]([8, 13])
+wrong_medium = Array[int]([3, 5, 6])
+wrong_hard = Array[int]([2, 3, 5])
 
 [sub_resource type="Resource" id="Resource_4ltgv"]
 script = ExtResource("2_7v8q3")
@@ -99,6 +127,8 @@ dividend = 10
 divisor = 2
 quotient = 5
 wrong_easy = Array[int]([20, 19])
+wrong_medium = Array[int]([6, 4, 7])
+wrong_hard = Array[int]([2, 6, 4])
 
 [sub_resource type="Resource" id="Resource_n5fpv"]
 script = ExtResource("2_7v8q3")
@@ -106,6 +136,8 @@ dividend = 12
 divisor = 2
 quotient = 6
 wrong_easy = Array[int]([16, 1])
+wrong_medium = Array[int]([5, 7, 4])
+wrong_hard = Array[int]([2, 5, 7])
 
 [sub_resource type="Resource" id="Resource_e8b74"]
 script = ExtResource("2_7v8q3")
@@ -113,6 +145,8 @@ dividend = 14
 divisor = 2
 quotient = 7
 wrong_easy = Array[int]([15, 16])
+wrong_medium = Array[int]([6, 8, 5])
+wrong_hard = Array[int]([2, 8, 6])
 
 [sub_resource type="Resource" id="Resource_r30kc"]
 script = ExtResource("2_7v8q3")
@@ -120,6 +154,8 @@ dividend = 16
 divisor = 2
 quotient = 8
 wrong_easy = Array[int]([1, 18])
+wrong_medium = Array[int]([9, 7, 6])
+wrong_hard = Array[int]([2, 9, 7])
 
 [sub_resource type="Resource" id="Resource_6vktm"]
 script = ExtResource("2_7v8q3")
@@ -127,6 +163,8 @@ dividend = 18
 divisor = 2
 quotient = 9
 wrong_easy = Array[int]([18, 2])
+wrong_medium = Array[int]([8, 10, 11])
+wrong_hard = Array[int]([2, 8, 10])
 
 [sub_resource type="Resource" id="Resource_l77ag"]
 script = ExtResource("2_7v8q3")
@@ -134,6 +172,8 @@ dividend = 20
 divisor = 2
 quotient = 10
 wrong_easy = Array[int]([14, 16])
+wrong_medium = Array[int]([9, 11, 12])
+wrong_hard = Array[int]([2, 9, 11])
 
 [sub_resource type="Resource" id="Resource_evvni"]
 script = ExtResource("1_1d2t0")
@@ -145,6 +185,8 @@ script = ExtResource("2_7v8q3")
 dividend = 5
 divisor = 5
 wrong_easy = Array[int]([6, 7])
+wrong_medium = Array[int]([2, 3, 4])
+wrong_hard = Array[int]([5, 2, 3])
 
 [sub_resource type="Resource" id="Resource_3rh41"]
 script = ExtResource("2_7v8q3")
@@ -152,6 +194,8 @@ dividend = 10
 divisor = 5
 quotient = 2
 wrong_easy = Array[int]([10, 15])
+wrong_medium = Array[int]([3, 1, 4])
+wrong_hard = Array[int]([5, 1, 3])
 
 [sub_resource type="Resource" id="Resource_psu34"]
 script = ExtResource("2_7v8q3")
@@ -159,6 +203,8 @@ dividend = 15
 divisor = 5
 quotient = 3
 wrong_easy = Array[int]([20, 16])
+wrong_medium = Array[int]([2, 4, 1])
+wrong_hard = Array[int]([5, 4, 2])
 
 [sub_resource type="Resource" id="Resource_mgi40"]
 script = ExtResource("2_7v8q3")
@@ -166,6 +212,8 @@ dividend = 20
 divisor = 5
 quotient = 4
 wrong_easy = Array[int]([15, 9])
+wrong_medium = Array[int]([5, 3, 2])
+wrong_hard = Array[int]([5, 3, 6])
 
 [sub_resource type="Resource" id="Resource_8i7pc"]
 script = ExtResource("2_7v8q3")
@@ -173,6 +221,8 @@ dividend = 25
 divisor = 5
 quotient = 5
 wrong_easy = Array[int]([20, 11])
+wrong_medium = Array[int]([6, 4, 3])
+wrong_hard = Array[int]([4, 6, 3])
 
 [sub_resource type="Resource" id="Resource_cd460"]
 script = ExtResource("2_7v8q3")
@@ -180,6 +230,8 @@ dividend = 30
 divisor = 5
 quotient = 6
 wrong_easy = Array[int]([18, 16])
+wrong_medium = Array[int]([7, 5, 8])
+wrong_hard = Array[int]([5, 7, 4])
 
 [sub_resource type="Resource" id="Resource_f3iom"]
 script = ExtResource("2_7v8q3")
@@ -187,6 +239,8 @@ dividend = 35
 divisor = 5
 quotient = 7
 wrong_easy = Array[int]([2, 13])
+wrong_medium = Array[int]([6, 8, 9])
+wrong_hard = Array[int]([5, 8, 6])
 
 [sub_resource type="Resource" id="Resource_h3t7d"]
 script = ExtResource("2_7v8q3")
@@ -194,6 +248,8 @@ dividend = 40
 divisor = 5
 quotient = 8
 wrong_easy = Array[int]([3, 18])
+wrong_medium = Array[int]([9, 7, 10])
+wrong_hard = Array[int]([5, 9, 7])
 
 [sub_resource type="Resource" id="Resource_n6eml"]
 script = ExtResource("2_7v8q3")
@@ -201,6 +257,8 @@ dividend = 45
 divisor = 5
 quotient = 9
 wrong_easy = Array[int]([18, 17])
+wrong_medium = Array[int]([10, 8, 7])
+wrong_hard = Array[int]([5, 10, 8])
 
 [sub_resource type="Resource" id="Resource_ndk64"]
 script = ExtResource("2_7v8q3")
@@ -208,6 +266,8 @@ dividend = 50
 divisor = 5
 quotient = 10
 wrong_easy = Array[int]([14, 13])
+wrong_medium = Array[int]([9, 11, 12])
+wrong_hard = Array[int]([5, 11, 9])
 
 [sub_resource type="Resource" id="Resource_h7gkh"]
 script = ExtResource("1_1d2t0")
@@ -219,6 +279,8 @@ script = ExtResource("2_7v8q3")
 dividend = 10
 divisor = 10
 wrong_easy = Array[int]([7, 12])
+wrong_medium = Array[int]([2, 3, 4])
+wrong_hard = Array[int]([10, 2, 3])
 
 [sub_resource type="Resource" id="Resource_6r1m4"]
 script = ExtResource("2_7v8q3")
@@ -226,6 +288,8 @@ dividend = 20
 divisor = 10
 quotient = 2
 wrong_easy = Array[int]([14, 5])
+wrong_medium = Array[int]([1, 3, 4])
+wrong_hard = Array[int]([10, 3, 1])
 
 [sub_resource type="Resource" id="Resource_apqdh"]
 script = ExtResource("2_7v8q3")
@@ -233,6 +297,8 @@ dividend = 30
 divisor = 10
 quotient = 3
 wrong_easy = Array[int]([12, 10])
+wrong_medium = Array[int]([2, 4, 1])
+wrong_hard = Array[int]([10, 4, 2])
 
 [sub_resource type="Resource" id="Resource_sxkkd"]
 script = ExtResource("2_7v8q3")
@@ -240,6 +306,8 @@ dividend = 40
 divisor = 10
 quotient = 4
 wrong_easy = Array[int]([12, 1])
+wrong_medium = Array[int]([3, 5, 6])
+wrong_hard = Array[int]([10, 3, 5])
 
 [sub_resource type="Resource" id="Resource_w0gdl"]
 script = ExtResource("2_7v8q3")
@@ -247,6 +315,8 @@ dividend = 50
 divisor = 10
 quotient = 5
 wrong_easy = Array[int]([13, 8])
+wrong_medium = Array[int]([6, 4, 3])
+wrong_hard = Array[int]([10, 4, 6])
 
 [sub_resource type="Resource" id="Resource_3kknl"]
 script = ExtResource("2_7v8q3")
@@ -254,6 +324,8 @@ dividend = 60
 divisor = 10
 quotient = 6
 wrong_easy = Array[int]([11, 12])
+wrong_medium = Array[int]([5, 7, 4])
+wrong_hard = Array[int]([10, 7, 5])
 
 [sub_resource type="Resource" id="Resource_niyhu"]
 script = ExtResource("2_7v8q3")
@@ -261,6 +333,8 @@ dividend = 70
 divisor = 10
 quotient = 7
 wrong_easy = Array[int]([19, 3])
+wrong_medium = Array[int]([8, 6, 9])
+wrong_hard = Array[int]([10, 6, 8])
 
 [sub_resource type="Resource" id="Resource_js0ro"]
 script = ExtResource("2_7v8q3")
@@ -268,6 +342,8 @@ dividend = 80
 divisor = 10
 quotient = 8
 wrong_easy = Array[int]([2, 17])
+wrong_medium = Array[int]([9, 7, 6])
+wrong_hard = Array[int]([10, 7, 9])
 
 [sub_resource type="Resource" id="Resource_ybpn5"]
 script = ExtResource("2_7v8q3")
@@ -275,6 +351,8 @@ dividend = 90
 divisor = 10
 quotient = 9
 wrong_easy = Array[int]([18, 6])
+wrong_medium = Array[int]([8, 10, 7])
+wrong_hard = Array[int]([10, 8, 11])
 
 [sub_resource type="Resource" id="Resource_bw2bx"]
 script = ExtResource("2_7v8q3")
@@ -282,6 +360,8 @@ dividend = 100
 divisor = 10
 quotient = 10
 wrong_easy = Array[int]([20, 16])
+wrong_medium = Array[int]([9, 11, 8])
+wrong_hard = Array[int]([9, 11, 12])
 
 [sub_resource type="Resource" id="Resource_7k2b5"]
 script = ExtResource("1_1d2t0")
@@ -293,12 +373,16 @@ script = ExtResource("2_7v8q3")
 dividend = 8
 quotient = 8
 wrong_easy = Array[int]([2, 12])
+wrong_medium = Array[int]([7, 9, 6])
+wrong_hard = Array[int]([1, 7, 9])
 
 [sub_resource type="Resource" id="Resource_440dd"]
 script = ExtResource("2_7v8q3")
 dividend = 10
 quotient = 10
 wrong_easy = Array[int]([7, 14])
+wrong_medium = Array[int]([11, 9, 12])
+wrong_hard = Array[int]([1, 9, 11])
 
 [sub_resource type="Resource" id="Resource_vp445"]
 script = ExtResource("2_7v8q3")
@@ -306,6 +390,8 @@ dividend = 6
 divisor = 2
 quotient = 3
 wrong_easy = Array[int]([18, 10])
+wrong_medium = Array[int]([2, 4, 1])
+wrong_hard = Array[int]([2, 4, 5])
 
 [sub_resource type="Resource" id="Resource_q5nlh"]
 script = ExtResource("2_7v8q3")
@@ -313,6 +399,8 @@ dividend = 14
 divisor = 2
 quotient = 7
 wrong_easy = Array[int]([3, 14])
+wrong_medium = Array[int]([6, 8, 9])
+wrong_hard = Array[int]([2, 6, 8])
 
 [sub_resource type="Resource" id="Resource_vv16n"]
 script = ExtResource("2_7v8q3")
@@ -320,6 +408,8 @@ dividend = 12
 divisor = 2
 quotient = 6
 wrong_easy = Array[int]([19, 15])
+wrong_medium = Array[int]([7, 5, 4])
+wrong_hard = Array[int]([2, 7, 5])
 
 [sub_resource type="Resource" id="Resource_pjch2"]
 script = ExtResource("2_7v8q3")
@@ -327,6 +417,8 @@ dividend = 15
 divisor = 5
 quotient = 3
 wrong_easy = Array[int]([20, 8])
+wrong_medium = Array[int]([4, 2, 1])
+wrong_hard = Array[int]([5, 4, 2])
 
 [sub_resource type="Resource" id="Resource_w3q7s"]
 script = ExtResource("2_7v8q3")
@@ -334,6 +426,8 @@ dividend = 45
 divisor = 5
 quotient = 9
 wrong_easy = Array[int]([14, 4])
+wrong_medium = Array[int]([10, 8, 11])
+wrong_hard = Array[int]([5, 10, 8])
 
 [sub_resource type="Resource" id="Resource_5ppqi"]
 script = ExtResource("2_7v8q3")
@@ -341,6 +435,8 @@ dividend = 30
 divisor = 5
 quotient = 6
 wrong_easy = Array[int]([16, 17])
+wrong_medium = Array[int]([7, 5, 8])
+wrong_hard = Array[int]([5, 7, 4])
 
 [sub_resource type="Resource" id="Resource_i11sj"]
 script = ExtResource("2_7v8q3")
@@ -348,6 +444,8 @@ dividend = 100
 divisor = 10
 quotient = 10
 wrong_easy = Array[int]([5, 17])
+wrong_medium = Array[int]([11, 9, 8])
+wrong_hard = Array[int]([9, 11, 12])
 
 [sub_resource type="Resource" id="Resource_3lx24"]
 script = ExtResource("2_7v8q3")
@@ -355,6 +453,8 @@ dividend = 70
 divisor = 10
 quotient = 7
 wrong_easy = Array[int]([18, 4])
+wrong_medium = Array[int]([6, 8, 5])
+wrong_hard = Array[int]([10, 6, 8])
 
 [sub_resource type="Resource" id="Resource_7oufu"]
 script = ExtResource("1_1d2t0")

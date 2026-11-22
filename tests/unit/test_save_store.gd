@@ -30,6 +30,20 @@ func test_progress_and_settings_survive_a_restart() -> void:
 	assert_eq(loaded_settings, settings)  # Settings came back.
 
 
+# Medium and Hard bests are saved under their own keys and come back separately from Easy.
+func test_medium_and_hard_bests_survive_a_restart() -> void:
+	var progress := Progress.new()  # Progress before the "restart".
+	progress.record(1, EASY, 1, 3, 250, 40.0)  # Easy Level 1.
+	progress.record(1, Difficulty.Kind.MEDIUM, 1, 1, 120, 70.0)  # Medium Level 1.
+	progress.record(1, Difficulty.Kind.HARD, 1, 2, 160, 55.0)  # Hard Level 1.
+	assert_eq(SaveStore.new(TEST_PATH).save(progress, SaveStore.default_settings()), OK)  # Write the file.
+	var loaded := Progress.new()  # New, empty progress, as after a restart.
+	SaveStore.new(TEST_PATH).load_into(loaded, SaveStore.default_settings())  # Read the file back.
+	assert_eq(loaded.best(1, EASY, 1).stars, 3)  # Easy came back.
+	assert_eq(loaded.best(1, Difficulty.Kind.MEDIUM, 1).stars, 1)  # Medium came back on its own.
+	assert_eq(loaded.best(1, Difficulty.Kind.HARD, 1).stars, 2)  # Hard came back on its own.
+
+
 # With no save file yet, loading keeps the defaults and does not crash.
 func test_missing_file_keeps_defaults() -> void:
 	var progress := Progress.new()  # Empty progress.

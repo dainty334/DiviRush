@@ -2,6 +2,7 @@
 extends GutTest  # GUT gives this script its assert_* checks.
 
 const EPISODE_1 := "res://resources/episodes/episode_1.tres"  # The Episode 1 item bank file.
+const Rules := preload("res://tests/helpers/answer_rules.gd")  # Shared checks for the D-011 rules.
 
 
 # An item shows its question as "56 ÷ 8 = ?" and its answer is the quotient.
@@ -68,3 +69,29 @@ func test_every_item_is_valid() -> void:
 			assert_eq(item.wrong_easy.size(), 2)  # 2 wrong answers for 3 Easy bubbles.
 			for value in item.wrong_easy:  # Each wrong answer.
 				assert_gte(absi(value - item.quotient), 3)  # Far from the answer.
+
+
+# Every Episode 1 item has 3 Medium wrong answers that follow the "closest first" rule (D-011).
+func test_every_item_has_medium_wrong_answers() -> void:
+	var episode: EpisodeData = load(EPISODE_1)  # Load the item bank.
+	for level in episode.levels:  # Each Level.
+		for item in level.items:  # Each item.
+			assert_eq(Rules.problem(item.quotient, item.wrong_medium, 3), "")  # "" means every rule holds.
+
+
+# Every Episode 1 item has 3 Hard wrong answers: the divisor, then the next facts (D-011).
+func test_every_item_has_hard_wrong_answers() -> void:
+	var episode: EpisodeData = load(EPISODE_1)  # Load the item bank.
+	for level in episode.levels:  # Each Level.
+		for item in level.items:  # Each item.
+			assert_eq(Rules.problem(item.quotient, item.wrong_hard, 3, item.divisor), "")  # "" means every rule holds.
+
+
+# Each Difficulty has enough wrong answers to fill its bubbles, so none shows "Coming soon".
+func test_every_difficulty_has_enough_wrong_answers() -> void:
+	var episode: EpisodeData = load(EPISODE_1)  # Load the item bank.
+	for kind in [Difficulty.Kind.EASY, Difficulty.Kind.MEDIUM, Difficulty.Kind.HARD]:  # Each Difficulty.
+		var needed := Difficulty.bubble_count(kind) - 1  # Bubbles minus the correct one.
+		for level in episode.levels:  # Each Level.
+			for item in level.items:  # Each item.
+				assert_eq(item.wrong_for(kind).size(), needed)  # Exactly enough wrong answers.

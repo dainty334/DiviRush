@@ -9,12 +9,14 @@ const OUT_DIR := "res://resources/episodes/"  # Where the item banks are saved.
 const SEED := 2026  # Fixed seed, so running the tool again gives the same items.
 const LEVEL_5_MIX := {1: 2, 2: 3, 5: 3, 10: 2}  # Level 5 review: divisor -> how many facts (D-010).
 
-var rng := RandomNumberGenerator.new()  # Random number maker for wrong answers and the Level 5 mix.
+var rng := RandomNumberGenerator.new()  # Random number maker for Easy wrong answers and the Level 5 mix.
+var near_rng := RandomNumberGenerator.new()  # A second maker for Medium and Hard, so adding them left Easy unchanged.
 
 
 # Runs once when the tool starts: builds and saves all four Episodes, then quits.
 func _init() -> void:
 	rng.seed = SEED  # Same seed every run.
+	near_rng.seed = SEED + 1  # Its own fixed seed, so Medium and Hard also repeat exactly.
 	_save(_episode_one())  # Episode 1 with its Levels.
 	_save(_episode_stub(2, "Middle Facts", "÷3, ÷4"))  # Episode 2: name only for now.
 	_save(_episode_stub(3, "Hard Facts", "÷6, ÷7, ÷8, ÷9"))  # Episode 3: name only for now.
@@ -49,13 +51,15 @@ func _mixed_level(number: int) -> LevelData:
 	return level  # Hand back the Level.
 
 
-# Makes one item: dividend = divisor x quotient, plus 2 far wrong answers for Easy.
+# Makes one item: dividend = divisor x quotient, plus its wrong answers for every Difficulty.
 func _make_item(divisor: int, quotient: int) -> DivisionItem:
 	var item := DivisionItem.new()  # A new item.
 	item.divisor = divisor  # The number it divides by.
 	item.quotient = quotient  # The answer.
 	item.dividend = divisor * quotient  # Always divides evenly and stays 100 or less (D-007).
 	item.wrong_easy = WrongAnswers.far(quotient, 2, rng)  # 2 far wrong answers for 3 Easy bubbles.
+	item.wrong_medium = WrongAnswers.near(quotient, 3, near_rng)  # 3 near wrong answers for 4 Medium bubbles (D-011).
+	item.wrong_hard = WrongAnswers.look_alike(quotient, divisor, 3, near_rng)  # 3 look-alike answers for 4 Hard bubbles; the divisor is the fact family answer (D-011).
 	return item  # Hand back the item.
 
 

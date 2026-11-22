@@ -59,6 +59,39 @@ func test_passing_medium_level_five_opens_hard() -> void:
 	assert_true(progress.is_level_open(1, HARD, 1))  # Hard Level 1 is open.
 
 
+# Medium Levels open one after another on their own, and Hard stays locked until Medium Level 5.
+func test_medium_levels_open_in_order() -> void:
+	for level in range(1, 6):  # Pass Easy Levels 1 to 5 to open Medium.
+		_record_pass(1, EASY, level)  # Easy Level passed.
+	assert_true(progress.is_level_open(1, MEDIUM, 1))  # Medium Level 1 is open.
+	assert_false(progress.is_level_open(1, MEDIUM, 2))  # Medium Level 2 waits for Medium Level 1.
+	_record_pass(1, MEDIUM, 1)  # Pass Medium Level 1.
+	assert_true(progress.is_level_open(1, MEDIUM, 2))  # Medium Level 2 opens.
+	assert_false(progress.is_level_open(1, HARD, 1))  # Hard still waits for Medium Level 5.
+
+
+# Hard Levels also open one after another.
+func test_hard_levels_open_in_order() -> void:
+	for level in range(1, 6):  # Pass Easy and Medium Levels 1 to 5.
+		_record_pass(1, EASY, level)  # Easy Level passed.
+		_record_pass(1, MEDIUM, level)  # Medium Level passed.
+	assert_false(progress.is_level_open(1, HARD, 2))  # Hard Level 2 waits for Hard Level 1.
+	_record_pass(1, HARD, 1)  # Pass Hard Level 1.
+	assert_true(progress.is_level_open(1, HARD, 2))  # Hard Level 2 opens.
+
+
+# Each Difficulty keeps its own bests for the same Level number.
+func test_each_difficulty_saves_its_own_bests() -> void:
+	progress.record(1, EASY, 1, 3, 250, 40.0)  # Easy Level 1: 3 Stars.
+	progress.record(1, MEDIUM, 1, 1, 120, 70.0)  # Medium Level 1: 1 Star.
+	progress.record(1, HARD, 1, 2, 160, 55.0)  # Hard Level 1: 2 Stars.
+	assert_eq(progress.best(1, EASY, 1), {"stars": 3, "score": 250, "time": 40.0})  # Easy bests unchanged.
+	assert_eq(progress.best(1, MEDIUM, 1), {"stars": 1, "score": 120, "time": 70.0})  # Medium bests.
+	assert_eq(progress.best(1, HARD, 1), {"stars": 2, "score": 160, "time": 55.0})  # Hard bests.
+	assert_eq(progress.stars_in(1, MEDIUM), 1)  # Medium total counts only Medium Stars.
+	assert_eq(progress.stars_in(1, HARD), 2)  # Hard total counts only Hard Stars.
+
+
 # The best Stars stay when a later play earns fewer.
 func test_best_stars_are_kept() -> void:
 	progress.record(1, EASY, 1, 3, 200, 50.0)  # A perfect play first.

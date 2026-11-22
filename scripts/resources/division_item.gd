@@ -10,8 +10,8 @@ enum Hidden { QUOTIENT, DIVISOR, DIVIDEND }  # Which number the learner must fin
 @export var quotient: int = 1  # The result, 1 to 10.
 @export var hidden: Hidden = Hidden.QUOTIENT  # Episodes 1-3 hide the quotient; Episode 4 may hide others.
 @export var wrong_easy: Array[int] = []  # 2 far wrong answers for Easy's 3 bubbles.
-@export var wrong_medium: Array[int] = []  # 3 near wrong answers for Medium (filled in a later slice).
-@export var wrong_hard: Array[int] = []  # 3 look-alike wrong answers for Hard (filled in a later slice).
+@export var wrong_medium: Array[int] = []  # 3 near wrong answers for Medium's 4 bubbles (D-011).
+@export var wrong_hard: Array[int] = []  # 3 look-alike wrong answers for Hard's 4 bubbles (D-011).
 
 
 # Returns the number the learner must tap. Used to check an answer.

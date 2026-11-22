@@ -42,7 +42,7 @@ func level_data() -> LevelData:
 
 
 # Returns true when a Difficulty of an Episode has the items it needs to be played.
-# In this first slice only Episode 1 Easy has them; others show "Coming soon".
+# Episode 1 Easy, Medium and Hard have them (D-011); Episodes 2-4 still show "Coming soon".
 func is_playable(episode_number: int, kind: int) -> bool:
 	var data := episode_data(episode_number)  # That Episode's item bank.
 	if not data.is_built() or data.levels[0].items.is_empty():  # No Levels or no items yet ...

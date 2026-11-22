@@ -2,6 +2,8 @@
 extends GutTest  # GUT gives this script its assert_* checks.
 
 const EASY := Difficulty.Kind.EASY  # Short name for Easy.
+const MEDIUM := Difficulty.Kind.MEDIUM  # Short name for Medium.
+const HARD := Difficulty.Kind.HARD  # Short name for Hard.
 
 var run: LevelRun  # A fresh play for each test.
 
@@ -15,6 +17,8 @@ func _make_items() -> Array[DivisionItem]:
 		item.quotient = quotient  # The answer.
 		item.dividend = 2 * quotient  # The number being divided.
 		item.wrong_easy = [quotient + 5, quotient + 9]  # Two far wrong answers.
+		item.wrong_medium = [quotient + 1, quotient + 2, quotient + 3]  # Three near wrong answers.
+		item.wrong_hard = [quotient + 1, quotient + 2, quotient + 4]  # Three Hard wrong answers.
 		items.append(item)  # Add it to the list.
 	return items  # Hand back all 10 items.
 
@@ -62,6 +66,35 @@ func test_easy_shows_three_different_choices_with_the_answer() -> void:
 	for value in choices:  # Look at each bubble.
 		unique[value] = true  # Remember it.
 	assert_eq(unique.size(), 3)  # No two bubbles show the same number.
+
+
+# Medium and Hard items show 4 bubbles: the answer and that Difficulty's 3 wrong ones, all different.
+func test_medium_and_hard_show_four_different_choices_with_the_answer() -> void:
+	for kind in [MEDIUM, HARD]:  # Both 4-bubble Difficulties.
+		var play := LevelRun.new(_make_items(), kind, _rng(3))  # A new play at this Difficulty.
+		var item := play.current_item()  # The item showing now.
+		var choices := play.choices()  # The numbers on the bubbles.
+		assert_eq(choices.size(), 4)  # 4 bubbles (D-008).
+		assert_has(choices, item.correct_answer())  # One is correct.
+		for wrong in item.wrong_for(kind):  # This Difficulty's own wrong answers ...
+			assert_has(choices, wrong)  # ... are all on the bubbles.
+
+
+# Medium gives 10 seconds per item and Hard gives 7 (D-008 starting values).
+func test_medium_and_hard_time_limits() -> void:
+	assert_eq(LevelRun.new(_make_items(), MEDIUM, _rng(1)).time_limit(), 10.0)  # Medium: 10 s.
+	assert_eq(LevelRun.new(_make_items(), HARD, _rng(1)).time_limit(), 7.0)  # Hard: 7 s.
+
+
+# On Medium and Hard a time-out still counts as wrong and uses that Difficulty's full time.
+func test_time_out_on_medium_and_hard_counts_as_wrong() -> void:
+	for kind in [MEDIUM, HARD]:  # Both Difficulties.
+		var play := LevelRun.new(_make_items(), kind, _rng(5))  # A new play.
+		var result := play.time_out()  # The timer ran out.
+		assert_false(result.correct)  # Counts as wrong.
+		assert_eq(result.points, 0)  # 0 points.
+		assert_eq(play.correct_count, 0)  # Not counted as correct.
+		assert_almost_eq(play.total_time, Difficulty.time_limit(kind), 0.001)  # The full 10 s or 7 s used.
 
 
 # Easy gives 15 seconds per item.
