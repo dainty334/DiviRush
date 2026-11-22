@@ -51,6 +51,7 @@ func _capture_all() -> void:
 	await _shot("level_end", "12_level_end", 2.6)  # Stars filled and "New best!".
 	await _capture_medium_and_hard(save, game)  # Medium and Hard screens with 4 bubbles.
 	await _capture_episode_two(save, game)  # Episode 2 screens.
+	await _capture_episode_three(save, game)  # Episode 3 screens.
 	quit()  # Close when done.
 
 
@@ -66,6 +67,27 @@ func _capture_episode_two(save: Node, game: Node) -> void:
 	await _shot("level_select", "19_level_select_episode_2")  # Levels 1-3 open, with their labels.
 	game.level = 3  # Level 3 (÷3 and ÷4, answers 1-5) chosen.
 	await _shot("play_screen", "20_play_episode_2")  # An Episode 2 item with 3 Easy bubbles.
+
+
+# Saves the Episode 3 screens (D-012): Episode select with Episode 3 open, its Level select,
+# and a Hard Play screen of Level 3 (÷8) with 4 bubbles and look-alike wrong answers.
+func _capture_episode_three(save: Node, game: Node) -> void:
+	for level: int in range(3, 6):  # Episode 2 Easy Levels 3 to 5 ...
+		save.progress.record(2, 0, level, 2, 200, 60.0)  # ... passed (0 = EASY), which opens Episode 3 Easy.
+	await _shot("episode_select", "21_episode_select_episode_3_open")  # Episode 3 open, Episode 4 locked.
+	game.episode = 3  # Episode 3 chosen.
+	game.difficulty = 0  # Easy chosen (0 = Difficulty.Kind.EASY).
+	save.progress.record(3, 0, 1, 3, 235, 50.0)  # Episode 3 Level 1 (÷6) passed with 3 Stars.
+	save.progress.record(3, 0, 2, 1, 160, 80.0)  # Episode 3 Level 2 (÷7) passed with 1 Star.
+	await _shot("level_select", "22_level_select_episode_3")  # Levels 1-3 open: ÷6, ÷7, ÷8; ÷9 and Mix locked.
+	for difficulty: int in range(2):  # Easy and then Medium ...
+		for level: int in range(1, 6):  # ... Levels 1 to 5 ...
+			save.progress.record(3, difficulty, level, 2, 200, 60.0)  # ... passed, which opens Episode 3 Hard.
+	save.progress.record(3, 2, 1, 2, 170, 50.0)  # Hard Level 1 passed.
+	save.progress.record(3, 2, 2, 2, 170, 50.0)  # Hard Level 2 passed, which opens Hard Level 3.
+	game.difficulty = 2  # Hard chosen (2 = Difficulty.Kind.HARD).
+	game.level = 3  # Hard Level 3 (÷8) chosen.
+	await _shot("play_screen", "23_play_episode_3_hard")  # An Episode 3 item with 4 Hard bubbles and a 7 s timer.
 
 
 # Opens Medium and then Hard, as a learner would by passing Easy and Medium Level 5,
