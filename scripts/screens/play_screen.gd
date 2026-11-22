@@ -9,6 +9,8 @@ const FEEDBACK_SECONDS := 0.9  # How long a tapped answer's result shows.
 const TIME_OUT_SECONDS := 1.5  # How long the correct answer shows after a time-out (D-010).
 const STREAK_BADGE_FROM := 3  # The streak badge appears at 3 correct in a row (D-010).
 const BUBBLE_COLOURS := ["yellow", "green", "pink", "yellow"]  # Resting colours, as in the sample.
+const THREE_AREA_HEIGHT := 560.0  # Height of the bubble area for Easy's 3 bubbles in a V.
+const SQUARE_GAP := 50.0  # Space between bubbles in Medium and Hard's 2 x 2 square, so they never overlap.
 
 var _state: State = State.ASKING  # The state right now.
 var _run: LevelRun  # This play's rules and results.
@@ -44,7 +46,7 @@ func _build() -> void:
 	_build_card()  # The item card.
 	add_spacer(1.0)  # Space between card and bubbles grows on tall phones.
 	_bubble_area = Control.new()  # Free-placement area for the bubbles.
-	_bubble_area.custom_minimum_size = Vector2(COLUMN_WIDTH, 560)  # Room for 3 or 4 bubbles.
+	_bubble_area.custom_minimum_size = Vector2(COLUMN_WIDTH, _bubble_area_height(Difficulty.bubble_count(_run.difficulty)))  # Room for 3 or 4 bubbles.
 	column.add_child(_bubble_area)  # Add it.
 	column.add_child(UiKit.label("Tap the right bubble!", 42, Palette.WHITE, 10))  # Hint line, as in the sample.
 	_wait = Timer.new()  # A timer for the feedback pause.
@@ -180,7 +182,16 @@ func _make_bubbles(values: Array[int]) -> void:
 func _bubble_spots(count: int) -> Array[Vector2]:
 	if count == 3:  # Easy (D-008).
 		return [Vector2(20, 30), Vector2(340, 210), Vector2(660, 30)]  # Left high, middle low, right high.
-	return [Vector2(160, 0), Vector2(520, 0), Vector2(160, 250), Vector2(520, 250)]  # Medium and Hard: 2 x 2.
+	var step := AnswerBubble.SIZE + SQUARE_GAP  # From one bubble's corner to the next one's: a bubble plus the gap.
+	var left := (COLUMN_WIDTH - AnswerBubble.SIZE - step) / 2.0  # Left edge that centres the square in the column.
+	return [Vector2(left, 0), Vector2(left + step, 0), Vector2(left, step), Vector2(left + step, step)]  # Medium and Hard: 2 x 2.
+
+
+# Returns how tall the bubble area must be for this many bubbles. Runs once when the screen is built.
+func _bubble_area_height(count: int) -> float:
+	if count == 3:  # Easy's V shape ...
+		return THREE_AREA_HEIGHT  # ... keeps the height from the style sample.
+	return AnswerBubble.SIZE * 2.0 + SQUARE_GAP  # Two rows of bubbles and the gap between them.
 
 
 # Runs every frame: counts the timer down while waiting for a tap.

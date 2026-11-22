@@ -49,7 +49,29 @@ func _capture_all() -> void:
 	save.progress.record(1, 0, 3, 2, 214, 58.4)  # Level 3's result, as the Play screen would save it.
 	game.last_result = {"correct": 9, "total": 10, "stars": 2, "score": 214, "time": 58.4, "passed": true, "new_best": true}  # A passed play.
 	await _shot("level_end", "12_level_end", 2.6)  # Stars filled and "New best!".
+	await _capture_medium_and_hard(save, game)  # Medium and Hard screens with 4 bubbles.
 	quit()  # Close when done.
+
+
+# Opens Medium and then Hard, as a learner would by passing Easy and Medium Level 5,
+# and saves their Difficulty select, Level select and Play screens (4 bubbles).
+func _capture_medium_and_hard(save: Node, game: Node) -> void:
+	for level in range(3, 6):  # Easy Levels 3 to 5 ...
+		save.progress.record(1, 0, level, 2, 200, 60.0)  # ... passed (0 = EASY), which opens Medium.
+	save.progress.record(1, 1, 1, 3, 230, 45.0)  # Medium Level 1 passed with 3 Stars.
+	save.progress.record(1, 1, 2, 1, 150, 75.0)  # Medium Level 2 passed with 1 Star.
+	await _shot("difficulty_select", "13_difficulty_select_medium_open")  # Medium open, Hard locked.
+	game.difficulty = 1  # Medium chosen (1 = Difficulty.Kind.MEDIUM).
+	await _shot("level_select", "14_level_select_medium")  # Medium Levels 1-3 open.
+	game.level = 3  # Medium Level 3 (÷5) chosen.
+	await _shot("play_screen", "15_play_medium")  # 4 bubbles with near wrong answers, 10 s timer.
+	for level in range(3, 6):  # Medium Levels 3 to 5 ...
+		save.progress.record(1, 1, level, 2, 180, 70.0)  # ... passed (1 = MEDIUM), which opens Hard.
+	save.progress.record(1, 2, 1, 2, 170, 50.0)  # Hard Level 1 passed with 2 Stars.
+	game.difficulty = 2  # Hard chosen (2 = Difficulty.Kind.HARD).
+	await _shot("level_select", "16_level_select_hard")  # Hard Levels 1-2 open.
+	game.level = 2  # Hard Level 2 (÷2) chosen.
+	await _shot("play_screen", "17_play_hard")  # 4 bubbles with look-alike wrong answers, 7 s timer.
 
 
 # Opens a screen, waits for it to settle, and saves its picture.
