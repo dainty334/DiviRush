@@ -44,8 +44,11 @@ func _level_card(number: int, level: LevelData) -> Button:
 	return card  # Hand it back.
 
 
-# Returns a short label for a Level's facts: "÷2" if it uses one divisor, otherwise "Mix".
+# Returns a short label for a Level's facts: the Level's own label if the item bank gives one
+# (Episode 2 Levels 3 and 4: "Mix 1–5", "Mix 6–10"), else "÷2" for one divisor, otherwise "Mix".
 func _facts_of(level: LevelData) -> String:
+	if not level.label.is_empty():  # The item bank names this Level ...
+		return level.label  # ... so show that name.
 	var divisors := {}  # Divisors found.
 	for item in level.items:  # Each item ...
 		divisors[item.divisor] = true  # ... adds its divisor.

@@ -1,13 +1,14 @@
 # Builds the Episode item banks as .tres files, so Godot itself writes them.
 # Run from the project folder with:
 #   godot --headless --script res://tools/build_item_banks.gd
-# Episode 1 gets its 5 Levels (D-010). Episodes 2-4 get only their name and facts for now,
-# because their Level contents are built in a later slice.
+# Episodes 1 and 2 get their 5 Levels (D-010, D-011). Episodes 3 and 4 get only their name
+# and facts for now, because their Level contents are built in a later slice.
 extends SceneTree  # A SceneTree script runs on its own, without opening a scene.
 
 const OUT_DIR := "res://resources/episodes/"  # Where the item banks are saved.
 const SEED := 2026  # Fixed seed, so running the tool again gives the same items.
-const LEVEL_5_MIX := {1: 2, 2: 3, 5: 3, 10: 2}  # Level 5 review: divisor -> how many facts (D-010).
+const LEVEL_5_MIX := {1: 2, 2: 3, 5: 3, 10: 2}  # Episode 1 Level 5 review: divisor -> how many facts (D-010).
+const EPISODE_2_MIX := {3: 5, 4: 5}  # Episode 2 Level 5 review: 5 ÷3 and 5 ÷4 facts (D-011).
 
 var rng := RandomNumberGenerator.new()  # Random number maker for Easy wrong answers and the Level 5 mix.
 var near_rng := RandomNumberGenerator.new()  # A second maker for Medium and Hard, so adding them left Easy unchanged.
@@ -15,10 +16,8 @@ var near_rng := RandomNumberGenerator.new()  # A second maker for Medium and Har
 
 # Runs once when the tool starts: builds and saves all four Episodes, then quits.
 func _init() -> void:
-	rng.seed = SEED  # Same seed every run.
-	near_rng.seed = SEED + 1  # Its own fixed seed, so Medium and Hard also repeat exactly.
 	_save(_episode_one())  # Episode 1 with its Levels.
-	_save(_episode_stub(2, "Middle Facts", "÷3, ÷4"))  # Episode 2: name only for now.
+	_save(_episode_two())  # Episode 2 with its Levels.
 	_save(_episode_stub(3, "Hard Facts", "÷6, ÷7, ÷8, ÷9"))  # Episode 3: name only for now.
 	_save(_episode_stub(4, "Fact Families", "÷1 to ÷10, missing numbers"))  # Episode 4: name only for now.
 	quit()  # Close the tool when done.
@@ -26,25 +25,52 @@ func _init() -> void:
 
 # Builds Episode 1: Levels 1-4 use ÷1, ÷2, ÷5, ÷10 with quotients 1-10; Level 5 mixes them.
 func _episode_one() -> EpisodeData:
+	rng.seed = SEED  # Episode 1's own seeds, so building other Episodes never changes it.
+	near_rng.seed = SEED + 1  # Its own fixed seed for Medium and Hard.
 	var episode := _episode_stub(1, "Easy Facts", "÷1, ÷2, ÷5, ÷10")  # Name and facts.
 	var divisors := [1, 2, 5, 10]  # One divisor per Level 1-4.
 	for i in range(divisors.size()):  # Levels 1 to 4.
-		var level := LevelData.new()  # A new Level.
-		level.number = i + 1  # Level number.
-		for quotient in range(1, 11):  # Every fact for this divisor, 1 to 10.
-			level.items.append(_make_item(divisors[i], quotient))  # Add the item.
-		episode.levels.append(level)  # Add the Level to the Episode.
-	episode.levels.append(_mixed_level(5))  # Level 5: mixed review.
+		episode.levels.append(_table_level(i + 1, [divisors[i]], range(1, 11)))  # Every fact for this divisor, 1 to 10.
+	episode.levels.append(_mixed_level(5, LEVEL_5_MIX))  # Level 5: mixed review.
 	return episode  # Hand back the finished Episode.
 
 
-# Builds a mixed review Level: a few facts from each divisor, with no fact repeated.
-func _mixed_level(number: int) -> LevelData:
+# Builds Episode 2 (D-011): Level 1 = ÷3, Level 2 = ÷4, Level 3 = both with answers 1-5,
+# Level 4 = both with answers 6-10, Level 5 = mixed review of 5 ÷3 and 5 ÷4 facts.
+func _episode_two() -> EpisodeData:
+	rng.seed = SEED + 2  # Episode 2's own seeds, so it never changes Episode 1.
+	near_rng.seed = SEED + 3  # Its own fixed seed for Medium and Hard.
+	var episode := _episode_stub(2, "Middle Facts", "÷3, ÷4")  # Name and facts.
+	episode.levels.append(_table_level(1, [3], range(1, 11)))  # Level 1: ÷3, answers 1-10.
+	episode.levels.append(_table_level(2, [4], range(1, 11)))  # Level 2: ÷4, answers 1-10.
+	var low := _table_level(3, [3, 4], range(1, 6))  # Level 3: both tables, answers 1-5.
+	low.label = "Mix 1–5"  # Card label, so it is not confused with Levels 4 and 5.
+	episode.levels.append(low)  # Add it.
+	var high := _table_level(4, [3, 4], range(6, 11))  # Level 4: both tables, answers 6-10.
+	high.label = "Mix 6–10"  # Card label.
+	episode.levels.append(high)  # Add it.
+	episode.levels.append(_mixed_level(5, EPISODE_2_MIX))  # Level 5: mixed review.
+	return episode  # Hand back the finished Episode.
+
+
+# Builds a Level with every fact of the given divisors and quotients, divisor by divisor.
+func _table_level(number: int, divisors: Array, quotients: Array) -> LevelData:
 	var level := LevelData.new()  # A new Level.
 	level.number = number  # Level number.
-	for divisor in LEVEL_5_MIX:  # Each divisor in the mix.
+	for divisor: int in divisors:  # Each divisor ...
+		for quotient: int in quotients:  # ... with each quotient ...
+			level.items.append(_make_item(divisor, quotient))  # ... is one item.
+	return level  # Hand back the Level.
+
+
+# Builds a mixed review Level: a few facts from each divisor, with no fact repeated.
+# `mix` maps each divisor to how many of its facts to pick, for example {3: 5, 4: 5}.
+func _mixed_level(number: int, mix: Dictionary) -> LevelData:
+	var level := LevelData.new()  # A new Level.
+	level.number = number  # Level number.
+	for divisor in mix:  # Each divisor in the mix.
 		var quotients := range(1, 11)  # Quotients 1 to 10 to pick from.
-		for n in range(LEVEL_5_MIX[divisor]):  # Pick this many facts.
+		for n in range(mix[divisor]):  # Pick this many facts.
 			var pick := rng.randi_range(0, quotients.size() - 1)  # A random spot.
 			level.items.append(_make_item(divisor, quotients[pick]))  # Add that fact.
 			quotients.remove_at(pick)  # Do not pick it again.
