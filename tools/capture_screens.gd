@@ -50,7 +50,22 @@ func _capture_all() -> void:
 	game.last_result = {"correct": 9, "total": 10, "stars": 2, "score": 214, "time": 58.4, "passed": true, "new_best": true}  # A passed play.
 	await _shot("level_end", "12_level_end", 2.6)  # Stars filled and "New best!".
 	await _capture_medium_and_hard(save, game)  # Medium and Hard screens with 4 bubbles.
+	await _capture_episode_two(save, game)  # Episode 2 screens.
 	quit()  # Close when done.
+
+
+# Saves the Episode 2 screens: Episode select with Episode 2 open, its Level select with the
+# "Mix 1–5" and "Mix 6–10" cards, and a Play screen of Level 3 (D-011).
+# Episode 2 is already open here, because Episode 1 Easy Level 5 was passed for the Medium shots.
+func _capture_episode_two(save: Node, game: Node) -> void:
+	await _shot("episode_select", "18_episode_select_episode_2_open")  # Episode 2 open, 3 and 4 locked.
+	game.episode = 2  # Episode 2 chosen.
+	game.difficulty = 0  # Easy chosen (0 = Difficulty.Kind.EASY).
+	save.progress.record(2, 0, 1, 3, 240, 47.0)  # Episode 2 Level 1 passed with 3 Stars.
+	save.progress.record(2, 0, 2, 2, 205, 58.0)  # Episode 2 Level 2 passed with 2 Stars.
+	await _shot("level_select", "19_level_select_episode_2")  # Levels 1-3 open, with their labels.
+	game.level = 3  # Level 3 (÷3 and ÷4, answers 1-5) chosen.
+	await _shot("play_screen", "20_play_episode_2")  # An Episode 2 item with 3 Easy bubbles.
 
 
 # Opens Medium and then Hard, as a learner would by passing Easy and Medium Level 5,
