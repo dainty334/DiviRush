@@ -226,24 +226,6 @@ static func rock(node: Control, degrees: float = 2.0, seconds: float = 1.6, dela
 	tween.tween_property(node, "rotation", deg_to_rad(-degrees), seconds / 2.0).set_trans(Tween.TRANS_SINE)  # Lean the other way.
 
 
-# Makes a control float up and down forever. The first rise waits `delay` seconds, then every rise
-# and fall takes the same time, so controls given different delays keep their order (a wave).
-# Used for the Main menu logo and title letters (D-017). The control must sit in a plain Control,
-# not a container, or the container would move it back into line.
-static func bob(node: Control, pixels: float, seconds: float, delay: float = 0.0) -> void:
-	var rest := node.position.y  # Where the control rests.
-	var start := node.create_tween()  # A one-time tween for the first wait.
-	start.tween_interval(delay)  # Wait once, so each control starts at its own time.
-	start.tween_callback(func() -> void: _float_forever(node, rest, pixels, seconds))  # Then float forever.
-
-
-# Rises `pixels` above `rest` and falls back, again and again. Called by bob() after its first wait.
-static func _float_forever(node: Control, rest: float, pixels: float, seconds: float) -> void:
-	var tween := node.create_tween().set_loops()  # A tween that repeats forever.
-	tween.tween_property(node, "position:y", rest - pixels, seconds / 2.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)  # Rise.
-	tween.tween_property(node, "position:y", rest, seconds / 2.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)  # Fall back.
-
-
 # Makes a control grow and shrink a little forever, like it is breathing. Used for "Tap to Start".
 static func pulse(node: Control, amount: float = 0.08, seconds: float = 1.0) -> void:
 	center_pivot(node)  # Pulse around the middle.

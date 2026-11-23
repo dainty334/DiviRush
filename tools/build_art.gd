@@ -16,6 +16,8 @@ const WHITE := "#FFFFFF"  # Card white.
 const SKY := "#4CC9F0"  # Light sky blue.
 const BLUE := "#4361EE"  # Deep sky blue.
 const GREY := "#B8C0D9"  # Locked / empty grey-blue.
+const NAVY := "#2B3A78"  # Navy blue school skirt and shorts (D-026).
+const SHOE := "#2A2A33"  # Black school shoes (D-026).
 const ART_DIR := "res://assets/art/"  # Where the SVG sources go.
 const SPRITE_DIR := "res://assets/sprites/"  # Where the PNG sheets go.
 
@@ -30,8 +32,8 @@ func _init() -> void:
 	_save_sheet("star", 200, 200, _star_frames())  # Level end Star filling up.
 	_save_sheet("icons", 96, 96, _icon_frames())  # Small icons: back, Stars, clock, lock, music, sound, vibration, and the Main menu icons.
 	_save_sheet("logo", 512, 512, [_logo_frame()])  # Title-screen logo bubble.
-	_save_sheet("mascot_ana", 300, 340, [_mascot_frame(true, false), _mascot_frame(true, true)])  # Ana: mouth closed, mouth open (D-024).
-	_save_sheet("mascot_migo", 300, 340, [_mascot_frame(false, false), _mascot_frame(false, true)])  # Migo: mouth closed, mouth open (D-024).
+	_save_sheet("mascot_ana", 300, 520, _mascot_parts(true))  # Ana from head to toe, in five parts (D-026).
+	_save_sheet("mascot_migo", 300, 520, _mascot_parts(false))  # Migo from head to toe, in five parts (D-026).
 	_save_icon_svg()  # The app icon (icon.svg in the project folder).
 	quit()  # Close the tool when done.
 
@@ -240,28 +242,76 @@ func _menu_icon_frames() -> Array:
 	return frames  # Hand back all four.
 
 
-# One frame of a student mascot (D-024): Ana (a girl, with pigtails, a clip and a blue ribbon) or
-# Migo (a boy, with short hair and a blue school patch), in a white school top with backpack straps.
-# `mouth_open` draws the talking mouth; otherwise the mascot smiles.
-func _mascot_frame(is_ana: bool, mouth_open: bool) -> String:
-	var skin := "#E0A872"  # Warm brown skin.
-	var hair := "#2B1B17"  # Dark brown-black hair.
+const MASCOT_SKIN := "#E0A872"  # Warm brown skin for both mascots.
+const MASCOT_HAIR := "#2B1B17"  # Dark brown-black hair for both mascots.
+
+
+# The five parts of a student mascot from head to toe (D-026), each on its own 300 x 520 frame at
+# its place in the whole picture, so the game can stack them and move each part on its own:
+# 0 body and legs, 1 left arm, 2 right arm, 3 head smiling, 4 head talking.
+# Ana is a girl with pigtails, a clip, a blue ribbon and a navy skirt; Migo is a boy with short
+# hair, a blue school patch and navy shorts (D-024, D-026).
+func _mascot_parts(is_ana: bool) -> Array:
+	return [  # The five frames, in the order the game expects.
+		_mascot_body(is_ana),  # 0: body and legs.
+		_mascot_arm(false),  # 1: left arm (on the viewer's left).
+		_mascot_arm(true),  # 2: right arm (on the viewer's right), the one that waves.
+		_mascot_head(is_ana, false),  # 3: head, smiling.
+		_mascot_head(is_ana, true),  # 4: head, talking.
+	]
+
+
+# The body: neck, white school top with backpack straps and collar, navy skirt or shorts, legs,
+# white socks and black school shoes (D-026).
+func _mascot_body(is_ana: bool) -> String:
+	var out := ""  # The drawing, back to front.
+	out += "<rect x=\"112\" y=\"380\" width=\"30\" height=\"80\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [MASCOT_SKIN, INK]  # Left leg.
+	out += "<rect x=\"158\" y=\"380\" width=\"30\" height=\"80\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [MASCOT_SKIN, INK]  # Right leg.
+	out += "<rect x=\"110\" y=\"440\" width=\"34\" height=\"44\" rx=\"6\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [WHITE, INK]  # Left white sock.
+	out += "<rect x=\"156\" y=\"440\" width=\"34\" height=\"44\" rx=\"6\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [WHITE, INK]  # Right white sock.
+	out += "<path d=\"M146 478 V500 Q146 510 136 510 H96 Q84 510 86 498 Q88 480 108 478 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % [SHOE, INK]  # Left black shoe, toe pointing out.
+	out += "<path d=\"M154 478 V500 Q154 510 164 510 H204 Q216 510 214 498 Q212 480 192 478 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % [SHOE, INK]  # Right black shoe, toe pointing out.
+	if is_ana:  # Ana: a navy pleated skirt.
+		out += "<path d=\"M86 316 H214 L240 396 Q150 410 60 396 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"7\" stroke-linejoin=\"round\"/>" % [NAVY, INK]  # Skirt.
+		out += "<path d=\"M118 322 L106 400 M150 322 V404 M182 322 L194 400\" fill=\"none\" stroke=\"%s\" stroke-width=\"4\" stroke-linecap=\"round\" opacity=\"0.6\"/>" % INK  # Pleats.
+	else:  # Migo: navy shorts.
+		out += "<path d=\"M88 316 H212 L220 394 H158 L150 356 L142 394 H80 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"7\" stroke-linejoin=\"round\"/>" % [NAVY, INK]  # Shorts.
+	out += "<rect x=\"132\" y=\"185\" width=\"36\" height=\"40\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [MASCOT_SKIN, INK]  # Neck.
+	out += "<path d=\"M84 332 V258 Q84 218 122 212 H178 Q216 218 216 258 V332 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"8\" stroke-linejoin=\"round\"/>" % [WHITE, INK]  # White school top.
+	out += "<rect x=\"98\" y=\"218\" width=\"20\" height=\"108\" rx=\"9\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\"/>" % [PINK, INK]  # Left backpack strap.
+	out += "<rect x=\"182\" y=\"218\" width=\"20\" height=\"108\" rx=\"9\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\"/>" % [PINK, INK]  # Right backpack strap.
+	out += "<path d=\"M126 212 L150 240 L112 236 Z M174 212 L150 240 L188 236 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % [WHITE, INK]  # Collar.
+	if is_ana:  # Ana: a blue ribbon at the collar.
+		out += "<path d=\"M150 244 L124 230 L124 260 Z M150 244 L176 230 L176 260 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\" stroke-linejoin=\"round\"/>" % [BLUE, INK]  # Bow.
+		out += _circle(150, 245, 9, BLUE, 5.0)  # Knot.
+	else:  # Migo: a blue school patch on his chest.
+		out += "<rect x=\"156\" y=\"262\" width=\"24\" height=\"22\" rx=\"5\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\"/>" % [BLUE, INK]  # Patch.
+	return out  # Hand back the drawing.
+
+
+# One arm hanging at the side: a short white sleeve, a skin-coloured arm and a round hand.
+# `right` draws the arm on the viewer's right; otherwise the one on the left. The game turns the
+# arm around its shoulder (see Mascot.SHOULDER_LEFT and SHOULDER_RIGHT) to wave.
+func _mascot_arm(right: bool) -> String:
+	var x := 210.0 if right else 66.0  # Left edge of the arm.
+	var out := ""  # The drawing, back to front.
+	out += "<rect x=\"%.0f\" y=\"256\" width=\"24\" height=\"80\" rx=\"12\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [x, MASCOT_SKIN, INK]  # Arm.
+	out += _circle(x + 12.0, 342, 15, MASCOT_SKIN, 6.0)  # Hand.
+	out += "<rect x=\"%.0f\" y=\"214\" width=\"38\" height=\"56\" rx=\"16\" fill=\"%s\" stroke=\"%s\" stroke-width=\"7\"/>" % [x - 7.0, WHITE, INK]  # Short white sleeve, over the top of the arm.
+	return out  # Hand back the drawing.
+
+
+# The head: hair, ears, face and features. `mouth_open` draws the talking mouth; otherwise the
+# mascot smiles (D-024).
+func _mascot_head(is_ana: bool, mouth_open: bool) -> String:
+	var skin := MASCOT_SKIN  # Warm brown skin.
+	var hair := MASCOT_HAIR  # Dark brown-black hair.
 	var out := ""  # The drawing, back to front.
 	if is_ana:  # Ana's long hair and two pigtails, behind her head.
 		out += _circle(150, 120, 92, hair, 8.0)  # Hair behind the head.
 		out += _circle(60, 150, 30, hair, 8.0) + _circle(240, 150, 30, hair, 8.0)  # Two pigtails.
 	else:  # Migo's short hair, just above his head.
 		out += _circle(150, 112, 85, hair, 8.0)  # Hair behind the head.
-	out += "<rect x=\"132\" y=\"185\" width=\"36\" height=\"40\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [skin, INK]  # Neck.
-	out += "<path d=\"M44 340 V276 Q44 222 104 212 H196 Q256 222 256 276 V340 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"8\" stroke-linejoin=\"round\"/>" % [WHITE, INK]  # White school top.
-	out += "<rect x=\"74\" y=\"222\" width=\"24\" height=\"118\" rx=\"10\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [PINK, INK]  # Left backpack strap.
-	out += "<rect x=\"202\" y=\"222\" width=\"24\" height=\"118\" rx=\"10\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [PINK, INK]  # Right backpack strap.
-	out += "<path d=\"M126 212 L150 240 L112 236 Z M174 212 L150 240 L188 236 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % [WHITE, INK]  # Collar.
-	if is_ana:  # Ana: a blue ribbon at the collar.
-		out += "<path d=\"M150 244 L124 230 L124 260 Z M150 244 L176 230 L176 260 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\" stroke-linejoin=\"round\"/>" % [BLUE, INK]  # Bow.
-		out += _circle(150, 245, 9, BLUE, 5.0)  # Knot.
-	else:  # Migo: a blue school patch on his chest.
-		out += "<rect x=\"166\" y=\"262\" width=\"34\" height=\"28\" rx=\"6\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\"/>" % [BLUE, INK]  # Patch.
 	out += _circle(68, 135, 16, skin, 7.0) + _circle(232, 135, 16, skin, 7.0)  # Ears.
 	out += _circle(150, 125, 82, skin, 8.0)  # Face.
 	if is_ana:  # Ana's fringe and a yellow hair clip.

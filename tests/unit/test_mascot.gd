@@ -59,7 +59,7 @@ func _tap() -> InputEventMouseButton:
 func test_mascot_talks_only_when_tapped() -> void:
 	var mascot := Mascot.new("Ana", ["Hello there!"] as Array[String])  # Ana with one line.
 	add_child_autofree(mascot)  # In the tree.
-	var frames := SpriteSheet.mascot("ana")  # Her two pictures: mouth closed, mouth open.
+	var frames := SpriteSheet.mascot("ana")  # Her five parts: body, two arms, head smiling, head talking.
 	assert_false(mascot.is_bubble_shown())  # No speech bubble at first ...
 	assert_false(mascot.is_talking())  # ... and no talking.
 	mascot._gui_input(_tap())  # She is tapped.
@@ -67,11 +67,49 @@ func test_mascot_talks_only_when_tapped() -> void:
 	assert_true(mascot.is_talking())  # ... and she starts typing.
 	assert_eq(mascot._words.text, "Hello there!")  # The first line.
 	mascot._process(MascotLines.MOUTH_SECONDS + 0.01)  # A moment passes ...
-	assert_eq(mascot._picture.texture, frames[1])  # ... and her mouth is open.
+	assert_eq(mascot._head.texture, frames[Mascot.Part.HEAD_TALKING])  # ... and her mouth is open.
 	await wait_seconds(1.0)  # The line finishes typing.
 	mascot._process(0.01)  # The next frame.
 	assert_false(mascot.is_talking())  # She has finished the line ...
-	assert_eq(mascot._picture.texture, frames[0])  # ... and smiles with her mouth closed.
+	assert_eq(mascot._head.texture, frames[Mascot.Part.HEAD])  # ... and smiles with her mouth closed.
+
+
+# The mascot is shown from head to toe (D-026): a body with legs, two arms and a head, about 520
+# pixels tall, so the face stays as big as before.
+func test_mascot_is_full_body() -> void:
+	var mascot := Mascot.new("Migo", ["Hi!"] as Array[String])  # Migo with one line.
+	add_child_autofree(mascot)  # In the tree.
+	var frames := SpriteSheet.mascot("migo")  # His five parts.
+	assert_eq(frames.size(), 5)  # Body, left arm, right arm, head smiling, head talking.
+	assert_eq(Mascot.PICTURE_SIZE, Vector2(300, 520))  # Head to toe.
+	assert_eq(mascot._body.texture, frames[Mascot.Part.BODY])  # His body and legs ...
+	assert_eq(mascot._arm_left.texture, frames[Mascot.Part.ARM_LEFT])  # ... his left arm ...
+	assert_eq(mascot._arm_right.texture, frames[Mascot.Part.ARM_RIGHT])  # ... his right arm ...
+	assert_eq(mascot._head.texture, frames[Mascot.Part.HEAD])  # ... and his smiling head.
+
+
+# A tap makes the mascot wave hello with one arm, which then drops back to the side (D-026).
+func test_tap_waves_hello() -> void:
+	var mascot := Mascot.new("Ana", ["Hello there!"] as Array[String])  # Ana with one line.
+	add_child_autofree(mascot)  # In the tree.
+	assert_false(mascot.is_waving())  # Not waving before the tap.
+	assert_almost_eq(mascot._arm_right.rotation, 0.0, 0.001)  # Her arm hangs down.
+	mascot._gui_input(_tap())  # She is tapped.
+	assert_true(mascot.is_waving())  # She starts waving ...
+	await wait_seconds(0.4)  # ... and a moment later
+	assert_lt(mascot._arm_right.rotation, -1.5)  # ... her arm is raised high.
+	await wait_seconds(2.0)  # The wave ends.
+	assert_false(mascot.is_waving())  # Not waving any more ...
+	assert_almost_eq(mascot._arm_right.rotation, 0.0, 0.001)  # ... and her arm is back down.
+
+
+# When nobody taps, the mascot breathes and sways gently (D-026).
+func test_idle_mascot_breathes_and_sways() -> void:
+	var mascot := Mascot.new("Migo", ["Hi!"] as Array[String])  # Migo with one line.
+	add_child_autofree(mascot)  # In the tree.
+	await wait_seconds(0.8)  # Some time passes with no tap.
+	assert_ne(mascot._rig.rotation, 0.0)  # He tilts a little ...
+	assert_gt(mascot._rig.scale.y, 1.0)  # ... and rises as he breathes in.
 
 
 # Each tap brings the next line; a few seconds after a line is finished the bubble goes away,

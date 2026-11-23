@@ -49,6 +49,7 @@ static func logo() -> Texture2D:
 	return frames("logo_512x512_1f.png", Vector2i(512, 512), 1)[0]  # The only frame.
 
 
-# The two frames of a student mascot (D-024): "ana" or "migo". Frame 0 smiles; frame 1 talks.
+# The five parts of a student mascot from head to toe (D-024, D-026): "ana" or "migo".
+# Frames follow Mascot.Part: body, left arm, right arm, head smiling, head talking.
 static func mascot(who: String) -> Array[Texture2D]:
-	return frames("mascot_%s_300x340_2f.png" % who, Vector2i(300, 340), 2)  # Mouth closed, mouth open.
+	return frames("mascot_%s_300x520_5f.png" % who, Vector2i(300, 520), 5)  # Each part on a whole-mascot frame.
