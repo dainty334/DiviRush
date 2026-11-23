@@ -1,112 +1,27 @@
-# Composes DiviRush's original chiptune music and sound effects in code (D-009) and saves them as WAV files:
-#   assets/audio/music/menu_loop.wav  calm loop for the menus
-#   assets/audio/music/play_loop.wav  faster loop during play
-#   assets/audio/music/win_jingle.wav short jingle on the Level end screen
-#   assets/audio/sfx/*.wav            tap, correct, wrong, time-up, star and pop sounds
-# The loops carry loop points inside the file, so Godot's importer makes them repeat by itself.
+# Composes DiviRush's original chiptune sound effects in code (D-009) and saves them as WAV files:
+#   assets/audio/sfx/*.wav  tap, correct, wrong, time-up, star and pop sounds
+# The music is no longer made here: it is free CC0 music, made into OGG files by
+# tools/convert_music.sh (D-018).
 # Run from the project folder with:
 #   godot --headless --script res://tools/build_audio.gd
 extends SceneTree  # A SceneTree script runs on its own, without opening a scene.
 
 const RATE := 22050  # Samples per second; enough for chiptune and keeps files small.
-const MUSIC_DIR := "res://assets/audio/music/"  # Where music goes.
 const SFX_DIR := "res://assets/audio/sfx/"  # Where sound effects go.
 
-var _noise := RandomNumberGenerator.new()  # Random numbers for drum noise.
+var _noise := RandomNumberGenerator.new()  # Random numbers for the pop's noise.
 
 
 # Runs once when the tool starts: makes every sound, then quits.
 func _init() -> void:
-	_noise.seed = 9  # Same drums every time the tool runs.
-	_save_wav(MUSIC_DIR + "menu_loop.wav", _menu_loop(), true)  # Calm menu loop.
-	_save_wav(MUSIC_DIR + "play_loop.wav", _play_loop(), true)  # Faster play loop.
-	_save_wav(MUSIC_DIR + "win_jingle.wav", _win_jingle(), false)  # Win jingle, plays once.
-	_save_wav(SFX_DIR + "tap.wav", _sfx_tap(), false)  # Button tap.
-	_save_wav(SFX_DIR + "correct.wav", _sfx_correct(), false)  # Correct answer.
-	_save_wav(SFX_DIR + "wrong.wav", _sfx_wrong(), false)  # Wrong answer.
-	_save_wav(SFX_DIR + "time_up.wav", _sfx_time_up(), false)  # Timer ran out.
-	_save_wav(SFX_DIR + "star.wav", _sfx_star(), false)  # A Star fills in.
-	_save_wav(SFX_DIR + "pop.wav", _sfx_pop(), false)  # A bubble pops.
+	_noise.seed = 9  # Same noise every time the tool runs.
+	_save_wav(SFX_DIR + "tap.wav", _sfx_tap())  # Button tap.
+	_save_wav(SFX_DIR + "correct.wav", _sfx_correct())  # Correct answer.
+	_save_wav(SFX_DIR + "wrong.wav", _sfx_wrong())  # Wrong answer.
+	_save_wav(SFX_DIR + "time_up.wav", _sfx_time_up())  # Timer ran out.
+	_save_wav(SFX_DIR + "star.wav", _sfx_star())  # A Star fills in.
+	_save_wav(SFX_DIR + "pop.wav", _sfx_pop())  # A bubble pops.
 	quit()  # Close the tool when done.
-
-
-# ---------- Music ----------
-
-# Calm menu loop: C major, 100 beats per minute, 8 bars (C, Am, F, G twice).
-func _menu_loop() -> PackedFloat32Array:
-	var beat := 60.0 / 100.0  # Seconds per beat at 100 BPM.
-	var buffer := _silence(32 * beat)  # 8 bars x 4 beats.
-	var roots := [48, 45, 41, 43, 48, 45, 41, 43]  # Chord root notes (MIDI numbers) per bar.
-	var minor := [false, true, false, false, false, true, false, false]  # Which bars are minor chords.
-	for bar in range(8):  # Each bar ...
-		var start := bar * 4.0  # ... starts on this beat.
-		_note(buffer, "triangle", roots[bar], start * beat, 2.0 * beat, 0.30)  # Bass root, half note.
-		_note(buffer, "triangle", roots[bar] + 7, (start + 2.0) * beat, 2.0 * beat, 0.30)  # Bass fifth, half note.
-		var shape := [0, 3, 7, 12] if minor[bar] else [0, 4, 7, 12]  # Chord notes above the root.
-		var order := [0, 1, 2, 3, 2, 1, 2, 1]  # Up-and-down arpeggio pattern.
-		for step in range(8):  # Eight soft eighth notes.
-			_note(buffer, "pulse25", roots[bar] + 24 + shape[order[step]], (start + step * 0.5) * beat, 0.45 * beat, 0.07)  # Gentle arpeggio.
-	var melody := [  # [note, start beat, length in beats]: an original, easy-going tune.
-		[76, 0, 1], [79, 1, 1], [81, 2, 1.5], [79, 3.5, 0.5],  # Notes as [MIDI note, start beat, length in beats].
-		[76, 4, 2], [72, 6, 2],  # Notes as [MIDI note, start beat, length in beats].
-		[77, 8, 1], [81, 9, 1], [84, 10, 1.5], [81, 11.5, 0.5],  # Notes as [MIDI note, start beat, length in beats].
-		[79, 12, 3],  # Notes as [MIDI note, start beat, length in beats].
-		[76, 16, 1], [79, 17, 1], [84, 18, 1.5], [83, 19.5, 0.5],  # Notes as [MIDI note, start beat, length in beats].
-		[81, 20, 2], [76, 22, 2],  # Notes as [MIDI note, start beat, length in beats].
-		[77, 24, 1], [76, 25, 1], [74, 26, 1], [72, 27, 1],  # Notes as [MIDI note, start beat, length in beats].
-		[74, 28, 2], [67, 30, 2],  # Notes as [MIDI note, start beat, length in beats].
-	]  # End of the list.
-	for n in melody:  # Each melody note ...
-		_note(buffer, "triangle", n[0], n[1] * beat, n[2] * beat * 0.92, 0.22)  # ... played softly.
-	return buffer  # The finished loop.
-
-
-# Faster play loop: A minor, 140 beats per minute, 8 bars (Am, F, C, G twice) with drums.
-func _play_loop() -> PackedFloat32Array:
-	var beat := 60.0 / 140.0  # Seconds per beat at 140 BPM.
-	var buffer := _silence(32 * beat)  # 8 bars x 4 beats.
-	var roots := [45, 41, 48, 43, 45, 41, 48, 43]  # Chord root notes per bar.
-	for bar in range(8):  # Each bar ...
-		var start := bar * 4.0  # ... starts on this beat.
-		for step in range(8):  # Driving eighth-note bass.
-			var octave := 12 if step % 2 == 1 else 0  # Jump up an octave on every other note.
-			_note(buffer, "pulse50", roots[bar] - 12 + octave, (start + step * 0.5) * beat, 0.4 * beat, 0.11)  # Bass note.
-		for b in range(4):  # Drums on each beat ...
-			_kick(buffer, (start + b) * beat)  # ... a kick drum,
-			_hat(buffer, (start + b + 0.5) * beat)  # ... a hi-hat between beats,
-			if b % 2 == 1:  # ... and on beats 2 and 4 ...
-				_snare(buffer, (start + b) * beat)  # ... a snare.
-	var phrase_a := [  # An original, bouncy lead for bars 1-3 (and 5-7).
-		[81, 0, 0.5], [84, 0.5, 0.5], [88, 1, 0.5], [84, 1.5, 0.5], [81, 2, 1], [79, 3, 0.5], [81, 3.5, 0.5],  # Notes as [MIDI note, start beat, length in beats].
-		[77, 4, 0.5], [81, 4.5, 0.5], [84, 5, 1], [81, 6, 0.5], [77, 6.5, 0.5], [76, 7, 1],  # Notes as [MIDI note, start beat, length in beats].
-		[79, 8, 0.5], [84, 8.5, 0.5], [88, 9, 1], [86, 10, 0.5], [84, 10.5, 0.5], [79, 11, 1],  # Notes as [MIDI note, start beat, length in beats].
-	]  # End of the list.
-	var ending_1 := [[83, 12, 0.5], [86, 12.5, 0.5], [91, 13, 1.5], [86, 14.5, 0.5], [83, 15, 1]]  # Bar 4 lead.
-	var ending_2 := [[79, 28, 0.5], [83, 28.5, 0.5], [86, 29, 0.5], [88, 29.5, 0.5], [86, 30, 1], [83, 31, 1]]  # Bar 8 lead, leads back to the start.
-	var lead := []  # The full lead line.
-	for n in phrase_a:  # Bars 1-3 ...
-		lead.append(n)  # ... as written,
-		lead.append([n[0], n[1] + 16, n[2]])  # ... and again in bars 5-7.
-	lead.append_array(ending_1)  # Bar 4.
-	lead.append_array(ending_2)  # Bar 8.
-	for n in lead:  # Each lead note ...
-		_note(buffer, "pulse25", n[0], n[1] * beat, n[2] * beat * 0.85, 0.10)  # ... played as a bright chiptune square.
-	return buffer  # The finished loop.
-
-
-# Short win jingle: a rising C major run that lands on a happy chord.
-func _win_jingle() -> PackedFloat32Array:
-	var beat := 60.0 / 150.0  # Seconds per beat at 150 BPM.
-	var buffer := _silence(6.5 * beat + 0.5)  # Room for the notes plus a short fade.
-	var run := [[72, 0, 0.5], [76, 0.5, 0.5], [79, 1, 0.5], [84, 1.5, 1.2], [79, 3, 0.5], [84, 3.5, 2.5]]  # Rising lead notes.
-	for n in run:  # Each lead note ...
-		_note(buffer, "pulse25", n[0], n[1] * beat, n[2] * beat, 0.14)  # ... as a bright square.
-	for chord_note in [72, 76, 79]:  # The final happy chord ...
-		_note(buffer, "triangle", chord_note, 3.5 * beat, 2.5 * beat, 0.12)  # ... held under the last note.
-	_note(buffer, "triangle", 48, 0.0, 1.5 * beat, 0.3)  # Bass C.
-	_note(buffer, "triangle", 43, 1.5 * beat, 2.0 * beat, 0.3)  # Bass G.
-	_note(buffer, "triangle", 48, 3.5 * beat, 2.5 * beat, 0.3)  # Bass C again.
-	return buffer  # The finished jingle.
 
 
 # ---------- Sound effects ----------
@@ -217,7 +132,7 @@ func _slide(buffer: PackedFloat32Array, shape: String, from_hz: float, to_hz: fl
 		buffer[index] += _wave(shape, phase) * _envelope(t, length) * volume  # Mix it in.
 
 
-# Adds a burst of noise (used for drums and the pop snap).
+# Adds a burst of noise (used for the pop snap).
 func _noise_burst(buffer: PackedFloat32Array, start: float, length: float, volume: float) -> void:
 	var first := int(start * RATE)  # First sample.
 	var count := int(length * RATE)  # How many samples.
@@ -229,36 +144,16 @@ func _noise_burst(buffer: PackedFloat32Array, start: float, length: float, volum
 		buffer[index] += _noise.randf_range(-1.0, 1.0) * fade * fade * volume  # Random hiss, fading fast.
 
 
-# Adds a kick drum: a sine that drops quickly in pitch.
-func _kick(buffer: PackedFloat32Array, start: float) -> void:
-	_slide(buffer, "sine", 150.0, 45.0, start, 0.12, 0.45)  # Deep thump.
-
-
-# Adds a short, quiet hi-hat.
-func _hat(buffer: PackedFloat32Array, start: float) -> void:
-	_noise_burst(buffer, start, 0.03, 0.08)  # Tiny tick of noise.
-
-
-# Adds a snare: a burst of noise with a little tone.
-func _snare(buffer: PackedFloat32Array, start: float) -> void:
-	_noise_burst(buffer, start, 0.12, 0.18)  # Noise crack.
-	_slide(buffer, "triangle", 220.0, 180.0, start, 0.06, 0.12)  # Body of the drum.
-
-
-# Saves samples as a 16-bit mono WAV file. If `loop` is true, adds a "smpl" chunk with loop points,
-# which Godot's WAV importer reads ("Loop Mode: Detect From WAV"), so the music repeats by itself.
-func _save_wav(path: String, samples: PackedFloat32Array, loop: bool) -> void:
+# Saves samples as a 16-bit mono WAV file.
+func _save_wav(path: String, samples: PackedFloat32Array) -> void:
 	var data := PackedByteArray()  # The sound data in bytes.
 	data.resize(samples.size() * 2)  # Two bytes per sample.
 	for i in range(samples.size()):  # Each sample ...
 		var value := clampf(tanh(samples[i] * 1.2), -1.0, 1.0)  # ... softly limited so loud parts do not crackle,
 		data.encode_s16(i * 2, int(value * 32000.0))  # ... stored as a 16-bit number.
-	var smpl := PackedByteArray()  # Optional loop chunk.
-	if loop:  # Only loops get loop points.
-		smpl = _smpl_chunk(samples.size())  # Loop the whole sound.
 	var out := PackedByteArray()  # The whole file.
 	out.append_array("RIFF".to_ascii_buffer())  # File type marker.
-	out.append_array(_u32(4 + 24 + 8 + data.size() + smpl.size()))  # Size of everything after this field.
+	out.append_array(_u32(4 + 24 + 8 + data.size()))  # Size of everything after this field.
 	out.append_array("WAVE".to_ascii_buffer())  # It is a WAVE file.
 	out.append_array("fmt ".to_ascii_buffer())  # Format chunk marker.
 	out.append_array(_u32(16))  # Format chunk size.
@@ -271,25 +166,12 @@ func _save_wav(path: String, samples: PackedFloat32Array, loop: bool) -> void:
 	out.append_array("data".to_ascii_buffer())  # Data chunk marker.
 	out.append_array(_u32(data.size()))  # Data size.
 	out.append_array(data)  # The sound itself.
-	out.append_array(smpl)  # Loop points (empty if none).
 	var file := FileAccess.open(path, FileAccess.WRITE)  # Open the file.
 	if file == null:  # It could not be opened ...
 		push_error("Could not write " + path)  # ... so say so.
 		return  # Stop here.
 	file.store_buffer(out)  # Write all bytes.
 	print("saved %s (%.1f s)" % [path, float(samples.size()) / RATE])  # Report the file and its length.
-
-
-# Builds a WAV "smpl" chunk with one forward loop from the first to the last sample.
-func _smpl_chunk(frame_count: int) -> PackedByteArray:
-	var chunk := PackedByteArray()  # The chunk bytes.
-	chunk.append_array("smpl".to_ascii_buffer())  # Chunk marker.
-	chunk.append_array(_u32(36 + 24))  # Chunk size: header plus one loop.
-	for value in [0, 0, int(1000000000.0 / RATE), 60, 0, 0, 0, 1, 0]:  # Maker, product, sample period, root note, tuning, SMPTE x2, 1 loop, extra data.
-		chunk.append_array(_u32(value))  # Write each header field.
-	for value in [0, 0, 0, frame_count, 0, 0]:  # Loop id, type 0 = forward, start, end, fraction, play forever.
-		chunk.append_array(_u32(value))  # Write each loop field.
-	return chunk  # Hand back the chunk.
 
 
 # Encodes a whole number as 4 little-endian bytes.
