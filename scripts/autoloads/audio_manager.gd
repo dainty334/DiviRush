@@ -3,10 +3,10 @@
 # mutes only its own bus (D-009).
 extends Node  # Autoloads are nodes that live for the whole game.
 
-const MUSIC := {  # Music tracks by name.
-	"menu": "res://assets/audio/music/menu_loop.wav",  # Calm loop for the menus.
-	"play": "res://assets/audio/music/play_loop.wav",  # Faster loop during play.
-	"win": "res://assets/audio/music/win_jingle.wav",  # Short jingle on a passed Level.
+const MUSIC := {  # Music tracks by name: free CC0 recordings, made into OGG files by tools/convert_music.sh (D-018).
+	"menu": "res://assets/audio/music/menu_loop.ogg",  # Calm loop for the menus: "Home" by heartade (piano, flute, strings).
+	"play": "res://assets/audio/music/play_loop.ogg",  # Livelier loop during play: "Picnic" by heartade (saxophone, vibraphone, strings).
+	"win": "res://assets/audio/music/win_jingle.ogg",  # Short saxophone jingle on a passed Level, by Kenney.
 }  # End of the list.
 const LOOPING := ["menu", "play"]  # Tracks that repeat.
 const SFX := {  # Sound effects by name.
@@ -34,7 +34,8 @@ var _fade: Tween  # The cross-fade running now.
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS  # Keep playing even if the game is paused.
 	for track in MUSIC:  # Each music track ...
-		_streams[track] = load(MUSIC[track])  # ... is loaded once.
+		_streams[track] = load(MUSIC[track])  # ... is loaded once,
+		_set_loop(_streams[track], track in LOOPING)  # ... and set to repeat or to play once.
 	for sound in SFX:  # Each sound effect ...
 		_streams[sound] = load(SFX[sound])  # ... is loaded once.
 	for i in range(2):  # Two music players.
@@ -61,8 +62,7 @@ func play_music(track: String, then: String = "") -> void:
 	var old := _music[_active]  # Player that is fading out.
 	_active = 1 - _active  # Switch to the other player.
 	var new := _music[_active]  # Player that is fading in.
-	new.stream = _streams[track]  # Give it the track.
-	_make_loop(new.stream, track in LOOPING)  # Make sure loops repeat.
+	new.stream = _streams[track]  # Give it the track (set to repeat or not when it was loaded).
 	new.volume_db = -30.0  # Start quiet.
 	new.play()  # Start the track.
 	if _fade != null and _fade.is_valid():  # An older fade is still running ...
@@ -73,15 +73,13 @@ func play_music(track: String, then: String = "") -> void:
 	_fade.chain().tween_callback(old.stop)  # Then stop the old track.
 
 
-# Makes sure a looping track repeats. The WAV files carry loop points; this is a safety net
-# in case the importer setting was changed.
-func _make_loop(stream: AudioStream, loop: bool) -> void:
-	var wav := stream as AudioStreamWAV  # Only WAV streams have these settings.
-	if wav == null or not loop or wav.loop_mode != AudioStreamWAV.LOOP_DISABLED:  # Not a WAV, not a loop, or already looping ...
-		return  # ... so nothing to do.
-	wav.loop_mode = AudioStreamWAV.LOOP_FORWARD  # Repeat from the start.
-	wav.loop_begin = 0  # Loop from the first sample ...
-	wav.loop_end = int(wav.get_length() * wav.mix_rate)  # ... to the last.
+# Sets a music track to repeat (the menu and play loops) or to play once (the win jingle).
+# Godot imports OGG music without repeating, so the loops are switched on here when they load.
+# The loop files are made so their end runs smoothly into their start (tools/convert_music.sh).
+func _set_loop(stream: AudioStream, loop: bool) -> void:
+	var ogg := stream as AudioStreamOggVorbis  # The music is OGG (D-018).
+	if ogg != null:  # It is OGG ...
+		ogg.loop = loop  # ... so repeat it, or not.
 
 
 # Runs when a music track reaches its end (only one-time tracks do): start the follow-up track.
