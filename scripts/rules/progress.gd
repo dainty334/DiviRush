@@ -6,6 +6,7 @@ extends RefCounted  # A light object that frees itself when no longer used.
 const EPISODE_COUNT := 4  # DiviRush has four Episodes (D-008).
 const LEVEL_COUNT := 5  # Each Difficulty has five Levels (D-008).
 const NO_TIME := -1.0  # Means "no best time yet".
+const MAX_STARS := EPISODE_COUNT * 3 * LEVEL_COUNT * 3  # 4 Episodes x 3 Difficulties x 5 Levels x 3 Stars = 180 (D-017).
 
 var bests: Dictionary = {}  # Level key -> { stars, score, time }.
 
@@ -33,6 +34,16 @@ func stars_in(episode: int, difficulty: int) -> int:
 	var total := 0  # Running total.
 	for level in range(1, LEVEL_COUNT + 1):  # Levels 1 to 5 ...
 		total += best(episode, difficulty, level).stars  # ... add each Level's best Stars.
+	return total  # Hand back the total.
+
+
+# Returns the best Stars added up over every Level of every Episode and Difficulty (0 to 180).
+# Shown in the Star pill on the Main menu (D-017).
+func total_stars() -> int:
+	var total := 0  # Running total.
+	for episode in range(1, EPISODE_COUNT + 1):  # Episodes 1 to 4 ...
+		for difficulty: int in Difficulty.Kind.values():  # ... Easy, Medium and Hard ...
+			total += stars_in(episode, difficulty)  # ... add each Difficulty's Stars.
 	return total  # Hand back the total.
 
 

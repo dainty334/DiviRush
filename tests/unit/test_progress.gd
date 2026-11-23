@@ -135,3 +135,19 @@ func test_record_reports_new_bests() -> void:
 	assert_false(second.new_stars)  # Same Stars: not new.
 	assert_false(second.new_score)  # Lower score: not new.
 	assert_false(second.new_time)  # Slower time: not new.
+
+
+# total_stars() adds the best Stars of every Level in every Episode and Difficulty,
+# for the Star pill on the Main menu (D-017).
+func test_total_stars_counts_every_episode_and_difficulty() -> void:
+	assert_eq(progress.total_stars(), 0)  # Nothing played: 0 Stars.
+	progress.record(1, EASY, 1, 3, 250, 50.0)  # Episode 1 Easy Level 1: 3 Stars.
+	progress.record(1, MEDIUM, 2, 2, 180, 60.0)  # Episode 1 Medium Level 2: 2 Stars.
+	progress.record(3, HARD, 5, 1, 120, 70.0)  # Episode 3 Hard Level 5: 1 Star.
+	progress.record(1, EASY, 1, 1, 90, 80.0)  # A weaker replay keeps the best 3 Stars.
+	assert_eq(progress.total_stars(), 6)  # 3 + 2 + 1 = 6 Stars.
+
+
+# The most Stars a learner can earn: 4 Episodes x 3 Difficulties x 5 Levels x 3 Stars = 180 (D-017).
+func test_max_stars_is_180() -> void:
+	assert_eq(Progress.MAX_STARS, 180)  # The number shown after the slash on the Main menu.
