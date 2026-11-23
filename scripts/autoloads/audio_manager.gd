@@ -3,19 +3,19 @@
 # mutes only its own bus (D-009).
 extends Node  # Autoloads are nodes that live for the whole game.
 
-const MUSIC := {  # Music tracks by name: free CC0 recordings, made into OGG files by tools/convert_music.sh (D-018).
+const MUSIC := {  # Music tracks by name: free CC0 recordings, made into OGG files by tools/convert_audio.sh (D-018).
 	"menu": "res://assets/audio/music/menu_loop.ogg",  # Calm loop for the menus: "Home" by heartade (piano, flute, strings).
 	"play": "res://assets/audio/music/play_loop.ogg",  # Livelier loop during play: "Picnic" by heartade (saxophone, vibraphone, strings).
 	"win": "res://assets/audio/music/win_jingle.ogg",  # Short saxophone jingle on a passed Level, by Kenney.
 }  # End of the list.
 const LOOPING := ["menu", "play"]  # Tracks that repeat.
-const SFX := {  # Sound effects by name.
-	"tap": "res://assets/audio/sfx/tap.wav",  # Button tap.
-	"correct": "res://assets/audio/sfx/correct.wav",  # Correct answer.
-	"wrong": "res://assets/audio/sfx/wrong.wav",  # Wrong answer.
-	"time_up": "res://assets/audio/sfx/time_up.wav",  # Timer ran out.
-	"star": "res://assets/audio/sfx/star.wav",  # A Star fills in.
-	"pop": "res://assets/audio/sfx/pop.wav",  # A bubble pops.
+const SFX := {  # Sound effects by name: recorded CC0 sounds from Kenney's Interface Sounds, made by tools/convert_audio.sh (D-019).
+	"tap": "res://assets/audio/sfx/tap.wav",  # Button tap: a short, soft click.
+	"correct": "res://assets/audio/sfx/correct.wav",  # Correct answer: a short rising sound.
+	"wrong": "res://assets/audio/sfx/wrong.wav",  # Wrong answer: a low, gentle falling sound.
+	"time_up": "res://assets/audio/sfx/time_up.wav",  # Timer ran out: a low falling swoosh.
+	"star": "res://assets/audio/sfx/star.wav",  # A Star fills in: a glassy ring.
+	"pop": "res://assets/audio/sfx/pop.wav",  # A bubble pops: a water drop.
 }  # End of the list.
 const SFX_PLAYERS := 6  # How many sound effects can play at the same time.
 const FADE_SECONDS := 0.6  # Cross-fade time between music tracks.
@@ -75,7 +75,7 @@ func play_music(track: String, then: String = "") -> void:
 
 # Sets a music track to repeat (the menu and play loops) or to play once (the win jingle).
 # Godot imports OGG music without repeating, so the loops are switched on here when they load.
-# The loop files are made so their end runs smoothly into their start (tools/convert_music.sh).
+# The loop files are made so their end runs smoothly into their start (tools/convert_audio.sh).
 func _set_loop(stream: AudioStream, loop: bool) -> void:
 	var ogg := stream as AudioStreamOggVorbis  # The music is OGG (D-018).
 	if ogg != null:  # It is OGG ...
