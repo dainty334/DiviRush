@@ -34,6 +34,7 @@ func _init() -> void:
 	_save_sheet("logo", 512, 512, [_logo_frame()])  # Title-screen logo bubble.
 	_save_sheet("mascot_ana", 450, 780, _mascot_parts(true))  # Ana from head to toe, in ten parts (D-026 to D-028).
 	_save_sheet("mascot_migo", 450, 780, _mascot_parts(false))  # Migo from head to toe, in ten parts (D-026 to D-028).
+	_save_sheet("mascot_wave", SpriteSheet.MASCOT_WAVE_SIZE.x, SpriteSheet.MASCOT_WAVE_SIZE.y, _mascot_wave_frames())  # Both students use the same open hand and bent arm.
 	_save_icon_svg()  # The app icon (icon.svg in the project folder).
 	quit()  # Close the tool when done.
 
@@ -246,8 +247,8 @@ const MASCOT_SKIN := "#E0A872"  # Warm brown skin for both mascots.
 const MASCOT_HAIR := "#2B1B17"  # Dark brown-black hair for both mascots.
 const MASCOT_SCALE := 1.5  # The mascot is drawn 1.5 times bigger than its 300 x 520 plan, so it stays sharp (D-027).
 const MASCOT_HEAD_SCALE := 0.82  # The head is drawn smaller than its plan, so the mascot is about 3.5 heads tall (D-028).
-const MASCOT_FINGER_INK := 12.0  # Width of a finger's dark outline (D-028).
-const MASCOT_FINGER_SKIN := 6.0  # Width of a finger's skin inside the outline.
+const MASCOT_REST_BEND := 8.0  # The elbow stays almost straight when the arm is down.
+const MASCOT_MAX_BEND := 36.0  # Keep the elbow gently bent as the arm reaches over the head.
 
 
 # The ten parts of a student mascot from head to toe (D-026 to D-028), each on its own 450 x 780
@@ -281,86 +282,126 @@ func _in_group(transform: String, drawing: String) -> String:
 	return "<g transform=\"%s\">%s</g>" % [transform, drawing]  # The wrapped drawing.
 
 
-# The body, balanced for a head about a third of the height (D-028): a pink backpack behind, neck,
-# chunky white school top with backpack straps and collar, navy skirt or shorts, long sturdy legs,
-# white socks and black school shoes (D-026, D-027).
+# Draws the tapered school uniform, backpack and slim legs for either student (D-026 to D-028).
 func _mascot_body(is_ana: bool) -> String:
-	var out := ""  # The drawing, back to front.
-	out += "<rect x=\"64\" y=\"192\" width=\"172\" height=\"118\" rx=\"34\" fill=\"%s\" stroke=\"%s\" stroke-width=\"7\"/>" % [PINK, INK]  # Backpack, peeking out behind the shoulders.
-	out += "<rect x=\"106\" y=\"356\" width=\"36\" height=\"108\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [MASCOT_SKIN, INK]  # Left leg.
-	out += "<rect x=\"158\" y=\"356\" width=\"36\" height=\"108\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [MASCOT_SKIN, INK]  # Right leg.
-	out += "<rect x=\"103\" y=\"440\" width=\"42\" height=\"46\" rx=\"8\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [WHITE, INK]  # Left white sock.
-	out += "<rect x=\"155\" y=\"440\" width=\"42\" height=\"46\" rx=\"8\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [WHITE, INK]  # Right white sock.
-	out += "<path d=\"M146 476 V500 Q146 512 134 512 H88 Q74 512 76 498 Q78 478 102 476 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % [SHOE, INK]  # Left black shoe, toe pointing out.
-	out += "<path d=\"M154 476 V500 Q154 512 166 512 H212 Q226 512 224 498 Q222 478 198 476 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % [SHOE, INK]  # Right black shoe, toe pointing out.
-	out += "<path d=\"M92 488 Q100 482 110 486 M190 486 Q200 482 208 488\" fill=\"none\" stroke=\"%s\" stroke-width=\"4\" stroke-linecap=\"round\" opacity=\"0.5\"/>" % WHITE  # Shine on the shoes.
+	var out := "<rect x=\"78\" y=\"191\" width=\"144\" height=\"118\" rx=\"29\" fill=\"%s\" stroke=\"%s\" stroke-width=\"4\"/>" % [PINK, INK]  # Start with the backpack behind the shirt.
+	var leg := "<path d=\"M112 350 H143 Q143 391 140 420 L140 452 H118 Q119 433 116 416 Q111 384 112 350 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"4\" stroke-linejoin=\"round\"/>" % [MASCOT_SKIN, INK]  # Shape the calf and narrow the ankle.
+	leg += "<path d=\"M116 439 Q128 442 141 439 L144 483 H114 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"4\" stroke-linejoin=\"round\"/>" % [WHITE, INK]  # Let the sock follow the ankle.
+	leg += "<path d=\"M143 474 L145 499 Q145 513 134 513 H90 Q82 513 85 503 Q88 490 104 483 Q111 480 117 474 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"4\" stroke-linejoin=\"round\"/>" % [SHOE, INK]  # Taper the school shoe toward the heel.
+	leg += "<path d=\"M92 499 Q99 490 111 488\" fill=\"none\" stroke=\"%s\" stroke-width=\"3\" stroke-linecap=\"round\" opacity=\"0.4\"/>" % WHITE  # Add a small highlight over the toe.
+	out += leg + _in_group("translate(300 0) scale(-1 1)", leg)  # Mirror the other leg so both feet sit at the same height.
 	if is_ana:  # Ana: a navy pleated skirt.
-		out += "<path d=\"M80 300 H220 L246 380 Q150 396 54 380 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"7\" stroke-linejoin=\"round\"/>" % [NAVY, INK]  # Skirt.
-		out += "<path d=\"M114 306 L100 384 M150 306 V388 M186 306 L200 384\" fill=\"none\" stroke=\"%s\" stroke-width=\"4\" stroke-linecap=\"round\" opacity=\"0.6\"/>" % INK  # Pleats.
+		out += "<path d=\"M104 296 Q150 302 196 296 L223 370 Q150 385 77 370 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"4\" stroke-linejoin=\"round\"/>" % [NAVY, INK]  # Let the skirt flare gently from the waist.
+		out += "<path d=\"M124 310 L112 375 M150 312 V378 M176 310 L188 375\" fill=\"none\" stroke=\"%s\" stroke-width=\"3\" stroke-linecap=\"round\" opacity=\"0.55\"/>" % INK  # Show the pleats with light seams.
 	else:  # Migo: navy shorts.
-		out += "<path d=\"M82 300 H218 L228 372 H160 L150 336 L140 372 H72 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"7\" stroke-linejoin=\"round\"/>" % [NAVY, INK]  # Shorts.
-	out += "<rect x=\"134\" y=\"164\" width=\"32\" height=\"36\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [MASCOT_SKIN, INK]  # Neck.
-	out += "<path d=\"M76 316 V240 Q76 196 118 190 H182 Q224 196 224 240 V316 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"8\" stroke-linejoin=\"round\"/>" % [WHITE, INK]  # Chunky white school top.
-	out += "<rect x=\"94\" y=\"196\" width=\"22\" height=\"112\" rx=\"10\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\"/>" % [PINK, INK]  # Left backpack strap.
-	out += "<rect x=\"184\" y=\"196\" width=\"22\" height=\"112\" rx=\"10\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\"/>" % [PINK, INK]  # Right backpack strap.
-	out += "<path d=\"M126 190 L150 218 L112 214 Z M174 190 L150 218 L188 214 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % [WHITE, INK]  # Collar.
+		out += "<path d=\"M102 297 Q150 303 198 297 Q203 326 199 365 Q178 371 157 366 L150 339 L143 366 Q122 371 101 365 Q97 326 102 297 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"4\" stroke-linejoin=\"round\"/>" % [NAVY, INK]  # Round the hems around each thigh.
+		out += "<path d=\"M150 315 V336\" fill=\"none\" stroke=\"%s\" stroke-width=\"3\" opacity=\"0.55\"/>" % INK  # Add the center seam.
+	out += "<path d=\"M137 162 H163 L165 191 Q150 201 135 191 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"4\" stroke-linejoin=\"round\"/>" % [MASCOT_SKIN, INK]  # Narrow the neck into the collar.
+	out += "<path d=\"M101 307 Q96 294 95 271 L78 228 Q70 211 80 201 Q92 191 121 192 Q150 186 179 192 Q208 191 220 201 Q230 211 222 228 L205 271 Q204 294 199 307 Q150 316 101 307 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"4\" stroke-linejoin=\"round\"/>" % [WHITE, INK]  # Carry the shirt across both shoulder joins and taper it toward the loose hem.
+	out += "<path d=\"M106 201 Q97 242 108 296 M194 201 Q203 242 192 296\" fill=\"none\" stroke=\"%s\" stroke-width=\"14\" stroke-linecap=\"round\"/>" % PINK  # Curve the backpack straps over the shirt.
+	out += "<path d=\"M131 190 L150 212 L120 210 Z M169 190 L150 212 L180 210 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"3\" stroke-linejoin=\"round\"/>" % [WHITE, INK]  # Fold the collar into two small points.
 	if is_ana:  # Ana: a blue ribbon at the collar.
-		out += "<path d=\"M150 222 L124 208 L124 238 Z M150 222 L176 208 L176 238 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\" stroke-linejoin=\"round\"/>" % [BLUE, INK]  # Bow.
-		out += _circle(150, 223, 9, BLUE, 5.0)  # Knot.
+		out += "<path d=\"M150 221 L130 211 L130 233 Z M150 221 L170 211 L170 233 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"3\" stroke-linejoin=\"round\"/>" % [BLUE, INK]  # Give the bow two small folds.
+		out += _circle(150, 221, 6, BLUE, 3.0)  # Tie the folds with a round knot.
 	else:  # Migo: a blue school patch on his chest.
-		out += "<rect x=\"154\" y=\"240\" width=\"26\" height=\"24\" rx=\"5\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\"/>" % [BLUE, INK]  # Patch.
+		out += "<rect x=\"156\" y=\"234\" width=\"24\" height=\"21\" rx=\"4\" fill=\"%s\" stroke=\"%s\" stroke-width=\"3\"/>" % [BLUE, INK]  # Keep the uniform patch on his chest.
 	return out  # Hand back the drawing.
 
 
-# One chunky arm hanging at the side: a short white sleeve, a skin-coloured arm and a five-finger
-# hand (D-028). `right` draws the arm on the viewer's right; otherwise the one on the left. `open`
-# spreads all five fingers wide for a wave; otherwise they are held loosely together. The game
-# turns the arm around its shoulder (see Mascot.SHOULDER_LEFT and SHOULDER_RIGHT) to swing and wave.
-func _mascot_arm(right: bool, open: bool) -> String:
-	var x := 216.0 if right else 54.0  # Left edge of the arm.
-	var middle := x + 15.0  # The middle of the arm, where the hand hangs.
-	var inner := -1.0 if right else 1.0  # Which way is towards the body, for the thumb.
-	var out := ""  # The drawing, back to front.
-	out += "<rect x=\"%.0f\" y=\"234\" width=\"30\" height=\"88\" rx=\"15\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [x, MASCOT_SKIN, INK]  # Arm.
-	out += _mascot_hand_open(middle, inner) if open else _mascot_hand_relaxed(middle, inner)  # The hand.
-	out += "<rect x=\"%.0f\" y=\"190\" width=\"46\" height=\"56\" rx=\"20\" fill=\"%s\" stroke=\"%s\" stroke-width=\"7\"/>" % [x - 8.0, WHITE, INK]  # Short white sleeve, over the top of the arm.
-	return out  # Hand back the drawing.
+# Draws a row of open-hand poses, cropped around the arm to keep the wave sheet small.
+func _mascot_wave_frames() -> Array:
+	var origin := SpriteSheet.MASCOT_WAVE_ORIGIN  # The crop starts here in the full-size picture.
+	var crop := "translate(-%d -%d) scale(%.2f)" % [origin.x, origin.y, MASCOT_SCALE]  # Scale the drawing and move it into the crop.
+	var frames := []  # The wave drawings, in order of elbow bend.
+	for i in range(SpriteSheet.MASCOT_WAVE_COUNT):  # From the arm hanging down to its deepest bend ...
+		var step := float(i) / (SpriteSheet.MASCOT_WAVE_COUNT - 1)  # ... count how far along the sheet we are.
+		var bend := lerpf(MASCOT_REST_BEND, MASCOT_MAX_BEND, step)  # Add the same small amount of elbow bend each time.
+		frames.append(_in_group(crop, _mascot_arm(true, true, bend, false)))  # The game draws the moving sleeve over the open arm.
+	return frames  # Hand back the wave frames.
 
 
-# A relaxed hand hanging down at `cx`: four fingers held loosely together and a thumb on the side
-# towards the body (`inner` is 1 or -1), drawn before the palm so the palm covers their roots (D-028).
-func _mascot_hand_relaxed(cx: float, inner: float) -> String:
-	var out := ""  # The drawing, back to front.
-	var spots := [-10.5, -3.5, 3.5, 10.5]  # Where each of the four fingers hangs, across the hand.
-	var lengths := [12.0, 16.0, 16.0, 13.0]  # How far each finger hangs below the palm.
-	for i in range(4):  # Each of the four fingers ...
-		var fx: float = cx + spots[i] * inner  # ... from the thumb side to the little finger.
-		out += _mascot_finger(Vector2(fx, 330), Vector2(fx, 336.0 + lengths[i]))  # ... hangs straight down.
-	out += _mascot_finger(Vector2(cx + 8.0 * inner, 322), Vector2(cx + 17.0 * inner, 334))  # The thumb, on the side towards the body.
-	out += "<ellipse cx=\"%.1f\" cy=\"326\" rx=\"17\" ry=\"14\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\"/>" % [cx, MASCOT_SKIN, INK]  # The palm.
-	return out  # Hand back the drawing.
+# Draws each arm with a continuous outline from the sleeve around the five fingers and back.
+func _mascot_arm(right: bool, open: bool, bend: float = MASCOT_REST_BEND, with_sleeve: bool = true) -> String:
+	var angle := deg_to_rad(-bend)  # The forearm turns out from the elbow.
+	var reach := smoothstep(13.0, 16.0, bend)  # Bring the arm into full view as it swings past the shoulder.
+	var elbow := Vector2(222, lerpf(267.0, 276.0, reach))  # Center the elbow under the cuff and closer to the shirt.
+	var wrist := elbow + Vector2(0, lerpf(42.0, 67.0, reach)).rotated(angle)  # The forearm is fully visible once the arm reaches up.
+	var hand_angle := angle - deg_to_rad(5.0) * reach * clampf((bend - 22.0) / 6.0, -1.0, 1.0)  # Let the wrist tilt slightly with each swing.
+	var elbow_edge := Vector2(10.5, 0).rotated(angle * 0.5) / cos(angle * 0.5)  # Keep the elbow slim where the arm edges meet.
+	var inside := elbow + elbow_edge  # Round the inner crease around this point.
+	var outside := elbow - elbow_edge  # Round the outer tip around this point.
+	var cuff_inner := SpriteSheet.MASCOT_CUFF_INNER  # The hem end closest to the shirt.
+	var cuff_outer := SpriteSheet.MASCOT_CUFF_OUTER  # The hem end farthest from the shirt.
+	var arm_inner := cuff_inner.lerp(cuff_outer, 0.15) - Vector2(0, 2)  # Start just inside and under the hem.
+	var arm_outer := cuff_outer.lerp(cuff_inner, 0.15) - Vector2(0, 2)  # Keep the other arm edge inside the same hem.
+	var outline := "M%s L%s Q237 243 %s Q%s %s Q%s %s " % [  # Start with the part of the arm hidden inside the sleeve.
+		_mascot_point(arm_inner), _mascot_point(arm_outer),  # Match the angle of the cuff.
+		_mascot_point(inside + Vector2(0, -8)), _mascot_point(inside),  # Approach the bend from the upper arm.
+		_mascot_point(inside + Vector2(0, 8).rotated(angle)),  # Leave the bend along the forearm.
+		_mascot_point(elbow + Vector2(11, 31).rotated(angle)), _mascot_point(wrist + Vector2(10, 0).rotated(hand_angle)),  # Taper into the wrist.
+	]  # End the first edge at the outer edge of the wrist.
+	outline += _mascot_hand(open, wrist, hand_angle, bend)  # Join the fingers to the wrist.
+	outline += " Q%s %s Q%s %s Q210 242 %s Z" % [  # Return along the outer elbow to the sleeve.
+		_mascot_point(elbow + Vector2(-12, 22).rotated(angle)), _mascot_point(elbow + Vector2(-12, 9).rotated(angle)),  # Approach from the forearm.
+		_mascot_point(outside), _mascot_point(elbow + Vector2(-12, -9)),  # Round the wider side of the joint.
+		_mascot_point(arm_inner),  # End under the same cuff edge where the outline started.
+	]  # Close the shape under the sleeve.
+	var arm := "<path d=\"%s\" fill=\"%s\" stroke=\"%s\" stroke-width=\"3.8\" stroke-linejoin=\"round\"/>" % [outline, MASCOT_SKIN, INK]  # Keep the arm and hand joined with the same light outline as the body.
+	if not open:  # A resting hand shows the thumb and the edges of overlapping fingers.
+		var creases := _mascot_hand_path([  # Small lines inside the profile show which fingers sit in front.
+			["M", -13, 20], ["Q", -9, 19, -7, 14],  # The thumb rests across the palm.
+			["M", -10, 35], ["Q", -7, 32, -7, 27],  # The index finger curls in front of the middle finger.
+			["M", -1, 39], ["Q", 2, 35, 3, 31],  # The next fingers tuck behind it.
+		], wrist, angle, 1.0)  # The creases follow the same wrist as the outline.
+		arm += "<path d=\"%s\" fill=\"none\" stroke=\"%s\" stroke-width=\"2.5\" stroke-linecap=\"round\" opacity=\"0.7\"/>" % [creases, INK]  # Keep the small details softer than the outline.
+	if with_sleeve:  # The arm at rest has its sleeve drawn in the same frame.
+		var cuff := "M191 192 C207 192 220 193 228 200 Q237 208 %s L%s" % [_mascot_point(cuff_outer), _mascot_point(cuff_inner)]  # Follow the shoulder over the sleeve and draw the hem.
+		arm += "<path d=\"%s Q205 230 203 222 Z\" fill=\"%s\"/>" % [cuff, WHITE]  # Let the same white cloth continue across the shirt.
+		arm += "<path d=\"%s\" fill=\"none\" stroke=\"%s\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>" % [cuff, INK]  # Leave the inside edge open where the sleeve overlaps the shirt.
+	return arm if right else _in_group("translate(300 0) scale(-1 1)", arm)  # Mirror the other arm across the middle of the body.
 
 
-# An open hand at `cx` with all five fingers spread wide, for waving (D-028). The thumb points
-# towards the body (`inner` is 1 or -1); the fingers fan out from the palm.
-func _mascot_hand_open(cx: float, inner: float) -> String:
-	var palm := Vector2(cx, 332)  # The middle of the palm.
-	var angles := [72.0, 32.0, 10.0, -12.0, -34.0]  # Each finger's angle from straight down, thumb first (degrees).
-	var lengths := [15.0, 20.0, 22.0, 20.0, 16.0]  # How far each finger reaches beyond the palm.
-	var out := ""  # The drawing, back to front.
-	for i in range(5):  # Each finger, from the thumb to the little finger ...
-		var turn := deg_to_rad(angles[i]) * inner  # ... turned towards or away from the body,
-		var way := Vector2(sin(turn), cos(turn))  # ... pointing this way from the palm,
-		out += _mascot_finger(palm + way * 8.0, palm + way * (14.0 + lengths[i]))  # ... from inside the palm to its tip.
-	out += _circle(palm.x, palm.y, 16, MASCOT_SKIN, 5.0)  # The palm, covering the fingers' roots.
-	return out  # Hand back the drawing.
+# Formats a point for an SVG path without dropping the small changes between frames.
+func _mascot_point(point: Vector2) -> String:
+	return "%.2f %.2f" % [point.x, point.y]  # Write the x and y coordinates.
 
 
-# One finger from `start` to `tip`: a round-ended skin line inside a dark outline (D-028).
-func _mascot_finger(start: Vector2, tip: Vector2) -> String:
-	var line := "<line x1=\"%.1f\" y1=\"%.1f\" x2=\"%.1f\" y2=\"%.1f\" stroke=\"%s\" stroke-width=\"%.1f\" stroke-linecap=\"round\"/>"  # One line with round ends.
-	var out := line % [start.x, start.y, tip.x, tip.y, INK, MASCOT_FINGER_INK]  # The dark outline.
-	return out + line % [start.x, start.y, tip.x, tip.y, MASCOT_SKIN, MASCOT_FINGER_SKIN]  # The skin inside it.
+# Draws a profile for the resting hand and a partly turned palm for the wave.
+func _mascot_hand(open: bool, wrist: Vector2, angle: float, bend: float) -> String:
+	var curves: Array[Array]  # Each row starts with an SVG command and lists the points it uses.
+	var palm_width := 1.0  # The resting outline is already drawn in profile.
+	if open:  # Let the palm turn toward and away from the viewer as the arm waves.
+		palm_width = 0.62 + 0.21 * smoothstep(MASCOT_REST_BEND, 22.0, bend) - 0.12 * smoothstep(22.0, MASCOT_MAX_BEND, bend)  # The palm looks narrower when it turns away.
+		curves = [  # Start on the thumb side of the open palm, which points toward the face when raised.
+			["Q", 13, 6, 22, 10], ["Q", 30, 14, 30, 19], ["Q", 29, 26, 22, 22], ["Q", 17, 19, 16, 23],  # A low thumb and a curved web lead into the index finger.
+			["L", 20, 39], ["Q", 22, 45, 17, 47], ["Q", 12, 49, 11, 43], ["L", 8, 29],  # Index finger.
+			["L", 7, 48], ["Q", 7, 53, 2, 53], ["Q", -3, 53, -3, 48], ["L", -3, 29],  # Middle finger.
+			["L", -5, 44], ["Q", -6, 49, -11, 48], ["Q", -15, 47, -14, 42], ["L", -12, 27],  # Ring finger.
+			["L", -17, 36], ["Q", -20, 41, -24, 38], ["Q", -28, 36, -25, 30], ["L", -19, 17],  # Little finger.
+			["Q", -15, 6, -10, 0],  # The palm flows back into the little-finger side of the wrist.
+		]  # End at the other edge of the wrist.
+	else:  # Turn the palm toward the hip so the curled fingers partly overlap.
+		curves = [  # Start at the little-finger side of the relaxed wrist.
+			["Q", 12, 6, 12, 13], ["Q", 14, 20, 11, 27],  # The narrow back of the hand.
+			["Q", 9, 34, 5, 35],  # Little finger sits farthest back.
+			["Q", 3, 40, -1, 39],  # Ring finger overlaps the little finger.
+			["Q", -4, 44, -8, 42], ["Q", -12, 40, -10, 35],  # Middle finger has the lowest knuckle.
+			["Q", -15, 38, -17, 34], ["Q", -18, 31, -13, 20],  # Index finger curls toward the palm.
+			["Q", -19, 22, -19, 17], ["Q", -18, 11, -15, 7], ["Q", -12, 3, -10, 0],  # Thumb and inner wrist.
+		]  # End at the inner wrist.
+	return _mascot_hand_path(curves, wrist, angle, palm_width)  # Set the outline against the wrist.
+
+
+# Places hand curves on the wrist and narrows the palm without changing the wrist width.
+func _mascot_hand_path(curves: Array[Array], wrist: Vector2, angle: float, palm_width: float) -> String:
+	var path := ""  # The turned hand path.
+	for curve in curves:  # Copy each drawing command ...
+		path += curve[0] + " "  # ... then turn its points with the forearm.
+		for i in range(1, curve.size(), 2):  # Take each x and y pair in turn.
+			var point := Vector2(curve[i], curve[i + 1])  # Start with the point in hand coordinates.
+			point.x *= lerpf(1.0, palm_width, smoothstep(0.0, 18.0, point.y))  # Keep the wrist full width and turn the palm and fingers.
+			path += _mascot_point(wrist + point.rotated(angle)) + " "  # Place the point next to the wrist.
+	return path  # Use the curves for the outline or the creases.
 
 
 # The head without its eyes, eyebrows or mouth: hair with a shine, ears, face and rosy cheeks (D-027).

@@ -5,6 +5,11 @@ class_name SpriteSheet  # Lets any script write SpriteSheet.bubble("yellow").
 extends RefCounted  # Only its static functions are used.
 
 const DIR := "res://assets/sprites/"  # Folder of the PNG sheets.
+const MASCOT_WAVE_ORIGIN := Vector2i(279, 270)  # Leave room for the sleeve where it joins the shirt.
+const MASCOT_WAVE_SIZE := Vector2i(210, 330)  # Leave room for the extended arm and open hand.
+const MASCOT_WAVE_COUNT := 19  # The number of steps from a relaxed elbow to a fully bent elbow.
+const MASCOT_CUFF_OUTER := Vector2(239, 229)  # The outside end of the right sleeve hem in the art plan.
+const MASCOT_CUFF_INNER := Vector2(208, 235)  # The end of the same hem nearest the shirt.
 
 static var _cache: Dictionary = {}  # Sheets already cut, so each is cut only once.
 
@@ -54,3 +59,9 @@ static func logo() -> Texture2D:
 # two mouths.
 static func mascot(who: String) -> Array[Texture2D]:
 	return frames("mascot_%s_450x780_10f.png" % who, Vector2i(450, 780), 10)  # Each part on a whole-mascot frame.
+
+
+# Returns the shared arm frames for a wave, in order from the least to the most bent elbow.
+static func mascot_wave() -> Array[Texture2D]:
+	var file_name := "mascot_wave_%dx%d_%df.png" % [MASCOT_WAVE_SIZE.x, MASCOT_WAVE_SIZE.y, MASCOT_WAVE_COUNT]  # The sheet name matches the art tool.
+	return frames(file_name, MASCOT_WAVE_SIZE, MASCOT_WAVE_COUNT)  # Cut out each bent arm.

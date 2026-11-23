@@ -15,8 +15,8 @@ const PICTURE_SIZE := Vector2(300, 520) * SCALE  # The whole mascot from head to
 const BUBBLE_SIZE := Vector2(780, 190)  # The speech bubble, including its pointer.
 const TAIL_HEIGHT := 28.0  # How far the bubble's pointer sticks down towards the mascot.
 const HEAD_TOP := 36.0 * SCALE  # Where the top of the hair is, so the bubble's pointer can touch it.
-const SHOULDER_LEFT := Vector2(69, 210) * SCALE  # Where the left arm turns, at the top of its sleeve (D-028).
-const SHOULDER_RIGHT := Vector2(231, 210) * SCALE  # Where the right arm turns, at the top of its sleeve (D-028).
+const SHOULDER_LEFT := Vector2(76, 204) * SCALE  # Turn the left arm where the sleeve meets the shirt.
+const SHOULDER_RIGHT := Vector2(224, 204) * SCALE  # Keep the right shoulder level with the left as the arm turns.
 const NECK := Vector2(150, 172) * SCALE  # Where the head nods and tilts from, on the balanced body (D-028).
 const FEET := Vector2(150, 510) * SCALE  # Where the body sways and breathes from, between the shoes.
 const SWAY_DEGREES := 1.5  # How far the body tilts each way when idle.
@@ -25,9 +25,12 @@ const BREATH_AMOUNT := 0.015  # How much taller the body grows when breathing in
 const BREATH_SECONDS := 2.4  # One full breath, in and out.
 const ARM_SWING_DEGREES := 4.0  # How far each arm swings when idle (D-027).
 const ARM_SWING_SECONDS := 2.8  # One full arm swing, forward and back.
-const WAVE_UP := -2.45  # Arm angle when raised to wave (about 140 degrees, up and out).
-const WAVE_SWING := 0.3  # How far the raised arm swings each way while waving.
+const WAVE_UP := -2.57  # Lift the hand above the head with room beside the hair.
+const WAVE_BEND := 0.50  # Leave a slight bend at the elbow with the hand above the hair.
+const WAVE_SWING := 0.22  # Swing the forearm a little each way while keeping the shoulder still.
 const WAVE_SWINGS := 3  # How many times the hand swings back and forth.
+const WAVE_RAISE_SECONDS := 0.35  # Give the shoulder time to lift into the overhead pose.
+const WAVE_LOWER_SECONDS := 0.38  # Ease the arm back into its idle swing.
 const BLINK_SECONDS := 0.12  # How long the eyes stay closed in a blink (D-027).
 const BLINK_GAP_MIN := 2.0  # The shortest wait between blinks, in seconds.
 const BLINK_GAP_MAX := 5.0  # The longest wait between blinks, in seconds.
@@ -46,6 +49,12 @@ var _rig: Control  # Holds every part; it drops in, breathes and sways as one.
 var _body: TextureRect  # Backpack, body and legs.
 var _arm_left: TextureRect  # The arm on the left, which swings.
 var _arm_right: TextureRect  # The arm on the right, which swings and waves.
+var _wave_arm: TextureRect  # Shows the bent elbow drawings and turns with the right shoulder.
+var _wave_sleeve: Node2D  # Draws the cloth between the fixed shirt and rotating arm.
+var _wave_sleeve_edge := Curve2D.new()  # Reuses the same curve as the sleeve moves.
+var _wave_frames: Array[Texture2D] = []  # The arm drawings from a straight elbow to a bent elbow.
+var _wave_bend := 0.0  # How far the elbow is bent, from the first drawing to the last.
+var _right_idle_angle := 0.0  # The arm angle where the idle swing paused.
 var _head_rig: Control  # Holds the head and its face; it nods and tilts while talking.
 var _head: TextureRect  # Hair, ears, face and cheeks.
 var _eyes: TextureRect  # The eyes, open or closed.
@@ -79,6 +88,16 @@ func _ready() -> void:
 	_body = _add_part(_rig, Part.BODY, Vector2.ZERO)  # Backpack, body and legs, at the back.
 	_arm_left = _add_part(_rig, Part.ARM_LEFT, SHOULDER_LEFT)  # Left arm, over the side of the top.
 	_arm_right = _add_part(_rig, Part.ARM_RIGHT, SHOULDER_RIGHT)  # Right arm, over the side of the top.
+	_wave_frames = SpriteSheet.mascot_wave()  # Both students use the same arm drawings for the wave.
+	_wave_arm = TextureRect.new()  # The cropped art needs only enough room for the one arm.
+	_wave_arm.position = Vector2(SpriteSheet.MASCOT_WAVE_ORIGIN)  # Place the crop where the right arm is drawn.
+	_wave_arm.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps still go to the whole mascot.
+	_wave_arm.hide()  # Use the relaxed arm until a tap.
+	_arm_right.add_child(_wave_arm)  # Turn the whole arm around the shoulder while the elbow bends.
+	_wave_sleeve = Node2D.new()  # Draw the moving sleeve in the shirt's own coordinates.
+	_wave_sleeve.draw.connect(_draw_wave_sleeve)  # Draw it when the arm moves.
+	_wave_sleeve.hide()  # The resting arm already includes its sleeve.
+	_rig.add_child(_wave_sleeve)  # Put it over the waving arm and under the head.
 	_head_rig = _add_box(_rig, NECK)  # Holds the head; nods from the neck.
 	_head = _add_part(_head_rig, Part.HEAD, Vector2.ZERO)  # Hair, ears, face and cheeks.
 	_eyes = _add_part(_head_rig, Part.EYES_OPEN, Vector2.ZERO)  # Open eyes.
@@ -147,23 +166,72 @@ func _swing_arm(arm: TextureRect, direction: float) -> Tween:
 	return swing  # Hand it back.
 
 
-# Waves hello with the right arm: up, a few swings, then back down to its idle swing (D-026).
+# Lifts the right arm, waves from the elbow, then lowers it back to the side (D-026).
 func wave() -> void:
 	if _wave != null and _wave.is_valid():  # Still waving from the last tap ...
 		_wave.kill()  # ... so start again from where the arm is.
+	else:  # This is the first tap since the arm went idle.
+		_right_idle_angle = _arm_right.rotation  # Return to this angle before resuming the idle swing.
 	_swing_right.pause()  # The idle swing stops while the arm waves.
 	_arm_right.texture = _frames[Part.ARM_RIGHT_WAVE]  # The hand opens wide, all five fingers spread (D-028).
+	_set_wave_bend(_wave_bend)  # Begin from the current elbow pose, even if the mascot was tapped twice.
 	_wave = create_tween()  # A new wave.
-	_wave.tween_property(_arm_right, "rotation", WAVE_UP, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)  # Raise the arm.
+	_wave.tween_property(_arm_right, "rotation", WAVE_UP, WAVE_RAISE_SECONDS).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)  # Lift smoothly and stop at the wave pose.
+	_wave.parallel().tween_method(_set_wave_bend, _wave_bend, WAVE_BEND, WAVE_RAISE_SECONDS).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)  # Bend the elbow at the same time.
 	for i in range(WAVE_SWINGS):  # A few swings ...
-		_wave.tween_property(_arm_right, "rotation", WAVE_UP + WAVE_SWING, 0.16).set_trans(Tween.TRANS_SINE)  # ... one way ...
-		_wave.tween_property(_arm_right, "rotation", WAVE_UP - WAVE_SWING, 0.16).set_trans(Tween.TRANS_SINE)  # ... and the other.
-	_wave.tween_property(_arm_right, "rotation", 0.0, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)  # Lower the arm to the side.
+		_wave.tween_method(_set_wave_bend, WAVE_BEND, WAVE_BEND + WAVE_SWING, 0.08).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)  # ... bend a little more ...
+		_wave.tween_method(_set_wave_bend, WAVE_BEND + WAVE_SWING, WAVE_BEND - WAVE_SWING, 0.16).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)  # ... swing the other way ...
+		_wave.tween_method(_set_wave_bend, WAVE_BEND - WAVE_SWING, WAVE_BEND, 0.08).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)  # ... and return to the middle.
+	_wave.tween_property(_arm_right, "rotation", _right_idle_angle, WAVE_LOWER_SECONDS).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)  # Lower the arm to the paused idle angle.
+	_wave.parallel().tween_method(_set_wave_bend, WAVE_BEND, 0.0, WAVE_LOWER_SECONDS).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)  # Straighten the elbow as it lowers.
 	_wave.tween_callback(_end_wave)  # Then close the hand and swing gently again.
+
+
+# Shows the drawing closest to the current elbow bend during the wave.
+func _set_wave_bend(bend: float) -> void:
+	_wave_bend = bend  # Remember the pose in case a new tap restarts the wave.
+	var index := roundi(bend * (_wave_frames.size() - 1))  # Pick the nearest drawing.
+	_wave_arm.visible = index > 0  # Use the full open-arm frame until the elbow bends.
+	_arm_right.self_modulate.a = 0.0 if _wave_arm.visible else 1.0  # Draw only the arm for this pose.
+	_wave_arm.texture = _wave_frames[index]  # Show the elbow and hand together.
+	_wave_sleeve.visible = _wave_arm.visible  # Draw the moving sleeve with the moving arm.
+	_wave_sleeve.queue_redraw()  # Follow the current shoulder angle.
+
+
+# Maps a point on the sleeve cuff into the shirt's coordinates at the current arm angle.
+func _wave_sleeve_point(point: Vector2) -> Vector2:
+	return SHOULDER_RIGHT + (point * SCALE - SHOULDER_RIGHT).rotated(_arm_right.rotation)  # Turn around the same joint as the arm sprite.
+
+
+# Draws a continuous sleeve from the fixed shoulder line to the moving cuff and back to the armpit.
+func _draw_wave_sleeve() -> void:
+	var raised := clampf(_arm_right.rotation / WAVE_UP, 0.0, 1.0)  # Measure how far the shoulder has lifted.
+	var shoulder := Vector2(191, 192) * SCALE  # Start on the top outline of the shirt.
+	var armpit := Vector2(222.0 + 3.0 * raised, 228.0 - 10.0 * raised) * SCALE  # Follow the shirt edge up as the cloth lifts.
+	var cuff_top := _wave_sleeve_point(SpriteSheet.MASCOT_CUFF_OUTER)  # Use the outside point that the arm art uses.
+	var cuff_bottom := _wave_sleeve_point(SpriteSheet.MASCOT_CUFF_INNER)  # Use the inside point that the arm art uses.
+	var top_tangent := (shoulder - cuff_top) * 0.32  # Lead into the cuff along the shoulder line.
+	var underarm_tangent := (armpit - cuff_bottom) * 0.35  # Pull the cloth back toward the shirt below the raised arm.
+	_wave_sleeve_edge.clear_points()  # Rebuild the edge for this shoulder angle.
+	_wave_sleeve_edge.add_point(shoulder, Vector2.ZERO, Vector2(15, 0) * SCALE)  # Leave the shoulder along the shirt line.
+	_wave_sleeve_edge.add_point(cuff_top, top_tangent)  # End the upper sleeve at the outside of the cuff.
+	_wave_sleeve_edge.add_point(cuff_bottom, Vector2.ZERO, underarm_tangent)  # Draw a straight hem across the base of the arm.
+	_wave_sleeve_edge.add_point(armpit, Vector2(2, -8) * SCALE)  # Blend into the shirt edge under the arm.
+	var edge := _wave_sleeve_edge.tessellate()  # Turn the curves into points to draw.
+	_wave_sleeve.draw_colored_polygon(edge, Palette.WHITE)  # Fill the sleeve and overlap the shirt.
+	var stroke_width := 4.0 * SCALE  # Match the outline on the resting sleeve.
+	_wave_sleeve.draw_polyline(edge.slice(0, edge.find(cuff_top) + 1), Palette.INK, stroke_width, true)  # Outline the top up to the cuff.
+	_wave_sleeve.draw_line(cuff_top, cuff_bottom, Palette.INK, stroke_width, true)  # Draw the cuff as a straight edge across the arm.
+	_wave_sleeve.draw_polyline(edge.slice(edge.find(cuff_bottom)), Palette.INK, stroke_width, true)  # Outline the underarm below the cuff.
+	_wave_sleeve.draw_circle(cuff_top, stroke_width * 0.5, Palette.INK, true, -1.0, true)  # Round one corner so the lines meet without a sharp tip.
+	_wave_sleeve.draw_circle(cuff_bottom, stroke_width * 0.5, Palette.INK, true, -1.0, true)  # Round the other corner the same way.
 
 
 # Ends a wave: the fingers come together again and the arm goes back to its gentle swing.
 func _end_wave() -> void:
+	_wave_sleeve.hide()  # The resting sleeve takes over again.
+	_wave_arm.hide()  # Switch back to the relaxed arm.
+	_arm_right.self_modulate.a = 1.0  # Show the relaxed arm again.
 	_arm_right.texture = _frames[Part.ARM_RIGHT]  # Fingers held loosely together (D-028).
 	_swing_right.play()  # Swing gently again.
 
