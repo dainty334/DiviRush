@@ -28,12 +28,13 @@ func _capture_all() -> void:
 	save.records.add_play(9, 4, 61.0)  # Level 2's play: best streak 4.
 	load("res://scripts/rules/trophies.gd").award(save.progress, save.records)  # The Trophies those bests earn.
 	await _shot("start_screen", "01_start_up_menu")  # Start-up menu.
-	await _shot("main_menu", "02_main_menu")  # Main menu.
+	await _shot("main_menu", "02_main_menu", 2.5)  # Main menu; extra time, since its first opening loads the mascot and fonts.
 	current_scene.show_exit_card()  # As if Exit was tapped (D-021).
-	await _wait(0.3)  # Let the card draw.
+	await _wait(0.6)  # Let the card draw.
 	_save_picture("29_exit_confirm")  # The "Leave DiviRush?" card.
 	await _shot("trophies_screen", "30_trophies")  # The twelve Trophies, two earned (D-023).
 	await _shot("records_screen", "31_my_records")  # The learner's game records (D-023).
+	await _shot("main_menu", "32_main_menu_migo", 0.7)  # The Main menu again: Migo's turn, still talking (D-024).
 	await _shot("how_to_play", "03_how_to_play")  # Rules screen.
 	await _shot("settings_screen", "04_settings")  # Settings.
 	await _shot("episode_select", "05_episode_select")  # Episodes 2-4 locked.

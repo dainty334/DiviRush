@@ -47,3 +47,8 @@ static func icons() -> Array[Texture2D]:
 # The title logo (one frame).
 static func logo() -> Texture2D:
 	return frames("logo_512x512_1f.png", Vector2i(512, 512), 1)[0]  # The only frame.
+
+
+# The two frames of a student mascot (D-024): "ana" or "migo". Frame 0 smiles; frame 1 talks.
+static func mascot(who: String) -> Array[Texture2D]:
+	return frames("mascot_%s_300x340_2f.png" % who, Vector2i(300, 340), 2)  # Mouth closed, mouth open.

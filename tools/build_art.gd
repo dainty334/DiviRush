@@ -30,6 +30,8 @@ func _init() -> void:
 	_save_sheet("star", 200, 200, _star_frames())  # Level end Star filling up.
 	_save_sheet("icons", 96, 96, _icon_frames())  # Small icons: back, Stars, clock, lock, music, sound, vibration, and the Main menu icons.
 	_save_sheet("logo", 512, 512, [_logo_frame()])  # Title-screen logo bubble.
+	_save_sheet("mascot_ana", 300, 340, [_mascot_frame(true, false), _mascot_frame(true, true)])  # Ana: mouth closed, mouth open (D-024).
+	_save_sheet("mascot_migo", 300, 340, [_mascot_frame(false, false), _mascot_frame(false, true)])  # Migo: mouth closed, mouth open (D-024).
 	_save_icon_svg()  # The app icon (icon.svg in the project folder).
 	quit()  # Close the tool when done.
 
@@ -236,6 +238,49 @@ func _menu_icon_frames() -> Array:
 	door += "<path d=\"M38 48 H84 M72 35 L85 48 L72 61\" fill=\"none\" stroke=\"%s\" stroke-width=\"9\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>" % INK  # ... and an arrow going out.
 	frames.append(door)  # 11: door.
 	return frames  # Hand back all four.
+
+
+# One frame of a student mascot (D-024): Ana (a girl, with pigtails, a clip and a blue ribbon) or
+# Migo (a boy, with short hair and a blue school patch), in a white school top with backpack straps.
+# `mouth_open` draws the talking mouth; otherwise the mascot smiles.
+func _mascot_frame(is_ana: bool, mouth_open: bool) -> String:
+	var skin := "#E0A872"  # Warm brown skin.
+	var hair := "#2B1B17"  # Dark brown-black hair.
+	var out := ""  # The drawing, back to front.
+	if is_ana:  # Ana's long hair and two pigtails, behind her head.
+		out += _circle(150, 120, 92, hair, 8.0)  # Hair behind the head.
+		out += _circle(60, 150, 30, hair, 8.0) + _circle(240, 150, 30, hair, 8.0)  # Two pigtails.
+	else:  # Migo's short hair, just above his head.
+		out += _circle(150, 112, 85, hair, 8.0)  # Hair behind the head.
+	out += "<rect x=\"132\" y=\"185\" width=\"36\" height=\"40\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [skin, INK]  # Neck.
+	out += "<path d=\"M44 340 V276 Q44 222 104 212 H196 Q256 222 256 276 V340 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"8\" stroke-linejoin=\"round\"/>" % [WHITE, INK]  # White school top.
+	out += "<rect x=\"74\" y=\"222\" width=\"24\" height=\"118\" rx=\"10\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [PINK, INK]  # Left backpack strap.
+	out += "<rect x=\"202\" y=\"222\" width=\"24\" height=\"118\" rx=\"10\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [PINK, INK]  # Right backpack strap.
+	out += "<path d=\"M126 212 L150 240 L112 236 Z M174 212 L150 240 L188 236 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % [WHITE, INK]  # Collar.
+	if is_ana:  # Ana: a blue ribbon at the collar.
+		out += "<path d=\"M150 244 L124 230 L124 260 Z M150 244 L176 230 L176 260 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\" stroke-linejoin=\"round\"/>" % [BLUE, INK]  # Bow.
+		out += _circle(150, 245, 9, BLUE, 5.0)  # Knot.
+	else:  # Migo: a blue school patch on his chest.
+		out += "<rect x=\"166\" y=\"262\" width=\"34\" height=\"28\" rx=\"6\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\"/>" % [BLUE, INK]  # Patch.
+	out += _circle(68, 135, 16, skin, 7.0) + _circle(232, 135, 16, skin, 7.0)  # Ears.
+	out += _circle(150, 125, 82, skin, 8.0)  # Face.
+	if is_ana:  # Ana's fringe and a yellow hair clip.
+		out += "<path d=\"M70 112 Q80 44 150 42 Q220 44 230 112 Q204 78 150 82 Q96 78 70 112 Z\" fill=\"%s\"/>" % hair  # Fringe.
+		out += "<rect x=\"196\" y=\"70\" width=\"30\" height=\"14\" rx=\"7\" fill=\"%s\" stroke=\"%s\" stroke-width=\"4\" transform=\"rotate(-20 211 77)\"/>" % [YELLOW, INK]  # Clip.
+	else:  # Migo's spiky fringe.
+		out += "<path d=\"M68 112 Q70 40 150 38 Q230 40 232 112 Q214 88 196 96 Q182 74 164 90 Q150 70 136 90 Q118 74 104 96 Q86 88 68 112 Z\" fill=\"%s\"/>" % hair  # Fringe.
+	out += "<ellipse cx=\"120\" cy=\"130\" rx=\"10\" ry=\"13\" fill=\"%s\"/><ellipse cx=\"180\" cy=\"130\" rx=\"10\" ry=\"13\" fill=\"%s\"/>" % [INK, INK]  # Eyes.
+	out += _circle(123, 125, 3.5, WHITE, 0.0) + _circle(183, 125, 3.5, WHITE, 0.0)  # Shine in the eyes.
+	out += "<path d=\"M106 108 Q120 100 134 108 M166 108 Q180 100 194 108\" fill=\"none\" stroke=\"%s\" stroke-width=\"5\" stroke-linecap=\"round\"/>" % INK  # Eyebrows.
+	out += "<circle cx=\"100\" cy=\"156\" r=\"13\" fill=\"%s\" opacity=\"0.45\"/><circle cx=\"200\" cy=\"156\" r=\"13\" fill=\"%s\" opacity=\"0.45\"/>" % [PINK, PINK]  # Rosy cheeks.
+	if mouth_open and is_ana:  # Ana talking: an open mouth with a tongue.
+		out += "<path d=\"M126 156 Q150 196 174 156 Z\" fill=\"#7A2E3B\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % INK  # Open mouth.
+		out += "<path d=\"M138 176 Q150 168 162 176 Q150 188 138 176 Z\" fill=\"%s\"/>" % PINK  # Tongue.
+	elif mouth_open:  # Migo talking: a plain dark open mouth, with no red or pink, so it does not look like lipstick.
+		out += "<path d=\"M128 156 Q150 190 172 156 Z\" fill=\"#3B2420\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % INK  # Open mouth.
+	else:  # Quiet: a big smile.
+		out += "<path d=\"M126 158 Q150 182 174 158\" fill=\"none\" stroke=\"%s\" stroke-width=\"7\" stroke-linecap=\"round\"/>" % INK  # Smile.
+	return out  # Hand back the drawing.
 
 
 # The logo: a big yellow bubble with a division sign, for the Start-up menu.

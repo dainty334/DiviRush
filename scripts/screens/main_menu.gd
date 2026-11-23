@@ -1,30 +1,29 @@
-# Main menu, laid out as a home dashboard on its own candy sky (D-022): a small floating logo, a
-# "My progress" card, one big breathing Play button, a 2 x 2 grid of icon tiles (How to Play,
-# Trophies, My Records, Settings), and a small Exit that asks first (D-021). No title, as asked.
+# Main menu, laid out as a home dashboard on its own candy sky (D-022): a talking student mascot
+# at the top (D-024), a "My progress" card, one big breathing Play button, a 2 x 2 grid of icon
+# tiles (How to Play, Trophies, My Records, Settings), and a small Exit that asks first (D-021).
+# No title, as asked. Everything is spaced evenly, with no big empty gap.
 extends ScreenBase  # Shared background, margins and column.
 
-const LOGO_SIZE := 220.0  # Logo width and height: small, since the screen has no title now.
 const TILE_SIZE := Vector2(436, 210)  # Each of the four tiles, so two fit side by side.
-const TWINKLE_SPOTS: Array[Vector2] = [Vector2(0.74, 0.16), Vector2(0.18, 0.34), Vector2(0.84, 0.66)]  # Where the sparkle shows on the logo, as parts of its size.
+
+static var _turn := 0  # Counts Main menu visits while the game runs, so Ana and Migo take turns (D-024).
 
 var _buttons: Array[Button] = []  # Play, the four tiles and Exit, top to bottom.
 var _play_breath: CenterContainer  # The box around Play that grows and shrinks, so Play's own size is free for its tap bounce.
-var _logo: TextureRect  # The floating logo.
-var _next_spot := 0  # Which spot the next sparkle uses.
+var _mascot: Mascot  # Ana or Migo, talking at the top.
 
 
 # Builds the screen. Called once by ScreenBase when the screen opens.
 func _build() -> void:
 	Audio.play_music("menu")  # Main menu area music (D-020).
-	add_spacer(0.5)  # Space at the top.
-	_add_logo()  # The small floating logo.
+	column.add_theme_constant_override("separation", 28)  # Even, slightly tighter gaps between the parts.
+	add_spacer(1.0)  # Space at the top ...
+	_add_mascot()  # The talking mascot.
 	column.add_child(_make_progress_card())  # Stars, Trophies and Levels at a glance.
-	add_spacer(0.5)  # Space above Play.
 	_add_play()  # The big Play button.
 	_add_tiles()  # The four tiles.
 	_add_exit()  # The small Exit button.
-	add_spacer(0.4)  # Space at the bottom.
-	_start_twinkles()  # Sparkles on the logo now and then.
+	add_spacer(1.0)  # ... and the same at the bottom, so the parts sit together in the middle with even gaps.
 
 
 # The Main menu has its own candy sky: pink to lavender with numbers and ÷ signs (D-022).
@@ -32,22 +31,14 @@ func sky_look() -> int:
 	return SkyBackground.Look.CANDY  # Candy look.
 
 
-# Adds the small logo, floating up and down inside a fixed box so the layout never moves.
-func _add_logo() -> void:
-	var holder := Control.new()  # A plain box that keeps the logo's place.
-	holder.custom_minimum_size = Vector2(LOGO_SIZE, LOGO_SIZE)  # As big as the logo.
-	holder.size_flags_horizontal = Control.SIZE_SHRINK_CENTER  # Centred.
-	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go through.
-	column.add_child(holder)  # Show the box first, because animations need it on screen.
-	_logo = TextureRect.new()  # The logo picture.
-	_logo.texture = SpriteSheet.logo()  # Yellow ÷ bubble.
-	_logo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE  # Any size.
-	_logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED  # Keep its shape.
-	_logo.size = Vector2(LOGO_SIZE, LOGO_SIZE)  # Its size on screen.
-	_logo.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go through.
-	holder.add_child(_logo)  # Put the logo in its box.
-	UiKit.pop_in(_logo, 0.05)  # Bounce in first.
-	UiKit.bob(_logo, 12.0, 2.4, 0.5)  # Then float 12 px up and down every 2.4 s.
+# Adds the talking mascot at the top: Ana and Migo take turns each time the Main menu opens (D-024).
+# Its lines come from the learner's own progress and Trophies, plus division tips.
+func _add_mascot() -> void:
+	var who: String = MascotLines.NAMES[_turn % MascotLines.NAMES.size()]  # Whose turn it is.
+	_turn += 1  # The other one next time.
+	_mascot = Mascot.new(who, MascotLines.lines_for(who, Save.progress, Save.records))  # The mascot and what it will say.
+	column.add_child(_mascot)  # Show it; it starts talking at once.
+	UiKit.pop_in(_mascot, 0.05)  # Bounce in first.
 
 
 # Makes the white "My progress" card: Stars of 180, Trophies of 12 and Levels passed of 60 (D-022).
@@ -121,29 +112,6 @@ func _add_button(parent: Control, button: Button, action: Callable, delay: float
 	parent.add_child(button)  # Show it.
 	UiKit.pop_in(button, delay)  # Bounce in one after another.
 	_buttons.append(button)  # Remember it, top to bottom.
-
-
-# Starts the sparkles: the first soon after the menu opens, then one every 3 s.
-func _start_twinkles() -> void:
-	var start := create_tween()  # A one-time tween for the first wait.
-	start.tween_interval(1.1)  # Wait until the logo has popped in.
-	start.tween_callback(_twinkle_forever)  # Then sparkle again and again.
-
-
-# Shows a sparkle now and then every 3 s, for as long as the menu is open.
-func _twinkle_forever() -> void:
-	var tween := create_tween().set_loops()  # A tween that repeats forever.
-	tween.tween_callback(_twinkle)  # Sparkle ...
-	tween.tween_interval(3.0)  # ... then wait 3 s.
-
-
-# Shows one sparkle on the logo, at the next of the spots in turn.
-func _twinkle() -> void:
-	var sparkle := Sparkle.new()  # A sparkle that plays once and removes itself.
-	var spot: Vector2 = TWINKLE_SPOTS[_next_spot % TWINKLE_SPOTS.size()] * LOGO_SIZE  # Where on the logo.
-	sparkle.position = spot - sparkle.size / 2.0  # Centre the sparkle on that spot.
-	_logo.add_child(sparkle)  # Show it on the logo, so it floats with the logo.
-	_next_spot += 1  # Use the next spot next time.
 
 
 # Play opens Episode select.
