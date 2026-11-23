@@ -46,13 +46,26 @@ func test_lines_follow_the_progress() -> void:
 	assert_has(lines, "Next Trophy: On a Roll. Get 5 right in a row!")  # The next Trophy not yet earned.
 
 
-# The mascot types each line letter by letter with its mouth moving, then smiles quietly.
-func test_mascot_types_with_a_moving_mouth() -> void:
+# Returns a tap with the left button (a finger on a phone), going down.
+func _tap() -> InputEventMouseButton:
+	var tap := InputEventMouseButton.new()  # A tap ...
+	tap.button_index = MOUSE_BUTTON_LEFT  # ... with the left button,
+	tap.pressed = true  # ... going down.
+	return tap  # Hand it back.
+
+
+# The mascot is quiet until tapped (D-025); then it types the line letter by letter with its mouth
+# moving, and smiles quietly when the line is finished.
+func test_mascot_talks_only_when_tapped() -> void:
 	var mascot := Mascot.new("Ana", ["Hello there!"] as Array[String])  # Ana with one line.
-	add_child_autofree(mascot)  # In the tree, so she starts talking.
+	add_child_autofree(mascot)  # In the tree.
 	var frames := SpriteSheet.mascot("ana")  # Her two pictures: mouth closed, mouth open.
-	assert_true(mascot.is_talking())  # She starts typing at once.
-	assert_lt(mascot._words.visible_ratio, 1.0)  # Not all the words show yet.
+	assert_false(mascot.is_bubble_shown())  # No speech bubble at first ...
+	assert_false(mascot.is_talking())  # ... and no talking.
+	mascot._gui_input(_tap())  # She is tapped.
+	assert_true(mascot.is_bubble_shown())  # The bubble shows ...
+	assert_true(mascot.is_talking())  # ... and she starts typing.
+	assert_eq(mascot._words.text, "Hello there!")  # The first line.
 	mascot._process(MascotLines.MOUTH_SECONDS + 0.01)  # A moment passes ...
 	assert_eq(mascot._picture.texture, frames[1])  # ... and her mouth is open.
 	await wait_seconds(1.0)  # The line finishes typing.
@@ -61,19 +74,20 @@ func test_mascot_types_with_a_moving_mouth() -> void:
 	assert_eq(mascot._picture.texture, frames[0])  # ... and smiles with her mouth closed.
 
 
-# Tapping the mascot shows the next line at once; after a few quiet seconds the next line comes by itself.
-func test_tap_and_wait_bring_the_next_line() -> void:
+# Each tap brings the next line; a few seconds after a line is finished the bubble goes away,
+# and no new line comes by itself (D-025).
+func test_each_tap_brings_the_next_line_then_the_bubble_goes() -> void:
 	var said: Array[String] = ["One.", "Two.", "Three."]  # Three short lines.
 	var mascot := Mascot.new("Migo", said)  # Migo with them.
 	add_child_autofree(mascot)  # In the tree.
-	var tap := InputEventMouseButton.new()  # A tap ...
-	tap.button_index = MOUSE_BUTTON_LEFT  # ... with the left button (a finger on a phone),
-	tap.pressed = true  # ... going down.
-	mascot._gui_input(tap)  # The mascot is tapped.
-	assert_eq(mascot._words.text, "Two.")  # The next line.
+	mascot._gui_input(_tap())  # First tap ...
+	assert_eq(mascot._words.text, "One.")  # ... the first line.
+	mascot._gui_input(_tap())  # Second tap ...
+	assert_eq(mascot._words.text, "Two.")  # ... the next line.
 	mascot._words.visible_ratio = 1.0  # The line has finished typing.
-	mascot._process(MascotLines.LINE_SECONDS + 0.1)  # A few quiet seconds pass.
-	assert_eq(mascot._words.text, "Three.")  # The next line came by itself.
+	mascot._process(MascotLines.BUBBLE_SECONDS + 0.1)  # A few quiet seconds pass.
+	assert_false(mascot.is_bubble_shown())  # The bubble has gone ...
+	assert_eq(mascot._words.text, "Two.")  # ... and no new line came by itself.
 
 
 # Ana and Migo take turns: each time the Main menu opens, the other one is there.

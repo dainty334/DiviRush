@@ -37,12 +37,12 @@ func _texts() -> Array[String]:
 	return texts  # Hand back the list.
 
 
-# The buttons, top to bottom: Play, the four tiles, and Exit (D-022).
+# The buttons: Play, the four in the bottom bar, and Exit, which sits at the top right (D-025).
 func test_buttons_in_order() -> void:
 	var words: Array[String] = []  # The buttons' words.
 	for button: Button in screen._buttons:  # Each button ...
 		words.append(button.text)  # ... adds its words.
-	assert_eq(words, ["Play", "How to Play", "Trophies", "My Records", "Settings", "Exit"] as Array[String])  # The six choices.
+	assert_eq(words, ["Play", "How to Play", "Trophies", "My Records", "Settings", "Exit"] as Array[String])  # Play, the bottom bar, then Exit (top right).
 
 
 # Each button shows its own drawn icon.
@@ -70,12 +70,12 @@ func test_progress_card() -> void:
 	assert_has(texts, "2/60")  # Two Levels passed.
 
 
-# Once they have popped in, the buttons stand straight, and the four tiles share one size, so they line up.
+# Once they have popped in, the buttons stand straight, and the four bottom-bar buttons share one size, so they line up.
 func test_buttons_stand_straight_and_tiles_line_up() -> void:
 	await wait_seconds(1.3)  # Let the pop-in finish.
 	for button: Button in screen._buttons:  # Each button ...
 		assert_almost_eq(button.rotation, 0.0, 0.0001, button.text)  # ... stands straight.
-	for i in range(1, 5):  # The four tiles ...
+	for i in range(1, 5):  # The four bottom-bar buttons ...
 		assert_eq(screen._buttons[i].size, screen._buttons[1].size, screen._buttons[i].text)  # ... are the same size.
 
 

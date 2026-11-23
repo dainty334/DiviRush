@@ -35,16 +35,46 @@ static func title(size: int) -> Label:
 
 # Makes a chunky button with a drawn icon on its left and its words in the middle (Main menu, D-017).
 # The words stay centred on the button, as on every other button, so the buttons line up.
-static func icon_button(text: String, which: int, colour: Color, min_size: Vector2, font_size: int) -> Button:
+# `side` is the icon's size and `inset` its distance from the button's left edge; small buttons use smaller ones.
+static func icon_button(text: String, which: int, colour: Color, min_size: Vector2, font_size: int, side: float = 84.0, inset: float = 44.0) -> Button:
 	var node := button(text, colour, min_size, font_size)  # The usual chunky button.
-	var side := 84.0  # Icon size on the button.
 	var picture := icon(which, side)  # The drawn icon.
 	picture.anchor_top = 0.5  # Hang the icon from the button's middle ...
 	picture.anchor_bottom = 0.5  # ... so it stays centred up and down.
-	picture.offset_left = 44.0  # Its left edge, inside the button.
-	picture.offset_right = 44.0 + side  # Its right edge.
+	picture.offset_left = inset  # Its left edge, inside the button.
+	picture.offset_right = inset + side  # Its right edge.
 	picture.offset_top = -side / 2.0  # Half above the middle ...
 	picture.offset_bottom = side / 2.0  # ... and half below.
+	node.add_child(picture)  # Put the icon on the button.
+	return node  # Hand back the button.
+
+
+# Makes a flat button for a bottom bar (Main menu, D-025): its icon at the top and its name underneath,
+# with no box of its own, so the bar around it is the only box. It darkens a little while held.
+static func bar_button(text: String, which: int, min_size: Vector2, font_size: int) -> Button:
+	var node := Button.new()  # A new button.
+	node.text = text  # Its name.
+	node.custom_minimum_size = min_size  # Big enough for small fingers.
+	node.add_theme_font_override("font", font())  # Fredoka.
+	node.add_theme_font_size_override("font_size", font_size)  # How big the name is.
+	for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]:  # Every text state ...
+		node.add_theme_color_override(state, Palette.INK)  # ... uses dark text.
+	for state in ["normal", "hover", "pressed", "hover_pressed", "disabled"]:  # Each look of the button ...
+		var style := StyleBoxFlat.new()  # ... a plain box,
+		style.bg_color = Color(Palette.INK, 0.08) if state in ["pressed", "hover_pressed"] else Color(0, 0, 0, 0)  # ... see-through, a light shade while held,
+		style.set_corner_radius_all(32)  # ... with round corners,
+		style.content_margin_top = 96.0  # ... and room for the icon above the name.
+		node.add_theme_stylebox_override(state, style)  # Use it.
+	node.add_theme_stylebox_override("focus", StyleBoxEmpty.new())  # No extra focus frame on phones.
+	add_press_bounce(node)  # Squash and spring when tapped.
+	var side := 76.0  # Icon size.
+	var picture := icon(which, side)  # The drawn icon.
+	picture.anchor_left = 0.5  # Hang the icon from the button's middle ...
+	picture.anchor_right = 0.5  # ... so it stays centred across.
+	picture.offset_left = -side / 2.0  # Half to the left ...
+	picture.offset_right = side / 2.0  # ... and half to the right.
+	picture.offset_top = 16.0  # Near the top edge ...
+	picture.offset_bottom = 16.0 + side  # ... and as tall as the icon.
 	node.add_child(picture)  # Put the icon on the button.
 	return node  # Hand back the button.
 

@@ -1,29 +1,31 @@
-# Main menu, laid out as a home dashboard on its own candy sky (D-022): a talking student mascot
-# at the top (D-024), a "My progress" card, one big breathing Play button, a 2 x 2 grid of icon
-# tiles (How to Play, Trophies, My Records, Settings), and a small Exit that asks first (D-021).
-# No title, as asked. Everything is spaced evenly, with no big empty gap.
+# Main menu, play first (D-025), on its own candy sky (D-022), with no title:
+#   top row     three small count pills (Stars, Trophies, Levels passed) and an Exit door at the right
+#   middle      the talking student mascot, Ana or Migo (D-024), who talks only when tapped
+#   Play        one huge breathing Play button
+#   bottom bar  How to Play, Trophies, My Records and Settings as icons in one white bar
 extends ScreenBase  # Shared background, margins and column.
 
-const TILE_SIZE := Vector2(436, 210)  # Each of the four tiles, so two fit side by side.
+const BAR_BUTTON_SIZE := Vector2(232, 176)  # Each of the four bottom-bar buttons, so all four fit in one bar.
 
 static var _turn := 0  # Counts Main menu visits while the game runs, so Ana and Migo take turns (D-024).
 
-var _buttons: Array[Button] = []  # Play, the four tiles and Exit, top to bottom.
+var _buttons: Array[Button] = []  # Play, the four bottom-bar buttons, then Exit.
 var _play_breath: CenterContainer  # The box around Play that grows and shrinks, so Play's own size is free for its tap bounce.
-var _mascot: Mascot  # Ana or Migo, talking at the top.
+var _mascot: Mascot  # Ana or Migo, in the middle.
 
 
 # Builds the screen. Called once by ScreenBase when the screen opens.
 func _build() -> void:
 	Audio.play_music("menu")  # Main menu area music (D-020).
-	column.add_theme_constant_override("separation", 28)  # Even, slightly tighter gaps between the parts.
-	add_spacer(1.0)  # Space at the top ...
+	column.add_theme_constant_override("separation", 28)  # Even gaps between the parts.
+	var exit := _add_top_row()  # Count pills and the Exit door.
+	add_spacer(0.6)  # Space above the mascot.
 	_add_mascot()  # The talking mascot.
-	column.add_child(_make_progress_card())  # Stars, Trophies and Levels at a glance.
-	_add_play()  # The big Play button.
-	_add_tiles()  # The four tiles.
-	_add_exit()  # The small Exit button.
-	add_spacer(1.0)  # ... and the same at the bottom, so the parts sit together in the middle with even gaps.
+	add_spacer(0.4)  # Space above Play.
+	_add_play()  # The huge Play button.
+	add_spacer(0.4)  # Space above the bottom bar.
+	_add_bottom_bar()  # How to Play, Trophies, My Records and Settings.
+	_buttons.append(exit)  # Exit is listed last, after the main choices.
 
 
 # The Main menu has its own candy sky: pink to lavender with numbers and ÷ signs (D-022).
@@ -31,87 +33,94 @@ func sky_look() -> int:
 	return SkyBackground.Look.CANDY  # Candy look.
 
 
-# Adds the talking mascot at the top: Ana and Migo take turns each time the Main menu opens (D-024).
-# Its lines come from the learner's own progress and Trophies, plus division tips.
+# Adds the top row: three small count pills on the left and the Exit door on the right.
+# Returns the Exit button, so it can be listed after the main choices.
+func _add_top_row() -> Button:
+	var row := HBoxContainer.new()  # Pills and Exit side by side.
+	row.add_theme_constant_override("separation", 14)  # Space between the pills.
+	column.add_child(row)  # Show it first, because animations need it on screen.
+	row.add_child(_make_pill(UiKit.Icon.STAR, Save.progress.total_stars(), Progress.MAX_STARS))  # Stars earned.
+	row.add_child(_make_pill(UiKit.Icon.TROPHY, Save.records.trophies.size(), Trophies.ALL.size()))  # Trophies earned.
+	row.add_child(_make_pill(UiKit.Icon.CHART, Save.progress.levels_passed(), Progress.LEVEL_TOTAL))  # Levels passed.
+	var gap := Control.new()  # Pushes Exit to the right edge.
+	gap.size_flags_horizontal = Control.SIZE_EXPAND_FILL  # Take the free width.
+	gap.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go through.
+	row.add_child(gap)  # Add it.
+	var exit := UiKit.icon_button("Exit", UiKit.Icon.EXIT, Palette.PINK, Vector2(210, 96), 38, 52.0, 22.0)  # A small pink door button, hard to tap by mistake.
+	exit.size_flags_vertical = Control.SIZE_SHRINK_CENTER  # Not stretched tall.
+	exit.pressed.connect(_on_exit)  # It asks first (D-021).
+	row.add_child(exit)  # At the right.
+	UiKit.pop_in(exit, 0.3)  # Bounce in.
+	return exit  # Hand it back.
+
+
+# Makes one small white count pill: an icon and "earned/total", for example "5/180".
+func _make_pill(which: int, earned: int, total: int) -> PanelContainer:
+	var pill := PanelContainer.new()  # The pill.
+	var style := UiKit.box(Palette.WHITE, 40, 5)  # White, round, with a thin dark outline.
+	style.set_content_margin_all(6)  # A little space inside ...
+	style.content_margin_left = 14  # ... more at the ends,
+	style.content_margin_right = 18  # ... so it looks round.
+	pill.add_theme_stylebox_override("panel", style)  # Use this look.
+	pill.size_flags_vertical = Control.SIZE_SHRINK_CENTER  # Not stretched tall.
+	pill.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Not a button.
+	var row := HBoxContainer.new()  # Icon beside the number.
+	row.add_theme_constant_override("separation", 6)  # Close together.
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go through.
+	row.add_child(UiKit.icon(which, 48))  # The icon.
+	row.add_child(UiKit.label("%d/%d" % [earned, total], 38, Palette.INK))  # The count.
+	pill.add_child(row)  # Put them in the pill.
+	UiKit.pop_in(pill, 0.05)  # Bounce in.
+	return pill  # Hand back the pill.
+
+
+# Adds the talking mascot in the middle: Ana and Migo take turns each time the Main menu opens (D-024).
+# The mascot talks only when tapped (D-025); its lines come from the learner's own progress and Trophies.
 func _add_mascot() -> void:
 	var who: String = MascotLines.NAMES[_turn % MascotLines.NAMES.size()]  # Whose turn it is.
 	_turn += 1  # The other one next time.
 	_mascot = Mascot.new(who, MascotLines.lines_for(who, Save.progress, Save.records))  # The mascot and what it will say.
-	column.add_child(_mascot)  # Show it; it starts talking at once.
-	UiKit.pop_in(_mascot, 0.05)  # Bounce in first.
+	_mascot.size_flags_horizontal = Control.SIZE_SHRINK_CENTER  # Centred.
+	column.add_child(_mascot)  # Show it.
+	UiKit.pop_in(_mascot, 0.1)  # Bounce in.
 
 
-# Makes the white "My progress" card: Stars of 180, Trophies of 12 and Levels passed of 60 (D-022).
-func _make_progress_card() -> PanelContainer:
-	var card := PanelContainer.new()  # The card.
-	var style := UiKit.box(Palette.WHITE, 48)  # White, round and outlined, like the other cards.
-	style.set_content_margin_all(22)  # Room inside the card.
-	card.add_theme_stylebox_override("panel", style)  # Use this look.
-	card.custom_minimum_size.x = 900.0  # Nearly as wide as the screen.
-	card.size_flags_horizontal = Control.SIZE_SHRINK_CENTER  # Centred.
-	card.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go through.
-	var row := HBoxContainer.new()  # The three counts side by side.
-	row.alignment = BoxContainer.ALIGNMENT_CENTER  # Centred across.
-	row.add_theme_constant_override("separation", 60)  # Space between them.
-	row.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go through.
-	card.add_child(row)  # Put the row on the card.
-	row.add_child(_make_count(UiKit.Icon.STAR, Save.progress.total_stars(), Progress.MAX_STARS, "Stars"))  # Stars earned.
-	row.add_child(_make_count(UiKit.Icon.TROPHY, Save.records.trophies.size(), Trophies.ALL.size(), "Trophies"))  # Trophies earned.
-	row.add_child(_make_count(UiKit.Icon.CHART, Save.progress.levels_passed(), Progress.LEVEL_TOTAL, "Levels"))  # Levels passed.
-	return card  # Hand back the card.
-
-
-# Makes one count on the progress card: an icon and "earned/total" above a small word.
-func _make_count(which: int, earned: int, total: int, word: String) -> VBoxContainer:
-	var count := VBoxContainer.new()  # Number above word.
-	count.add_theme_constant_override("separation", 0)  # Close together.
-	count.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go through.
-	var top := HBoxContainer.new()  # Icon beside the number.
-	top.alignment = BoxContainer.ALIGNMENT_CENTER  # Centred.
-	top.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go through.
-	top.add_child(UiKit.icon(which, 60))  # The icon.
-	top.add_child(UiKit.label("%d/%d" % [earned, total], 50, Palette.INK))  # For example "5/180".
-	count.add_child(top)  # Add the top line.
-	count.add_child(UiKit.label(word, 34, Palette.BLUE))  # "Stars", "Trophies" or "Levels".
-	return count  # Hand back the count.
-
-
-# Adds the big Play button, which breathes so the eye goes to it first (D-017, kept by D-022).
+# Adds the huge Play button, which breathes so the eye goes to it first (D-017, kept by D-025).
 func _add_play() -> void:
 	_play_breath = CenterContainer.new()  # The box that breathes around Play.
 	_play_breath.size_flags_horizontal = Control.SIZE_SHRINK_CENTER  # Centred, as wide as Play.
 	_play_breath.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go to Play itself.
 	column.add_child(_play_breath)  # Play's place in the column.
-	_add_button(_play_breath, UiKit.icon_button("Play", UiKit.Icon.PLAY, Palette.GREEN, Vector2(900, 200), 88), _on_play, 0.1)  # The biggest button.
-	UiKit.pulse(_play_breath, 0.05, 1.2)  # Only Play breathes: 5% bigger and back every 1.2 s.
+	_add_button(_play_breath, UiKit.icon_button("Play", UiKit.Icon.PLAY, Palette.GREEN, Vector2(900, 210), 92), _on_play, 0.15)  # The only big button.
+	UiKit.pulse(_play_breath, 0.05, 1.2)  # Breathes: 5% bigger and back every 1.2 s.
 
 
-# Adds the 2 x 2 grid of tiles: How to Play, Trophies, My Records and Settings.
-func _add_tiles() -> void:
-	var grid := GridContainer.new()  # Two tiles per row.
-	grid.columns = 2  # Two columns.
-	grid.add_theme_constant_override("h_separation", 28)  # Space between the columns.
-	grid.add_theme_constant_override("v_separation", 28)  # Space between the rows.
-	grid.size_flags_horizontal = Control.SIZE_SHRINK_CENTER  # Centred.
-	column.add_child(grid)  # Show it first, because animations need it on screen.
-	_add_button(grid, UiKit.tile_button("How to Play", UiKit.Icon.HELP, Palette.YELLOW, TILE_SIZE, 50), _on_how_to_play, 0.2)  # Rules screen.
-	_add_button(grid, UiKit.tile_button("Trophies", UiKit.Icon.TROPHY, Palette.ORANGE, TILE_SIZE, 50), _on_trophies, 0.25)  # Trophies screen (D-023).
-	_add_button(grid, UiKit.tile_button("My Records", UiKit.Icon.CHART, Palette.SKY_TOP, TILE_SIZE, 50), _on_records, 0.3)  # My Records screen (D-023).
-	_add_button(grid, UiKit.tile_button("Settings", UiKit.Icon.GEAR, Palette.WHITE, TILE_SIZE, 50), _on_settings, 0.35)  # Switches screen.
+# Adds the bottom bar: one white bar with How to Play, Trophies, My Records and Settings (D-025).
+func _add_bottom_bar() -> void:
+	var bar := PanelContainer.new()  # The white bar.
+	var style := UiKit.box(Palette.WHITE, 48)  # White, round and outlined.
+	style.set_content_margin_all(8)  # A little room inside.
+	bar.add_theme_stylebox_override("panel", style)  # Use this look.
+	bar.size_flags_horizontal = Control.SIZE_SHRINK_CENTER  # Centred, as wide as its buttons.
+	column.add_child(bar)  # Show it first, because animations need it on screen.
+	UiKit.pop_in(bar, 0.2)  # Bounce in.
+	var row := HBoxContainer.new()  # The four buttons side by side.
+	row.add_theme_constant_override("separation", 4)  # Close together.
+	bar.add_child(row)  # Put them in the bar.
+	_add_button(row, UiKit.bar_button("How to Play", UiKit.Icon.HELP, BAR_BUTTON_SIZE, 34), _on_how_to_play, -1.0)  # Rules screen.
+	_add_button(row, UiKit.bar_button("Trophies", UiKit.Icon.TROPHY, BAR_BUTTON_SIZE, 34), _on_trophies, -1.0)  # Trophies screen (D-023).
+	_add_button(row, UiKit.bar_button("My Records", UiKit.Icon.CHART, BAR_BUTTON_SIZE, 34), _on_records, -1.0)  # My Records screen (D-023).
+	_add_button(row, UiKit.bar_button("Settings", UiKit.Icon.GEAR, BAR_BUTTON_SIZE, 34), _on_settings, -1.0)  # Switches screen.
 
 
-# Adds the small pink Exit button at the bottom; it asks first (D-021).
-func _add_exit() -> void:
-	var exit := UiKit.icon_button("Exit", UiKit.Icon.EXIT, Palette.PINK, Vector2(360, 110), 48)  # Small, so it is not tapped by mistake.
-	_add_button(column, exit, _on_exit, 0.4)  # At the bottom of the column.
-
-
-# Adds one button to `parent`; it does `action` when tapped and pops in after `delay`.
+# Adds one button to `parent` and lists it; it does `action` when tapped. A `delay` of 0 or more
+# makes it pop in after that many seconds; the bar's buttons pop in with the bar instead.
 func _add_button(parent: Control, button: Button, action: Callable, delay: float) -> void:
 	button.pressed.connect(action)  # What it does.
 	parent.add_child(button)  # Show it.
-	UiKit.pop_in(button, delay)  # Bounce in one after another.
-	_buttons.append(button)  # Remember it, top to bottom.
+	if delay >= 0.0:  # It pops in on its own ...
+		UiKit.pop_in(button, delay)  # ... after the delay.
+	_buttons.append(button)  # Remember it.
 
 
 # Play opens Episode select.

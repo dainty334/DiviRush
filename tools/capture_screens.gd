@@ -34,7 +34,11 @@ func _capture_all() -> void:
 	_save_picture("29_exit_confirm")  # The "Leave DiviRush?" card.
 	await _shot("trophies_screen", "30_trophies")  # The twelve Trophies, two earned (D-023).
 	await _shot("records_screen", "31_my_records")  # The learner's game records (D-023).
-	await _shot("main_menu", "32_main_menu_migo", 0.7)  # The Main menu again: Migo's turn, still talking (D-024).
+	change_scene_to_file(SCREEN % "main_menu")  # The Main menu again: Migo's turn (D-024).
+	await _wait(1.2)  # Let it settle.
+	current_scene._mascot.next_line()  # As if Migo was tapped: he talks only when tapped (D-025).
+	await _wait(0.7)  # Part way through his greeting, mouth moving.
+	_save_picture("32_main_menu_migo")  # Migo talking in his speech bubble.
 	await _shot("how_to_play", "03_how_to_play")  # Rules screen.
 	await _shot("settings_screen", "04_settings")  # Settings.
 	await _shot("episode_select", "05_episode_select")  # Episodes 2-4 locked.

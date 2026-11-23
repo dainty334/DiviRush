@@ -14,7 +14,7 @@ const TIPS := [  # Short division tips, said after the progress hints.
 ]  # End of the list.
 const LETTERS_PER_SECOND := 30.0  # How fast a line is typed into the speech bubble.
 const MOUTH_SECONDS := 0.12  # How long the mouth stays open or closed while talking.
-const LINE_SECONDS := 6.0  # How long a finished line stays before the next one comes.
+const BUBBLE_SECONDS := 3.0  # How long the speech bubble stays after a line is finished, before it fades away (D-025).
 
 
 # Returns everything a mascot says, in order: its greeting, the progress hints, then the tips.
