@@ -32,8 +32,8 @@ func _init() -> void:
 	_save_sheet("star", 200, 200, _star_frames())  # Level end Star filling up.
 	_save_sheet("icons", 96, 96, _icon_frames())  # Small icons: back, Stars, clock, lock, music, sound, vibration, and the Main menu icons.
 	_save_sheet("logo", 512, 512, [_logo_frame()])  # Title-screen logo bubble.
-	_save_sheet("mascot_ana", 450, 780, _mascot_parts(true))  # Ana from head to toe, in nine parts (D-026, D-027).
-	_save_sheet("mascot_migo", 450, 780, _mascot_parts(false))  # Migo from head to toe, in nine parts (D-026, D-027).
+	_save_sheet("mascot_ana", 450, 780, _mascot_parts(true))  # Ana from head to toe, in ten parts (D-026 to D-028).
+	_save_sheet("mascot_migo", 450, 780, _mascot_parts(false))  # Migo from head to toe, in ten parts (D-026 to D-028).
 	_save_icon_svg()  # The app icon (icon.svg in the project folder).
 	quit()  # Close the tool when done.
 
@@ -245,72 +245,122 @@ func _menu_icon_frames() -> Array:
 const MASCOT_SKIN := "#E0A872"  # Warm brown skin for both mascots.
 const MASCOT_HAIR := "#2B1B17"  # Dark brown-black hair for both mascots.
 const MASCOT_SCALE := 1.5  # The mascot is drawn 1.5 times bigger than its 300 x 520 plan, so it stays sharp (D-027).
+const MASCOT_HEAD_SCALE := 0.82  # The head is drawn smaller than its plan, so the mascot is about 3.5 heads tall (D-028).
+const MASCOT_FINGER_INK := 12.0  # Width of a finger's dark outline (D-028).
+const MASCOT_FINGER_SKIN := 6.0  # Width of a finger's skin inside the outline.
 
 
-# The nine parts of a student mascot from head to toe (D-026, D-027), each on its own 450 x 780
+# The ten parts of a student mascot from head to toe (D-026 to D-028), each on its own 450 x 780
 # frame at its place in the whole picture, so the game can stack them and move each part on its
-# own. The order matches Mascot.Part: 0 body, 1 left arm, 2 right arm, 3 head, 4 eyes open,
-# 5 eyes closed, 6 eyebrows, 7 mouth smiling, 8 mouth talking.
+# own. The order matches Mascot.Part: 0 body, 1 left arm, 2 right arm, 3 right arm waving with an
+# open hand, 4 head, 5 eyes open, 6 eyes closed, 7 eyebrows, 8 mouth smiling, 9 mouth talking.
 # Ana is a girl with pigtails, a clip, a blue ribbon and a navy skirt; Migo is a boy with short
 # hair, a blue school patch and navy shorts (D-024, D-026).
 func _mascot_parts(is_ana: bool) -> Array:
-	var parts := [  # The nine drawings, in the order the game expects.
+	var head := "translate(150 28) scale(%.2f) translate(-150 -28)" % MASCOT_HEAD_SCALE  # Shrinks the head from the top of the hair, so it sits on the neck.
+	var parts := [  # The ten drawings, in the order the game expects.
 		_mascot_body(is_ana),  # 0: backpack, body and legs.
-		_mascot_arm(false),  # 1: left arm (on the viewer's left).
-		_mascot_arm(true),  # 2: right arm (on the viewer's right), the one that waves.
-		_mascot_head(is_ana),  # 3: hair, ears, face and cheeks, with no eyes, eyebrows or mouth.
-		_mascot_eyes(false),  # 4: eyes open.
-		_mascot_eyes(true),  # 5: eyes closed, for blinking.
-		_mascot_brows(),  # 6: eyebrows, which lift while talking.
-		_mascot_mouth(is_ana, false),  # 7: smiling mouth.
-		_mascot_mouth(is_ana, true),  # 8: talking mouth.
+		_mascot_arm(false, false),  # 1: left arm (on the viewer's left), fingers together.
+		_mascot_arm(true, false),  # 2: right arm (on the viewer's right), fingers together.
+		_mascot_arm(true, true),  # 3: right arm with the hand open wide, shown while waving (D-028).
+		_in_group(head, _mascot_head(is_ana)),  # 4: hair, ears, face and cheeks, with no eyes, eyebrows or mouth.
+		_in_group(head, _mascot_eyes(false)),  # 5: eyes open.
+		_in_group(head, _mascot_eyes(true)),  # 6: eyes closed, for blinking.
+		_in_group(head, _mascot_brows()),  # 7: eyebrows, which lift while talking.
+		_in_group(head, _mascot_mouth(is_ana, false)),  # 8: smiling mouth.
+		_in_group(head, _mascot_mouth(is_ana, true)),  # 9: talking mouth.
 	]
 	var frames := []  # The same drawings, made bigger.
 	for part: String in parts:  # Each drawing ...
-		frames.append("<g transform=\"scale(%.2f)\">%s</g>" % [MASCOT_SCALE, part])  # ... drawn 1.5 times bigger.
-	return frames  # Hand back all nine.
+		frames.append(_in_group("scale(%.2f)" % MASCOT_SCALE, part))  # ... drawn 1.5 times bigger.
+	return frames  # Hand back all ten.
 
 
-# The body: a pink backpack behind, neck, chunky white school top with backpack straps and collar,
-# navy skirt or shorts, sturdy legs, white socks and black school shoes (D-026, D-027).
+# Wraps a drawing in an SVG group that moves or resizes it by `transform`.
+func _in_group(transform: String, drawing: String) -> String:
+	return "<g transform=\"%s\">%s</g>" % [transform, drawing]  # The wrapped drawing.
+
+
+# The body, balanced for a head about a third of the height (D-028): a pink backpack behind, neck,
+# chunky white school top with backpack straps and collar, navy skirt or shorts, long sturdy legs,
+# white socks and black school shoes (D-026, D-027).
 func _mascot_body(is_ana: bool) -> String:
 	var out := ""  # The drawing, back to front.
-	out += "<rect x=\"64\" y=\"214\" width=\"172\" height=\"118\" rx=\"34\" fill=\"%s\" stroke=\"%s\" stroke-width=\"7\"/>" % [PINK, INK]  # Backpack, peeking out behind the shoulders.
-	out += "<rect x=\"104\" y=\"378\" width=\"38\" height=\"84\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [MASCOT_SKIN, INK]  # Left leg.
-	out += "<rect x=\"158\" y=\"378\" width=\"38\" height=\"84\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [MASCOT_SKIN, INK]  # Right leg.
-	out += "<rect x=\"101\" y=\"438\" width=\"44\" height=\"46\" rx=\"8\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [WHITE, INK]  # Left white sock.
-	out += "<rect x=\"155\" y=\"438\" width=\"44\" height=\"46\" rx=\"8\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [WHITE, INK]  # Right white sock.
+	out += "<rect x=\"64\" y=\"192\" width=\"172\" height=\"118\" rx=\"34\" fill=\"%s\" stroke=\"%s\" stroke-width=\"7\"/>" % [PINK, INK]  # Backpack, peeking out behind the shoulders.
+	out += "<rect x=\"106\" y=\"356\" width=\"36\" height=\"108\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [MASCOT_SKIN, INK]  # Left leg.
+	out += "<rect x=\"158\" y=\"356\" width=\"36\" height=\"108\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [MASCOT_SKIN, INK]  # Right leg.
+	out += "<rect x=\"103\" y=\"440\" width=\"42\" height=\"46\" rx=\"8\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [WHITE, INK]  # Left white sock.
+	out += "<rect x=\"155\" y=\"440\" width=\"42\" height=\"46\" rx=\"8\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [WHITE, INK]  # Right white sock.
 	out += "<path d=\"M146 476 V500 Q146 512 134 512 H88 Q74 512 76 498 Q78 478 102 476 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % [SHOE, INK]  # Left black shoe, toe pointing out.
 	out += "<path d=\"M154 476 V500 Q154 512 166 512 H212 Q226 512 224 498 Q222 478 198 476 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % [SHOE, INK]  # Right black shoe, toe pointing out.
 	out += "<path d=\"M92 488 Q100 482 110 486 M190 486 Q200 482 208 488\" fill=\"none\" stroke=\"%s\" stroke-width=\"4\" stroke-linecap=\"round\" opacity=\"0.5\"/>" % WHITE  # Shine on the shoes.
 	if is_ana:  # Ana: a navy pleated skirt.
-		out += "<path d=\"M78 314 H222 L248 398 Q150 414 52 398 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"7\" stroke-linejoin=\"round\"/>" % [NAVY, INK]  # Skirt.
-		out += "<path d=\"M114 320 L100 402 M150 320 V406 M186 320 L200 402\" fill=\"none\" stroke=\"%s\" stroke-width=\"4\" stroke-linecap=\"round\" opacity=\"0.6\"/>" % INK  # Pleats.
+		out += "<path d=\"M80 300 H220 L246 380 Q150 396 54 380 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"7\" stroke-linejoin=\"round\"/>" % [NAVY, INK]  # Skirt.
+		out += "<path d=\"M114 306 L100 384 M150 306 V388 M186 306 L200 384\" fill=\"none\" stroke=\"%s\" stroke-width=\"4\" stroke-linecap=\"round\" opacity=\"0.6\"/>" % INK  # Pleats.
 	else:  # Migo: navy shorts.
-		out += "<path d=\"M80 314 H220 L230 394 H160 L150 354 L140 394 H70 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"7\" stroke-linejoin=\"round\"/>" % [NAVY, INK]  # Shorts.
-	out += "<rect x=\"130\" y=\"185\" width=\"40\" height=\"40\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [MASCOT_SKIN, INK]  # Neck.
-	out += "<path d=\"M74 334 V262 Q74 218 118 212 H182 Q226 218 226 262 V334 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"8\" stroke-linejoin=\"round\"/>" % [WHITE, INK]  # Chunky white school top.
-	out += "<rect x=\"92\" y=\"218\" width=\"24\" height=\"110\" rx=\"10\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\"/>" % [PINK, INK]  # Left backpack strap.
-	out += "<rect x=\"184\" y=\"218\" width=\"24\" height=\"110\" rx=\"10\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\"/>" % [PINK, INK]  # Right backpack strap.
-	out += "<path d=\"M126 212 L150 240 L112 236 Z M174 212 L150 240 L188 236 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % [WHITE, INK]  # Collar.
+		out += "<path d=\"M82 300 H218 L228 372 H160 L150 336 L140 372 H72 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"7\" stroke-linejoin=\"round\"/>" % [NAVY, INK]  # Shorts.
+	out += "<rect x=\"134\" y=\"164\" width=\"32\" height=\"36\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [MASCOT_SKIN, INK]  # Neck.
+	out += "<path d=\"M76 316 V240 Q76 196 118 190 H182 Q224 196 224 240 V316 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"8\" stroke-linejoin=\"round\"/>" % [WHITE, INK]  # Chunky white school top.
+	out += "<rect x=\"94\" y=\"196\" width=\"22\" height=\"112\" rx=\"10\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\"/>" % [PINK, INK]  # Left backpack strap.
+	out += "<rect x=\"184\" y=\"196\" width=\"22\" height=\"112\" rx=\"10\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\"/>" % [PINK, INK]  # Right backpack strap.
+	out += "<path d=\"M126 190 L150 218 L112 214 Z M174 190 L150 218 L188 214 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % [WHITE, INK]  # Collar.
 	if is_ana:  # Ana: a blue ribbon at the collar.
-		out += "<path d=\"M150 244 L124 230 L124 260 Z M150 244 L176 230 L176 260 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\" stroke-linejoin=\"round\"/>" % [BLUE, INK]  # Bow.
-		out += _circle(150, 245, 9, BLUE, 5.0)  # Knot.
+		out += "<path d=\"M150 222 L124 208 L124 238 Z M150 222 L176 208 L176 238 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\" stroke-linejoin=\"round\"/>" % [BLUE, INK]  # Bow.
+		out += _circle(150, 223, 9, BLUE, 5.0)  # Knot.
 	else:  # Migo: a blue school patch on his chest.
-		out += "<rect x=\"154\" y=\"262\" width=\"26\" height=\"24\" rx=\"5\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\"/>" % [BLUE, INK]  # Patch.
+		out += "<rect x=\"154\" y=\"240\" width=\"26\" height=\"24\" rx=\"5\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\"/>" % [BLUE, INK]  # Patch.
 	return out  # Hand back the drawing.
 
 
-# One chunky arm hanging at the side: a short white sleeve, a skin-coloured arm and a round hand.
-# `right` draws the arm on the viewer's right; otherwise the one on the left. The game turns the
-# arm around its shoulder (see Mascot.SHOULDER_LEFT and SHOULDER_RIGHT) to swing and wave.
-func _mascot_arm(right: bool) -> String:
-	var x := 216.0 if right else 52.0  # Left edge of the arm.
+# One chunky arm hanging at the side: a short white sleeve, a skin-coloured arm and a five-finger
+# hand (D-028). `right` draws the arm on the viewer's right; otherwise the one on the left. `open`
+# spreads all five fingers wide for a wave; otherwise they are held loosely together. The game
+# turns the arm around its shoulder (see Mascot.SHOULDER_LEFT and SHOULDER_RIGHT) to swing and wave.
+func _mascot_arm(right: bool, open: bool) -> String:
+	var x := 216.0 if right else 54.0  # Left edge of the arm.
+	var middle := x + 15.0  # The middle of the arm, where the hand hangs.
+	var inner := -1.0 if right else 1.0  # Which way is towards the body, for the thumb.
 	var out := ""  # The drawing, back to front.
-	out += "<rect x=\"%.0f\" y=\"256\" width=\"32\" height=\"84\" rx=\"16\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [x, MASCOT_SKIN, INK]  # Arm.
-	out += _circle(x + 16.0, 346, 19, MASCOT_SKIN, 6.0)  # Hand.
-	out += "<rect x=\"%.0f\" y=\"212\" width=\"48\" height=\"60\" rx=\"20\" fill=\"%s\" stroke=\"%s\" stroke-width=\"7\"/>" % [x - 8.0, WHITE, INK]  # Short white sleeve, over the top of the arm.
+	out += "<rect x=\"%.0f\" y=\"234\" width=\"30\" height=\"88\" rx=\"15\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [x, MASCOT_SKIN, INK]  # Arm.
+	out += _mascot_hand_open(middle, inner) if open else _mascot_hand_relaxed(middle, inner)  # The hand.
+	out += "<rect x=\"%.0f\" y=\"190\" width=\"46\" height=\"56\" rx=\"20\" fill=\"%s\" stroke=\"%s\" stroke-width=\"7\"/>" % [x - 8.0, WHITE, INK]  # Short white sleeve, over the top of the arm.
 	return out  # Hand back the drawing.
+
+
+# A relaxed hand hanging down at `cx`: four fingers held loosely together and a thumb on the side
+# towards the body (`inner` is 1 or -1), drawn before the palm so the palm covers their roots (D-028).
+func _mascot_hand_relaxed(cx: float, inner: float) -> String:
+	var out := ""  # The drawing, back to front.
+	var spots := [-10.5, -3.5, 3.5, 10.5]  # Where each of the four fingers hangs, across the hand.
+	var lengths := [12.0, 16.0, 16.0, 13.0]  # How far each finger hangs below the palm.
+	for i in range(4):  # Each of the four fingers ...
+		var fx: float = cx + spots[i] * inner  # ... from the thumb side to the little finger.
+		out += _mascot_finger(Vector2(fx, 330), Vector2(fx, 336.0 + lengths[i]))  # ... hangs straight down.
+	out += _mascot_finger(Vector2(cx + 8.0 * inner, 322), Vector2(cx + 17.0 * inner, 334))  # The thumb, on the side towards the body.
+	out += "<ellipse cx=\"%.1f\" cy=\"326\" rx=\"17\" ry=\"14\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\"/>" % [cx, MASCOT_SKIN, INK]  # The palm.
+	return out  # Hand back the drawing.
+
+
+# An open hand at `cx` with all five fingers spread wide, for waving (D-028). The thumb points
+# towards the body (`inner` is 1 or -1); the fingers fan out from the palm.
+func _mascot_hand_open(cx: float, inner: float) -> String:
+	var palm := Vector2(cx, 332)  # The middle of the palm.
+	var angles := [72.0, 32.0, 10.0, -12.0, -34.0]  # Each finger's angle from straight down, thumb first (degrees).
+	var lengths := [15.0, 20.0, 22.0, 20.0, 16.0]  # How far each finger reaches beyond the palm.
+	var out := ""  # The drawing, back to front.
+	for i in range(5):  # Each finger, from the thumb to the little finger ...
+		var turn := deg_to_rad(angles[i]) * inner  # ... turned towards or away from the body,
+		var way := Vector2(sin(turn), cos(turn))  # ... pointing this way from the palm,
+		out += _mascot_finger(palm + way * 8.0, palm + way * (14.0 + lengths[i]))  # ... from inside the palm to its tip.
+	out += _circle(palm.x, palm.y, 16, MASCOT_SKIN, 5.0)  # The palm, covering the fingers' roots.
+	return out  # Hand back the drawing.
+
+
+# One finger from `start` to `tip`: a round-ended skin line inside a dark outline (D-028).
+func _mascot_finger(start: Vector2, tip: Vector2) -> String:
+	var line := "<line x1=\"%.1f\" y1=\"%.1f\" x2=\"%.1f\" y2=\"%.1f\" stroke=\"%s\" stroke-width=\"%.1f\" stroke-linecap=\"round\"/>"  # One line with round ends.
+	var out := line % [start.x, start.y, tip.x, tip.y, INK, MASCOT_FINGER_INK]  # The dark outline.
+	return out + line % [start.x, start.y, tip.x, tip.y, MASCOT_SKIN, MASCOT_FINGER_SKIN]  # The skin inside it.
 
 
 # The head without its eyes, eyebrows or mouth: hair with a shine, ears, face and rosy cheeks (D-027).

@@ -82,6 +82,7 @@ func test_mascot_is_big_and_full_body() -> void:
 	var frames := SpriteSheet.mascot("migo")  # His parts.
 	assert_eq(frames.size(), Mascot.Part.size())  # One frame for each part.
 	assert_eq(Mascot.PICTURE_SIZE, Vector2(450, 780))  # Head to toe, 1.5 times the old 300 x 520.
+	assert_lt(Mascot.NECK.y, Mascot.PICTURE_SIZE.y / 3.0)  # Balanced: the head and neck take under a third of the height, about 3.5 heads tall (D-028).
 	assert_eq(mascot.custom_minimum_size, Mascot.PICTURE_SIZE)  # It takes that much room on the Main menu.
 	assert_eq(mascot._body.texture, frames[Mascot.Part.BODY])  # His body and legs ...
 	assert_eq(mascot._arm_left.texture, frames[Mascot.Part.ARM_LEFT])  # ... his left arm ...
@@ -105,15 +106,19 @@ func test_tap_waves_hello() -> void:
 	var mascot := Mascot.new("Ana", ["Hello there!"] as Array[String])  # Ana with one line.
 	add_child_autofree(mascot)  # In the tree.
 	var swing := deg_to_rad(Mascot.ARM_SWING_DEGREES) + 0.01  # The most an idle arm turns.
+	var frames := SpriteSheet.mascot("ana")  # Her parts.
 	assert_false(mascot.is_waving())  # Not waving before the tap.
-	assert_lt(absf(mascot._arm_right.rotation), swing)  # Her arm hangs down.
+	assert_lt(absf(mascot._arm_right.rotation), swing)  # Her arm hangs down ...
+	assert_eq(mascot._arm_right.texture, frames[Mascot.Part.ARM_RIGHT])  # ... with the fingers held together.
 	mascot._gui_input(_tap())  # She is tapped.
 	assert_true(mascot.is_waving())  # She starts waving ...
+	assert_eq(mascot._arm_right.texture, frames[Mascot.Part.ARM_RIGHT_WAVE])  # ... with her hand open wide (D-028) ...
 	await wait_seconds(0.4)  # ... and a moment later
 	assert_lt(mascot._arm_right.rotation, -1.5)  # ... her arm is raised high.
 	await wait_seconds(2.0)  # The wave ends.
 	assert_false(mascot.is_waving())  # Not waving any more ...
-	assert_lt(absf(mascot._arm_right.rotation), swing)  # ... and her arm is back down at her side.
+	assert_lt(absf(mascot._arm_right.rotation), swing)  # ... her arm is back down at her side ...
+	assert_eq(mascot._arm_right.texture, frames[Mascot.Part.ARM_RIGHT])  # ... and her fingers are together again.
 
 
 # When nobody taps, the mascot breathes, sways and swings its arms gently (D-026, D-027).

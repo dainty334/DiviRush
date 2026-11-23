@@ -7,17 +7,17 @@
 class_name Mascot  # Lets the Main menu and tests write Mascot.new("Ana", lines).
 extends Control  # A plain box: the mascot fills it, and the bubble floats above it.
 
-## The parts of the mascot, in the order of the frames in its sprite sheet (D-027).
-enum Part { BODY, ARM_LEFT, ARM_RIGHT, HEAD, EYES_OPEN, EYES_CLOSED, BROWS, MOUTH, MOUTH_TALKING }
+## The parts of the mascot, in the order of the frames in its sprite sheet (D-027, D-028).
+enum Part { BODY, ARM_LEFT, ARM_RIGHT, ARM_RIGHT_WAVE, HEAD, EYES_OPEN, EYES_CLOSED, BROWS, MOUTH, MOUTH_TALKING }
 
 const SCALE := 1.5  # The mascot is drawn 1.5 times bigger than its 300 x 520 plan (D-027).
 const PICTURE_SIZE := Vector2(300, 520) * SCALE  # The whole mascot from head to toe, the size of one sheet frame.
 const BUBBLE_SIZE := Vector2(780, 190)  # The speech bubble, including its pointer.
 const TAIL_HEIGHT := 28.0  # How far the bubble's pointer sticks down towards the mascot.
 const HEAD_TOP := 36.0 * SCALE  # Where the top of the hair is, so the bubble's pointer can touch it.
-const SHOULDER_LEFT := Vector2(68, 232) * SCALE  # Where the left arm turns, at the top of its sleeve.
-const SHOULDER_RIGHT := Vector2(232, 232) * SCALE  # Where the right arm turns, at the top of its sleeve.
-const NECK := Vector2(150, 205) * SCALE  # Where the head nods and tilts from.
+const SHOULDER_LEFT := Vector2(69, 210) * SCALE  # Where the left arm turns, at the top of its sleeve (D-028).
+const SHOULDER_RIGHT := Vector2(231, 210) * SCALE  # Where the right arm turns, at the top of its sleeve (D-028).
+const NECK := Vector2(150, 172) * SCALE  # Where the head nods and tilts from, on the balanced body (D-028).
 const FEET := Vector2(150, 510) * SCALE  # Where the body sways and breathes from, between the shoes.
 const SWAY_DEGREES := 1.5  # How far the body tilts each way when idle.
 const SWAY_SECONDS := 3.2  # One full sway, left and right and back.
@@ -152,13 +152,20 @@ func wave() -> void:
 	if _wave != null and _wave.is_valid():  # Still waving from the last tap ...
 		_wave.kill()  # ... so start again from where the arm is.
 	_swing_right.pause()  # The idle swing stops while the arm waves.
+	_arm_right.texture = _frames[Part.ARM_RIGHT_WAVE]  # The hand opens wide, all five fingers spread (D-028).
 	_wave = create_tween()  # A new wave.
 	_wave.tween_property(_arm_right, "rotation", WAVE_UP, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)  # Raise the arm.
 	for i in range(WAVE_SWINGS):  # A few swings ...
 		_wave.tween_property(_arm_right, "rotation", WAVE_UP + WAVE_SWING, 0.16).set_trans(Tween.TRANS_SINE)  # ... one way ...
 		_wave.tween_property(_arm_right, "rotation", WAVE_UP - WAVE_SWING, 0.16).set_trans(Tween.TRANS_SINE)  # ... and the other.
 	_wave.tween_property(_arm_right, "rotation", 0.0, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)  # Lower the arm to the side.
-	_wave.tween_callback(_swing_right.play)  # Then swing gently again.
+	_wave.tween_callback(_end_wave)  # Then close the hand and swing gently again.
+
+
+# Ends a wave: the fingers come together again and the arm goes back to its gentle swing.
+func _end_wave() -> void:
+	_arm_right.texture = _frames[Part.ARM_RIGHT]  # Fingers held loosely together (D-028).
+	_swing_right.play()  # Swing gently again.
 
 
 # Returns true while the arm is waving.
