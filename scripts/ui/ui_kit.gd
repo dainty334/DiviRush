@@ -3,7 +3,7 @@
 class_name UiKit  # Lets any script write UiKit.button(...).
 extends RefCounted  # Only its static functions are used.
 
-enum Icon { BACK, STAR, STAR_EMPTY, CLOCK, LOCK, MUSIC, SOUND, VIBRATION, PLAY, HELP, GEAR, EXIT }  # Frame order in icons_96x96_12f.png.
+enum Icon { BACK, STAR, STAR_EMPTY, CLOCK, LOCK, MUSIC, SOUND, VIBRATION, PLAY, HELP, GEAR, EXIT, TROPHY, CHART }  # Frame order in icons_96x96_14f.png.
 
 const FONT_PATH := "res://assets/fonts/Fredoka-Variable.ttf"  # Rounded font (OFL licence, D-010).
 const BORDER := 10  # Thick dark outline width, as in the style sample.
@@ -33,38 +33,6 @@ static func title(size: int) -> Label:
 	return node  # Hand back the title.
 
 
-# Makes the DIVIRUSH title with every letter on its own, so the letters can bounce in one by one
-# and then wave (Main menu, D-017). Each letter sits in a holder box, because a container would
-# move a letter back into line; inside a plain holder the letter is free to rise and fall.
-# The animations start when the title is shown, since tweens need the node on screen.
-static func wave_title(size: int) -> HBoxContainer:
-	var row := HBoxContainer.new()  # The letters side by side.
-	row.alignment = BoxContainer.ALIGNMENT_CENTER  # Centred across.
-	row.size_flags_horizontal = Control.SIZE_SHRINK_CENTER  # Only as wide as the word.
-	row.add_theme_constant_override("separation", int(size / 10.0))  # The same gap title() adds, so I and V do not touch.
-	row.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go through.
-	var letters: Array[Label] = []  # The letter labels, for the animations below.
-	for character in "DIVIRUSH":  # Each letter of the name ...
-		var letter := label(character, size, Palette.YELLOW, int(size / 5.0))  # ... yellow with a thick outline, as in title().
-		letter.size = letter.get_minimum_size()  # Exactly as big as its letter.
-		var holder := Control.new()  # A plain box that keeps the letter's place in the row.
-		holder.custom_minimum_size = letter.size  # The same size as the letter.
-		holder.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go through.
-		holder.add_child(letter)  # The letter inside its box.
-		row.add_child(holder)  # The box in the row.
-		letters.append(letter)  # Remember the letter.
-	row.ready.connect(func() -> void: _start_wave(letters, size), CONNECT_ONE_SHOT)  # Animate once the title is on screen.
-	return row  # Hand back the title.
-
-
-# Pops the title letters in one after another, then makes them rise and fall in turn, like a wave.
-# Called once, when the wave title is first shown.
-static func _start_wave(letters: Array[Label], size: int) -> void:
-	for i in range(letters.size()):  # Each letter, left to right ...
-		pop_in(letters[i], 0.1 + i * 0.06)  # ... bounces in 0.06 s after the one before (D-017),
-		bob(letters[i], size * 0.08, 1.2, 0.9 + i * 0.12)  # ... then rises and falls a little later than the one before.
-
-
 # Makes a chunky button with a drawn icon on its left and its words in the middle (Main menu, D-017).
 # The words stay centred on the button, as on every other button, so the buttons line up.
 static func icon_button(text: String, which: int, colour: Color, min_size: Vector2, font_size: int) -> Button:
@@ -79,6 +47,26 @@ static func icon_button(text: String, which: int, colour: Color, min_size: Vecto
 	picture.offset_bottom = side / 2.0  # ... and half below.
 	node.add_child(picture)  # Put the icon on the button.
 	return node  # Hand back the button.
+
+
+# Makes a square-ish tile button with its icon at the top and its words underneath (Main menu
+# tiles, D-022). The words are the button's own text, pushed below the icon by a big top margin.
+static func tile_button(text: String, which: int, colour: Color, min_size: Vector2, font_size: int) -> Button:
+	var node := button(text, colour, min_size, font_size)  # The usual chunky button.
+	for state in ["normal", "hover", "pressed", "hover_pressed", "disabled"]:  # Each look of the button ...
+		var style := node.get_theme_stylebox(state).duplicate() as StyleBoxFlat  # ... a copy of its box,
+		style.content_margin_top = 104.0  # ... with room for the icon above the words,
+		node.add_theme_stylebox_override(state, style)  # ... used instead.
+	var side := 84.0  # Icon size on the tile.
+	var picture := icon(which, side)  # The drawn icon.
+	picture.anchor_left = 0.5  # Hang the icon from the tile's middle ...
+	picture.anchor_right = 0.5  # ... so it stays centred across.
+	picture.offset_left = -side / 2.0  # Half to the left ...
+	picture.offset_right = side / 2.0  # ... and half to the right.
+	picture.offset_top = 26.0  # Near the top edge ...
+	picture.offset_bottom = 26.0 + side  # ... and as tall as the icon.
+	node.add_child(picture)  # Put the icon on the tile.
+	return node  # Hand back the tile.
 
 
 # Builds the game-wide theme. Called once at start-up by the Game autoload.

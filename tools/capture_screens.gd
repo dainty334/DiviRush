@@ -23,11 +23,17 @@ func _capture_all() -> void:
 	save.progress = load("res://scripts/rules/progress.gd").new()  # Fresh progress in memory only (loaded here, after the autoloads exist).
 	save.progress.record(1, 0, 1, 3, 245, 48.2)  # Level 1 passed with 3 Stars.
 	save.progress.record(1, 0, 2, 2, 198, 61.0)  # Level 2 passed with 2 Stars.
+	save.records = load("res://scripts/rules/records.gd").new()  # Fresh game records in memory only (D-023).
+	save.records.add_play(8, 4, 48.2)  # Level 1's play: best streak 4.
+	save.records.add_play(9, 4, 61.0)  # Level 2's play: best streak 4.
+	load("res://scripts/rules/trophies.gd").award(save.progress, save.records)  # The Trophies those bests earn.
 	await _shot("start_screen", "01_start_up_menu")  # Start-up menu.
 	await _shot("main_menu", "02_main_menu")  # Main menu.
 	current_scene.show_exit_card()  # As if Exit was tapped (D-021).
 	await _wait(0.3)  # Let the card draw.
 	_save_picture("29_exit_confirm")  # The "Leave DiviRush?" card.
+	await _shot("trophies_screen", "30_trophies")  # The twelve Trophies, two earned (D-023).
+	await _shot("records_screen", "31_my_records")  # The learner's game records (D-023).
 	await _shot("how_to_play", "03_how_to_play")  # Rules screen.
 	await _shot("settings_screen", "04_settings")  # Settings.
 	await _shot("episode_select", "05_episode_select")  # Episodes 2-4 locked.
@@ -50,8 +56,8 @@ func _capture_all() -> void:
 	await _wait(0.4)  # Time-out feedback shows.
 	_save_picture("11_play_time_up")  # Time-out with the correct answer shown.
 	save.progress.record(1, 0, 3, 2, 214, 58.4)  # Level 3's result, as the Play screen would save it.
-	game.last_result = {"correct": 9, "total": 10, "stars": 2, "score": 214, "time": 58.4, "passed": true, "new_best": true}  # A passed play.
-	await _shot("level_end", "12_level_end", 2.6)  # Stars filled and "New best!".
+	game.last_result = {"correct": 9, "total": 10, "stars": 2, "score": 214, "time": 58.4, "passed": true, "new_best": true, "new_trophies": ["on_a_roll"]}  # A passed play that earned "On a Roll".
+	await _shot("level_end", "12_level_end", 3.2)  # Stars filled, "New best!" and the Trophy banner.
 	await _capture_medium_and_hard(save, game)  # Medium and Hard screens with 4 bubbles.
 	await _capture_episode_two(save, game)  # Episode 2 screens.
 	await _capture_episode_three(save, game)  # Episode 3 screens.

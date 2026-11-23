@@ -163,9 +163,9 @@ func _star_frames() -> Array:
 	return frames  # Hand back all six.
 
 
-# Twelve small 96 x 96 icons, in this order:
+# Fourteen small 96 x 96 icons, in this order:
 # 0 back arrow, 1 gold Star, 2 empty Star, 3 clock, 4 lock, 5 music note, 6 speaker, 7 vibrating phone,
-# 8 play arrow, 9 question mark, 10 gear, 11 door (the last four for the Main menu, D-017).
+# 8 play arrow, 9 question mark, 10 gear, 11 door (for the Main menu, D-017), 12 Trophy, 13 bar chart (D-022, D-023).
 func _icon_frames() -> Array:
 	var frames := []  # The finished icons.
 	frames.append("<path d=\"M60 20 L30 48 L60 76\" fill=\"none\" stroke=\"%s\" stroke-width=\"14\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>" % INK)  # 0: back arrow.
@@ -189,7 +189,25 @@ func _icon_frames() -> Array:
 	phone += "<path d=\"M16 34 L10 42 L16 50 L10 58 M80 34 L86 42 L80 50 L86 58\" fill=\"none\" stroke=\"%s\" stroke-width=\"6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>" % INK  # Shake lines.
 	frames.append(phone)  # 7: vibrating phone.
 	frames.append_array(_menu_icon_frames())  # 8-11: the Main menu button icons (D-017).
-	return frames  # Hand back all twelve.
+	frames.append_array(_progress_icon_frames())  # 12-13: Trophy and My Records icons (D-022, D-023).
+	return frames  # Hand back all fourteen.
+
+
+# Two icons for the progress screens (D-022, D-023): 12 a gold Trophy cup, 13 a bar chart for My Records.
+func _progress_icon_frames() -> Array:
+	var frames := []  # The finished icons.
+	var cup := "<path d=\"M28 20 A12 12 0 0 0 28 46 M68 20 A12 12 0 0 1 68 46\" fill=\"none\" stroke=\"%s\" stroke-width=\"7\" stroke-linecap=\"round\"/>" % INK  # 12: the two handles ...
+	cup += "<path d=\"M24 12 H72 V34 A24 24 0 0 1 24 34 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"7\" stroke-linejoin=\"round\"/>" % [YELLOW, INK]  # ... the gold cup,
+	cup += "<rect x=\"42\" y=\"56\" width=\"12\" height=\"14\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [YELLOW, INK]  # ... its stem,
+	cup += "<rect x=\"28\" y=\"70\" width=\"40\" height=\"14\" rx=\"5\" fill=\"%s\" stroke=\"%s\" stroke-width=\"7\"/>" % [YELLOW, INK]  # ... its base,
+	cup += "<path d=\"M36 20 V32\" stroke=\"%s\" stroke-width=\"6\" stroke-linecap=\"round\" opacity=\"0.85\"/>" % WHITE  # ... and a shine.
+	frames.append(cup)  # 12: Trophy.
+	var chart := "<rect x=\"14\" y=\"52\" width=\"18\" height=\"30\" rx=\"4\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [PINK, INK]  # 13: a short bar ...
+	chart += "<rect x=\"39\" y=\"34\" width=\"18\" height=\"48\" rx=\"4\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [YELLOW, INK]  # ... a middle bar,
+	chart += "<rect x=\"64\" y=\"14\" width=\"18\" height=\"68\" rx=\"4\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [GREEN, INK]  # ... a tall bar,
+	chart += "<path d=\"M8 86 H88\" stroke=\"%s\" stroke-width=\"7\" stroke-linecap=\"round\"/>" % INK  # ... and the ground line.
+	frames.append(chart)  # 13: My Records.
+	return frames  # Hand back both.
 
 
 # Four icons for the Main menu buttons (D-017), white with a dark outline so they show on every

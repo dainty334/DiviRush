@@ -15,8 +15,9 @@ func _look_of(screen_name: String) -> int:
 
 # The Main menu area keeps the blue bubble sky, and the selection screens have their own look.
 func test_area_looks() -> void:
-	for screen_name: String in ["start_screen", "main_menu", "how_to_play", "settings_screen"]:  # Main menu area ...
+	for screen_name: String in ["start_screen", "how_to_play", "settings_screen", "trophies_screen", "records_screen"]:  # Main menu area ...
 		assert_eq(_look_of(screen_name), Look.MENU, screen_name)  # ... blue sky with bubbles.
+	assert_eq(_look_of("main_menu"), Look.CANDY)  # The Main menu has its own candy sky (D-022).
 	Game.episode = 1  # Difficulty select needs an Episode.
 	for screen_name: String in ["episode_select", "difficulty_select"]:  # Selection screens ...
 		assert_eq(_look_of(screen_name), Look.SELECT, screen_name)  # ... teal sky with stars and ÷ signs.
@@ -42,8 +43,8 @@ func test_every_look_is_different() -> void:
 		var setup: Dictionary = SkyBackground.LOOKS[look]  # ... its settings,
 		skies[[setup.top, setup.bottom]] = true  # ... adds its sky colours,
 		shapes[str(setup.shapes)] = true  # ... and its shapes.
-	assert_eq(skies.size(), SkyBackground.LOOKS.size())  # Six looks, six skies.
-	assert_eq(shapes.size(), SkyBackground.LOOKS.size() - 1)  # Six looks, five shape sets: the day sky has bubbles like the Main menu, under a sun.
+	assert_eq(skies.size(), SkyBackground.LOOKS.size())  # Seven looks, seven skies.
+	assert_eq(shapes.size(), SkyBackground.LOOKS.size() - 1)  # Seven looks, six shape sets: the day sky has bubbles like the Start-up menu, under a sun.
 
 
 # Bubbles float up and leaves fall down, as they would in real life.

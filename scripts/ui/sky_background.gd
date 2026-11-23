@@ -4,8 +4,8 @@
 class_name SkyBackground  # Lets screens write SkyBackground.new(SkyBackground.Look.MEADOW).
 extends Control  # A UI node that can draw.
 
-enum Look { MENU, SELECT, DAY, MEADOW, SUNSET, NIGHT }  # The six looks (D-020).
-enum Shape { BUBBLE, STAR, DIVIDE, LEAF, SPARKLE, TWINKLE }  # The shapes that can float over a sky.
+enum Look { MENU, SELECT, DAY, MEADOW, SUNSET, NIGHT, CANDY }  # The looks (D-020); CANDY is the Main menu's own (D-022).
+enum Shape { BUBBLE, STAR, DIVIDE, LEAF, SPARKLE, TWINKLE, NUMBER }  # The shapes that can float over a sky.
 
 # Each look: its sky colours (top and bottom), its floating shapes and how many, how they move
 # ("rise" 1 = up at full speed, a minus number = falling, near 0 = almost still), their colour
@@ -17,6 +17,7 @@ const LOOKS := {  # Look -> its settings.
 	Look.MEADOW: {"top": Color("#D4F58A"), "bottom": Color("#4CB050"), "shapes": [Shape.LEAF], "count": 14, "rise": -0.6, "tint": Color("#F4FFB8"), "extra": "hills"},  # Episode 2: green meadow, falling leaves, hills.
 	Look.SUNSET: {"top": Color("#FFC46B"), "bottom": Color("#EE5A7A"), "shapes": [Shape.SPARKLE], "count": 16, "rise": 0.4, "tint": Color("#FFF7D6"), "extra": "low_sun"},  # Episode 3: orange-pink sunset, sparkles, a low sun.
 	Look.NIGHT: {"top": Color("#3F2A9C"), "bottom": Color("#160B45"), "shapes": [Shape.TWINKLE], "count": 30, "rise": 0.08, "tint": Color("#FFF3B0"), "extra": "moon"},  # Episode 4: purple night, twinkling stars, a moon.
+	Look.CANDY: {"top": Color("#FFB8D9"), "bottom": Color("#9D8CE8"), "shapes": [Shape.NUMBER, Shape.DIVIDE], "count": 16, "rise": 0.4, "tint": Color("#FFFFFF"), "extra": ""},  # Main menu: pink to lavender, numbers 1-10 and ÷ signs (D-022).
 }  # End of the list.
 
 var look: int = Look.MENU  # This background's look.
@@ -73,6 +74,7 @@ func _new_shape(from_edge: bool) -> Dictionary:
 		"angle": randf() * TAU,  # How far it is turned.
 		"spin": randf_range(-0.8, 0.8),  # How fast it turns, in radians per second.
 		"ring": randf() < 0.3,  # For bubbles: about 1 in 3 is an outline ring instead of a filled bubble.
+		"text": str(randi_range(1, 10)),  # For numbers: which number, 1 to 10.
 	}  # End of the list.
 
 
@@ -87,6 +89,8 @@ func _size_of(kind: int) -> float:
 			return randf_range(18.0, 34.0)  # ... small to middle.
 		Shape.SPARKLE:  # Sparkles ...
 			return randf_range(10.0, 30.0)  # ... small.
+		Shape.NUMBER:  # Numbers ...
+			return randf_range(34.0, 64.0)  # ... big enough to read.
 	return randf_range(3.0, 9.0)  # Night stars are tiny.
 
 
@@ -136,6 +140,10 @@ func _draw_shape(shape: Dictionary, at: Vector2, tint: Color) -> void:
 			draw_set_transform(at, shape.angle)  # Draw around its middle, turned.
 			draw_colored_polygon(_leaf_points(r), Color(tint, 0.6))  # The leaf.
 			draw_line(Vector2(0.0, -r * 0.8), Vector2(0.0, r * 0.9), Color(Palette.INK, 0.15), 2.0, true)  # Its middle line.
+			draw_set_transform(Vector2.ZERO)  # Back to normal drawing.
+		Shape.NUMBER:  # A number 1 to 10, tilted a little by its angle.
+			draw_set_transform(at, sin(shape.angle) * 0.35)  # Draw around its middle, tilted at most 20 degrees.
+			draw_string(UiKit.font(), Vector2(-r, r * 0.35), shape.text, HORIZONTAL_ALIGNMENT_CENTER, r * 2.0, int(r), Color(tint, 0.45))  # The number, centred.
 			draw_set_transform(Vector2.ZERO)  # Back to normal drawing.
 		Shape.SPARKLE:  # A four-point sparkle that glows brighter and softer.
 			var glow := 0.45 + 0.35 * sin(_time * 2.2 + shape.phase)  # 0.1 to 0.8.

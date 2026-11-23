@@ -24,7 +24,7 @@ func _card_buttons(screen: Node) -> Array[String]:
 func test_exit_button_shows_the_card() -> void:
 	var menu := _open("main_menu")  # The Main menu.
 	assert_false(menu.is_exit_card_open())  # No card at first.
-	menu._buttons[3].pressed.emit()  # Tap Exit (the fourth button).
+	menu._buttons[menu._buttons.size() - 1].pressed.emit()  # Tap Exit (the last button).
 	assert_true(menu.is_exit_card_open())  # The card shows.
 	assert_eq(_card_buttons(menu), ["Stay", "Exit"] as Array[String])  # Stay first and biggest, then Exit.
 

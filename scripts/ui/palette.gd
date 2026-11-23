@@ -13,3 +13,4 @@ const RED := Color("#D62839")  # Deeper red for a wrong answer.
 const WHITE := Color("#FFFFFF")  # White for cards.
 const BLUE := Color("#4361EE")  # Blue text on white cards.
 const LOCKED := Color("#B8C0D9")  # Grey-blue for locked cards and empty Stars.
+const ORANGE := Color("#FFA94D")  # Warm orange for the Trophies tile on the Main menu (D-022).

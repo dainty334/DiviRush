@@ -5,6 +5,7 @@ extends ScreenBase  # Shared background, margins and column.
 var _result: Dictionary  # The finished play, from Game.last_result.
 var _stars: Array[TextureRect] = []  # The three big Stars.
 var _new_best: PanelContainer  # The "New best!" tag.
+var _trophy_banner: PanelContainer = null  # The "Trophy earned!" banner, only when this play earned a Trophy (D-023).
 
 
 # Builds the screen and starts the Star animation. Called once by ScreenBase when the screen opens.
@@ -24,6 +25,10 @@ func _build() -> void:
 	_new_best = _build_new_best()  # The "New best!" tag (hidden for now).
 	column.add_child(_new_best)  # Add it.
 	column.add_child(_build_numbers())  # Correct answers, score, time and bests.
+	var trophies: Array = _result.get("new_trophies", [])  # Trophies this play earned, if any.
+	if not trophies.is_empty():  # At least one ...
+		_trophy_banner = _build_trophy_banner(trophies)  # ... gets the banner (hidden for now),
+		column.add_child(_trophy_banner)  # ... under the numbers.
 	add_spacer(1.0)  # Push the buttons down.
 	_build_buttons(passed)  # Next / Play again / Levels.
 	_animate_stars()  # Start filling the Stars.
@@ -101,6 +106,41 @@ func _animate_stars() -> void:
 		tween.tween_interval(0.15)  # Small gap before the next Star.
 	if _result.new_best:  # A new record ...
 		tween.tween_callback(_show_new_best)  # ... gets the tag.
+	if _trophy_banner != null:  # A Trophy was earned ...
+		tween.tween_interval(0.4)  # ... after a short pause,
+		tween.tween_callback(_show_trophy_banner)  # ... the banner shows.
+
+
+# Builds the gold "Trophy earned!" banner: a Trophy picture, the heading, and each new Trophy's name.
+# It starts hidden; the Star animation shows it at the end (D-023).
+func _build_trophy_banner(trophies: Array) -> PanelContainer:
+	var banner := PanelContainer.new()  # The banner.
+	var style := UiKit.box(Palette.YELLOW, 48)  # Gold, round and outlined.
+	style.set_content_margin_all(18)  # Room inside.
+	style.content_margin_left = 30  # A bit more at the ends ...
+	style.content_margin_right = 36  # ... so it looks balanced.
+	banner.add_theme_stylebox_override("panel", style)  # Use this look.
+	banner.size_flags_horizontal = Control.SIZE_SHRINK_CENTER  # Centred, as wide as its words.
+	banner.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Not a button.
+	banner.modulate.a = 0.0  # Hidden at first.
+	var row := HBoxContainer.new()  # Picture beside the words.
+	row.add_theme_constant_override("separation", 20)  # Space between them.
+	banner.add_child(row)  # Put it on the banner.
+	row.add_child(UiKit.icon(UiKit.Icon.TROPHY, 96))  # The gold Trophy.
+	var words := VBoxContainer.new()  # Heading above the names.
+	words.add_theme_constant_override("separation", 0)  # Close together.
+	row.add_child(words)  # Add it.
+	words.add_child(UiKit.label("Trophy earned!", 48, Palette.INK))  # The heading.
+	for id: String in trophies:  # Each new Trophy ...
+		words.add_child(UiKit.label(Trophies.name_of(id), 38, Palette.BLUE))  # ... by name.
+	return banner  # Hand back the hidden banner.
+
+
+# Shows the Trophy banner with a pop and a bright Star sound.
+func _show_trophy_banner() -> void:
+	_trophy_banner.modulate.a = 1.0  # Make it visible.
+	UiKit.pop_in(_trophy_banner)  # Bounce it in.
+	Audio.play_sfx("star", 1.5)  # A high, happy ring.
 
 
 # Shows one fill frame of Star `index`. Called by the tween with values from 0 to 5.99.

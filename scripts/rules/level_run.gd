@@ -10,6 +10,7 @@ var index: int = 0  # Which item is showing now, 0 to 9.
 var score: int = 0  # Points so far; it only goes up.
 var correct_count: int = 0  # Correct answers so far.
 var streak: int = 0  # Correct answers in a row right now.
+var best_streak: int = 0  # Most correct answers in a row in this play, for My Records and "On a Roll" (D-023).
 var total_time: float = 0.0  # Seconds used on all items so far.
 var results: Array[bool] = []  # true or false for each answered item, for the progress dots.
 var _rng: RandomNumberGenerator  # Random number maker for shuffling.
@@ -76,7 +77,8 @@ func time_out() -> Dictionary:
 func _finish_item(is_correct: bool, seconds_left: float, used: float, answer: int) -> Dictionary:
 	if is_correct:  # A correct answer ...
 		correct_count += 1  # ... counts towards Stars ...
-		streak += 1  # ... and grows the streak.
+		streak += 1  # ... and grows the streak,
+		best_streak = maxi(best_streak, streak)  # ... which may be this play's best.
 	else:  # A wrong answer or time-out ...
 		streak = 0  # ... ends the streak.
 	var points := Scoring.points_for(is_correct, seconds_left, streak)  # Points for this item (D-008).

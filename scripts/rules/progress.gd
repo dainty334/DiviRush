@@ -7,6 +7,7 @@ const EPISODE_COUNT := 4  # DiviRush has four Episodes (D-008).
 const LEVEL_COUNT := 5  # Each Difficulty has five Levels (D-008).
 const NO_TIME := -1.0  # Means "no best time yet".
 const MAX_STARS := EPISODE_COUNT * 3 * LEVEL_COUNT * 3  # 4 Episodes x 3 Difficulties x 5 Levels x 3 Stars = 180 (D-017).
+const LEVEL_TOTAL := EPISODE_COUNT * 3 * LEVEL_COUNT  # 4 Episodes x 3 Difficulties x 5 Levels = 60 Levels (D-022).
 
 var bests: Dictionary = {}  # Level key -> { stars, score, time }.
 
@@ -45,6 +46,18 @@ func total_stars() -> int:
 		for difficulty: int in Difficulty.Kind.values():  # ... Easy, Medium and Hard ...
 			total += stars_in(episode, difficulty)  # ... add each Difficulty's Stars.
 	return total  # Hand back the total.
+
+
+# Returns how many Levels have been passed, over every Episode and Difficulty (0 to 60).
+# Shown on the Main menu progress card and on My Records (D-022, D-023).
+func levels_passed() -> int:
+	var count := 0  # Running count.
+	for episode in range(1, EPISODE_COUNT + 1):  # Episodes 1 to 4 ...
+		for difficulty: int in Difficulty.Kind.values():  # ... Easy, Medium and Hard ...
+			for level in range(1, LEVEL_COUNT + 1):  # ... Levels 1 to 5 ...
+				if is_passed(episode, difficulty, level):  # ... passed?
+					count += 1  # Count it.
+	return count  # Hand back the count.
 
 
 # Returns true when an Episode can be chosen: its Easy is open.

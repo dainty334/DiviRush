@@ -7,6 +7,7 @@ extends SceneTree  # A SceneTree script runs on its own, without opening a scene
 const SCREENS := [  # Every screen in the game, in play order.
 	"start_screen", "main_menu", "how_to_play", "settings_screen",  # Screen names.
 	"episode_select", "difficulty_select", "level_select", "play_screen", "level_end",  # Screen names.
+	"trophies_screen", "records_screen",  # The Trophies and My Records screens (D-023).
 ]  # End of the list.
 
 

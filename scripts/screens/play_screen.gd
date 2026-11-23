@@ -319,7 +319,7 @@ func _on_feedback_done() -> void:
 # Ends the Level: saves the bests and opens the Level end screen.
 func _finish() -> void:
 	_state = State.FINISHED  # Nothing more to do here.
-	var flags := Save.record_result(Game.episode, Game.difficulty, Game.level, _run.stars(), _run.score, _run.total_time)  # Save bests (D-008).
+	var flags := Save.record_result(Game.episode, Game.difficulty, Game.level, _run.stars(), _run.score, _run.total_time, _run.correct_count, _run.best_streak)  # Save bests (D-008), records and Trophies (D-023).
 	Game.last_result = {  # What the Level end screen shows.
 		"correct": _run.correct_count,  # Right answers.
 		"total": _run.items.size(),  # Items in the Level (10).
@@ -328,6 +328,7 @@ func _finish() -> void:
 		"time": _run.total_time,  # Seconds used.
 		"passed": _run.passed(),  # At least one Star?
 		"new_best": flags.new_stars or flags.new_score or flags.new_time,  # Any new record?
+		"new_trophies": flags.new_trophies,  # Trophies this play earned, for the banner (D-023).
 	}  # End of the list.
 	Game.go_to("level_end")  # Show the result.
 
