@@ -28,7 +28,7 @@ func _init() -> void:
 	_save_sheet("bubble_red", 320, 320, _bubble_frames(RED))  # Answer bubble after a wrong tap.
 	_save_sheet("sparkle", 160, 160, _sparkle_frames())  # Sparkle burst for a correct answer.
 	_save_sheet("star", 200, 200, _star_frames())  # Level end Star filling up.
-	_save_sheet("icons", 96, 96, _icon_frames())  # Small icons: back, Stars, clock, lock, music, sound, vibration.
+	_save_sheet("icons", 96, 96, _icon_frames())  # Small icons: back, Stars, clock, lock, music, sound, vibration, and the Main menu icons.
 	_save_sheet("logo", 512, 512, [_logo_frame()])  # Title-screen logo bubble.
 	_save_icon_svg()  # The app icon (icon.svg in the project folder).
 	quit()  # Close the tool when done.
@@ -163,8 +163,9 @@ func _star_frames() -> Array:
 	return frames  # Hand back all six.
 
 
-# Eight small 96 x 96 icons, in this order:
-# 0 back arrow, 1 gold Star, 2 empty Star, 3 clock, 4 lock, 5 music note, 6 speaker, 7 vibrating phone.
+# Twelve small 96 x 96 icons, in this order:
+# 0 back arrow, 1 gold Star, 2 empty Star, 3 clock, 4 lock, 5 music note, 6 speaker, 7 vibrating phone,
+# 8 play arrow, 9 question mark, 10 gear, 11 door (the last four for the Main menu, D-017).
 func _icon_frames() -> Array:
 	var frames := []  # The finished icons.
 	frames.append("<path d=\"M60 20 L30 48 L60 76\" fill=\"none\" stroke=\"%s\" stroke-width=\"14\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>" % INK)  # 0: back arrow.
@@ -187,7 +188,36 @@ func _icon_frames() -> Array:
 	var phone := "<rect x=\"30\" y=\"12\" width=\"36\" height=\"72\" rx=\"9\" fill=\"%s\" stroke=\"%s\" stroke-width=\"7\"/>" % [WHITE, INK]  # Phone body.
 	phone += "<path d=\"M16 34 L10 42 L16 50 L10 58 M80 34 L86 42 L80 50 L86 58\" fill=\"none\" stroke=\"%s\" stroke-width=\"6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>" % INK  # Shake lines.
 	frames.append(phone)  # 7: vibrating phone.
-	return frames  # Hand back all eight.
+	frames.append_array(_menu_icon_frames())  # 8-11: the Main menu button icons (D-017).
+	return frames  # Hand back all twelve.
+
+
+# Four icons for the Main menu buttons (D-017), white with a dark outline so they show on every
+# button colour: 8 play arrow, 9 question mark, 10 gear, 11 door with an arrow going out.
+func _menu_icon_frames() -> Array:
+	var frames := []  # The finished icons.
+	frames.append("<polygon points=\"28,14 80,48 28,82\" fill=\"%s\" stroke=\"%s\" stroke-width=\"8\" stroke-linejoin=\"round\"/>" % [WHITE, INK])  # 8: play arrow.
+	var help := _circle(48, 48, 40, WHITE, 7.0)  # 9: round white face ...
+	help += "<path d=\"M35 36 A13 13 0 0 1 61 36 C61 46 48 46 48 56 V58\" fill=\"none\" stroke=\"%s\" stroke-width=\"9\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>" % INK  # ... with the hook of a question mark,
+	help += "<circle cx=\"48\" cy=\"72\" r=\"6\" fill=\"%s\"/>" % INK  # ... and its dot.
+	frames.append(help)  # 9: question mark.
+	var gear := ""  # 10: gear.
+	for i in range(8):  # Eight teeth around the middle ...
+		var angle := TAU * i / 8.0  # ... spread evenly.
+		var tip := Vector2(48, 48) + Vector2(cos(angle), sin(angle)) * 43.0  # Outer end of the tooth.
+		gear += "<line x1=\"48\" y1=\"48\" x2=\"%.1f\" y2=\"%.1f\" stroke=\"%s\" stroke-width=\"22\"/>" % [tip.x, tip.y, INK]  # Dark tooth (its outline).
+	for i in range(8):  # The same eight teeth again ...
+		var angle := TAU * i / 8.0  # ... at the same angles,
+		var tip := Vector2(48, 48) + Vector2(cos(angle), sin(angle)) * 37.0  # ... a little shorter,
+		gear += "<line x1=\"48\" y1=\"48\" x2=\"%.1f\" y2=\"%.1f\" stroke=\"%s\" stroke-width=\"8\"/>" % [tip.x, tip.y, WHITE]  # ... and thinner and white, so each tooth has a dark outline.
+	gear += _circle(48, 48, 28, WHITE, 7.0)  # Round gear body on top of the teeth.
+	gear += _circle(48, 48, 10, WHITE, 7.0)  # Hole in the middle.
+	frames.append(gear)  # 10: gear.
+	var door := "<rect x=\"10\" y=\"10\" width=\"44\" height=\"76\" rx=\"6\" fill=\"%s\" stroke=\"%s\" stroke-width=\"7\"/>" % [WHITE, INK]  # 11: white door ...
+	door += "<circle cx=\"21\" cy=\"50\" r=\"5\" fill=\"%s\"/>" % INK  # ... with a knob,
+	door += "<path d=\"M38 48 H84 M72 35 L85 48 L72 61\" fill=\"none\" stroke=\"%s\" stroke-width=\"9\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>" % INK  # ... and an arrow going out.
+	frames.append(door)  # 11: door.
+	return frames  # Hand back all four.
 
 
 # The logo: a big yellow bubble with a division sign, for the Start-up menu.

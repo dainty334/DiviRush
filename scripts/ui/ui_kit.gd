@@ -3,7 +3,7 @@
 class_name UiKit  # Lets any script write UiKit.button(...).
 extends RefCounted  # Only its static functions are used.
 
-enum Icon { BACK, STAR, STAR_EMPTY, CLOCK, LOCK, MUSIC, SOUND, VIBRATION }  # Frame order in icons_96x96_8f.png.
+enum Icon { BACK, STAR, STAR_EMPTY, CLOCK, LOCK, MUSIC, SOUND, VIBRATION, PLAY, HELP, GEAR, EXIT }  # Frame order in icons_96x96_12f.png.
 
 const FONT_PATH := "res://assets/fonts/Fredoka-Variable.ttf"  # Rounded font (OFL licence, D-010).
 const BORDER := 10  # Thick dark outline width, as in the style sample.
@@ -31,6 +31,54 @@ static func title(size: int) -> Label:
 	spaced.spacing_glyph = int(size / 10.0)  # ... with space added after every letter.
 	node.label_settings.font = spaced  # Use the spaced font for the title.
 	return node  # Hand back the title.
+
+
+# Makes the DIVIRUSH title with every letter on its own, so the letters can bounce in one by one
+# and then wave (Main menu, D-017). Each letter sits in a holder box, because a container would
+# move a letter back into line; inside a plain holder the letter is free to rise and fall.
+# The animations start when the title is shown, since tweens need the node on screen.
+static func wave_title(size: int) -> HBoxContainer:
+	var row := HBoxContainer.new()  # The letters side by side.
+	row.alignment = BoxContainer.ALIGNMENT_CENTER  # Centred across.
+	row.size_flags_horizontal = Control.SIZE_SHRINK_CENTER  # Only as wide as the word.
+	row.add_theme_constant_override("separation", int(size / 10.0))  # The same gap title() adds, so I and V do not touch.
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go through.
+	var letters: Array[Label] = []  # The letter labels, for the animations below.
+	for character in "DIVIRUSH":  # Each letter of the name ...
+		var letter := label(character, size, Palette.YELLOW, int(size / 5.0))  # ... yellow with a thick outline, as in title().
+		letter.size = letter.get_minimum_size()  # Exactly as big as its letter.
+		var holder := Control.new()  # A plain box that keeps the letter's place in the row.
+		holder.custom_minimum_size = letter.size  # The same size as the letter.
+		holder.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go through.
+		holder.add_child(letter)  # The letter inside its box.
+		row.add_child(holder)  # The box in the row.
+		letters.append(letter)  # Remember the letter.
+	row.ready.connect(func() -> void: _start_wave(letters, size), CONNECT_ONE_SHOT)  # Animate once the title is on screen.
+	return row  # Hand back the title.
+
+
+# Pops the title letters in one after another, then makes them rise and fall in turn, like a wave.
+# Called once, when the wave title is first shown.
+static func _start_wave(letters: Array[Label], size: int) -> void:
+	for i in range(letters.size()):  # Each letter, left to right ...
+		pop_in(letters[i], 0.1 + i * 0.06)  # ... bounces in 0.06 s after the one before (D-017),
+		bob(letters[i], size * 0.08, 1.2, 0.9 + i * 0.12)  # ... then rises and falls a little later than the one before.
+
+
+# Makes a chunky button with a drawn icon on its left and its words in the middle (Main menu, D-017).
+# The words stay centred on the button, as on every other button, so the buttons line up.
+static func icon_button(text: String, which: int, colour: Color, min_size: Vector2, font_size: int) -> Button:
+	var node := button(text, colour, min_size, font_size)  # The usual chunky button.
+	var side := 84.0  # Icon size on the button.
+	var picture := icon(which, side)  # The drawn icon.
+	picture.anchor_top = 0.5  # Hang the icon from the button's middle ...
+	picture.anchor_bottom = 0.5  # ... so it stays centred up and down.
+	picture.offset_left = 44.0  # Its left edge, inside the button.
+	picture.offset_right = 44.0 + side  # Its right edge.
+	picture.offset_top = -side / 2.0  # Half above the middle ...
+	picture.offset_bottom = side / 2.0  # ... and half below.
+	node.add_child(picture)  # Put the icon on the button.
+	return node  # Hand back the button.
 
 
 # Builds the game-wide theme. Called once at start-up by the Game autoload.
@@ -158,6 +206,24 @@ static func rock(node: Control, degrees: float = 2.0, seconds: float = 1.6, dela
 	tween.tween_interval(delay)  # Wait first, so buttons do not all move together.
 	tween.tween_property(node, "rotation", deg_to_rad(degrees), seconds / 2.0).set_trans(Tween.TRANS_SINE)  # Lean one way.
 	tween.tween_property(node, "rotation", deg_to_rad(-degrees), seconds / 2.0).set_trans(Tween.TRANS_SINE)  # Lean the other way.
+
+
+# Makes a control float up and down forever. The first rise waits `delay` seconds, then every rise
+# and fall takes the same time, so controls given different delays keep their order (a wave).
+# Used for the Main menu logo and title letters (D-017). The control must sit in a plain Control,
+# not a container, or the container would move it back into line.
+static func bob(node: Control, pixels: float, seconds: float, delay: float = 0.0) -> void:
+	var rest := node.position.y  # Where the control rests.
+	var start := node.create_tween()  # A one-time tween for the first wait.
+	start.tween_interval(delay)  # Wait once, so each control starts at its own time.
+	start.tween_callback(func() -> void: _float_forever(node, rest, pixels, seconds))  # Then float forever.
+
+
+# Rises `pixels` above `rest` and falls back, again and again. Called by bob() after its first wait.
+static func _float_forever(node: Control, rest: float, pixels: float, seconds: float) -> void:
+	var tween := node.create_tween().set_loops()  # A tween that repeats forever.
+	tween.tween_property(node, "position:y", rest - pixels, seconds / 2.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)  # Rise.
+	tween.tween_property(node, "position:y", rest, seconds / 2.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)  # Fall back.
 
 
 # Makes a control grow and shrink a little forever, like it is breathing. Used for "Tap to Start".
