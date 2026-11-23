@@ -19,11 +19,11 @@ func _build() -> void:
 	Audio.play_music("menu")  # Main menu area music (D-020).
 	column.add_theme_constant_override("separation", 28)  # Even gaps between the parts.
 	var exit := _add_top_row()  # Count pills and the Exit door.
-	add_spacer(0.6)  # Space above the mascot.
-	_add_mascot()  # The talking mascot.
-	add_spacer(0.4)  # Space above Play.
+	add_spacer(1.0)  # Sky above the mascot, where its speech bubble floats when tapped (D-027).
+	_add_mascot()  # The big talking mascot.
+	add_spacer(0.3)  # Space above Play.
 	_add_play()  # The huge Play button.
-	add_spacer(0.4)  # Space above the bottom bar.
+	add_spacer(0.3)  # Space above the bottom bar.
 	_add_bottom_bar()  # How to Play, Trophies, My Records and Settings.
 	_buttons.append(exit)  # Exit is listed last, after the main choices.
 
@@ -81,8 +81,7 @@ func _add_mascot() -> void:
 	_turn += 1  # The other one next time.
 	_mascot = Mascot.new(who, MascotLines.lines_for(who, Save.progress, Save.records))  # The mascot and what it will say.
 	_mascot.size_flags_horizontal = Control.SIZE_SHRINK_CENTER  # Centred.
-	column.add_child(_mascot)  # Show it.
-	UiKit.pop_in(_mascot, 0.1)  # Bounce in.
+	column.add_child(_mascot)  # Show it; it drops in by itself with a bounce (D-027).
 
 
 # Adds the huge Play button, which breathes so the eye goes to it first (D-017, kept by D-025).

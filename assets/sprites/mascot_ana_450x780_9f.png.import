@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dmfhxtggdnebq"
-path="res://.godot/imported/mascot_ana_300x520_5f.png-591e0740e2d7025e2678f9c40bf60289.ctex"
+uid="uid://ckc52cnmvhqkn"
+path="res://.godot/imported/mascot_ana_450x780_9f.png-ae4bf9d90c966184f92330fff1136c81.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/mascot_ana_300x520_5f.png"
-dest_files=["res://.godot/imported/mascot_ana_300x520_5f.png-591e0740e2d7025e2678f9c40bf60289.ctex"]
+source_file="res://assets/sprites/mascot_ana_450x780_9f.png"
+dest_files=["res://.godot/imported/mascot_ana_450x780_9f.png-ae4bf9d90c966184f92330fff1136c81.ctex"]
 
 [params]
 
