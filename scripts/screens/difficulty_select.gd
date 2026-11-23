@@ -10,7 +10,7 @@ const LOCK_HINTS := [  # Why each Difficulty is locked, in Kind order.
 
 # Builds the screen. Called once by ScreenBase when the screen opens.
 func _build() -> void:
-	Audio.play_music("menu")  # Menu music.
+	Audio.play_music("select")  # Selection music (D-020).
 	var data := Game.episode_data()  # The chosen Episode.
 	add_header("Episode %d" % Game.episode, data.title)  # Back button and title.
 	add_spacer(0.2)  # A little space.
@@ -56,3 +56,8 @@ func _on_difficulty(kind: int, card: Button) -> void:
 # Back returns to Episode select.
 func go_back() -> void:
 	Game.go_to("episode_select")  # Episode select.
+
+
+# The selection screens have their own teal sky with stars and ÷ signs (D-020).
+func sky_look() -> int:
+	return SkyBackground.Look.SELECT  # Selection look.

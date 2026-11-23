@@ -4,7 +4,7 @@ extends ScreenBase  # Shared background, margins and column.
 
 # Builds the screen. Called once by ScreenBase when the screen opens.
 func _build() -> void:
-	Audio.play_music("menu")  # Menu music.
+	Audio.play_music("select")  # Selection music (D-020).
 	add_header("Episodes", "Choose an Episode")  # Back button and title.
 	add_spacer(0.2)  # A little space.
 	for number in range(1, Progress.EPISODE_COUNT + 1):  # Episodes 1 to 4 ...
@@ -52,3 +52,8 @@ func _on_episode(number: int, card: Button) -> void:
 # Back returns to the Main menu.
 func go_back() -> void:
 	Game.go_to("main_menu")  # Main menu.
+
+
+# The selection screens have their own teal sky with stars and ÷ signs (D-020).
+func sky_look() -> int:
+	return SkyBackground.Look.SELECT  # Selection look.

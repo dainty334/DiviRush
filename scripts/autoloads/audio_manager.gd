@@ -3,12 +3,18 @@
 # mutes only its own bus (D-009).
 extends Node  # Autoloads are nodes that live for the whole game.
 
-const MUSIC := {  # Music tracks by name: free CC0 recordings, made into OGG files by tools/convert_audio.sh (D-018).
-	"menu": "res://assets/audio/music/menu_loop.ogg",  # Calm loop for the menus: "Home" by heartade (piano, flute, strings).
-	"play": "res://assets/audio/music/play_loop.ogg",  # Livelier loop during play: "Picnic" by heartade (saxophone, vibraphone, strings).
-	"win": "res://assets/audio/music/win_jingle.ogg",  # Short saxophone jingle on a passed Level, by Kenney.
+# Music tracks by name: free CC0 recordings, made into OGG files by tools/convert_audio.sh.
+# Each area of the game and each Episode has its own track, so the music does not repeat (D-020).
+const MUSIC := {  # Track name -> file.
+	"menu": "res://assets/audio/music/main_menu_loop.ogg",  # Main menu area: "Happy Clappy Loop" by OwlishMedia (piano).
+	"select": "res://assets/audio/music/select_loop.ogg",  # Selection screens: "Home" by heartade (piano, flute, strings).
+	"play_1": "res://assets/audio/music/play_episode_1.ogg",  # Episode 1 play: "Picnic" by heartade (saxophone, vibraphone, strings).
+	"play_2": "res://assets/audio/music/play_episode_2.ogg",  # Episode 2 play: "Happy Vibes" by Ruskerdax (cute island feel).
+	"play_3": "res://assets/audio/music/play_episode_3.ogg",  # Episode 3 play: "Cozy Puzzle In-Game 2" by MintoDog (brass).
+	"play_4": "res://assets/audio/music/play_episode_4.ogg",  # Episode 4 play: "Activity" by heartade (shakers, woodblocks).
+	"win": "res://assets/audio/music/win_jingle.ogg",  # Short saxophone jingle on a passed Level, by Kenney (D-018).
 }  # End of the list.
-const LOOPING := ["menu", "play"]  # Tracks that repeat.
+const LOOPING := ["menu", "select", "play_1", "play_2", "play_3", "play_4"]  # Tracks that repeat; only the jingle plays once.
 const SFX := {  # Sound effects by name: recorded CC0 sounds from Kenney's Interface Sounds, made by tools/convert_audio.sh (D-019).
 	"tap": "res://assets/audio/sfx/tap.wav",  # Button tap: a short, soft click.
 	"correct": "res://assets/audio/sfx/correct.wav",  # Correct answer: a short rising sound.

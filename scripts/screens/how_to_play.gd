@@ -13,6 +13,7 @@ const RULES := [  # [icon, rule text], shown top to bottom.
 
 # Builds the screen. Called once by ScreenBase when the screen opens.
 func _build() -> void:
+	Audio.play_music("menu")  # Main menu area music (D-020); it keeps playing from the Main menu.
 	add_header("How to Play")  # Back button and title.
 	var card := PanelContainer.new()  # White card for the rules.
 	card.add_theme_stylebox_override("panel", UiKit.box(Palette.WHITE, 60))  # Rounded with a thick outline.

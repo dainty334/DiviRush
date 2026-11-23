@@ -7,7 +7,7 @@ var _leaving := false  # true once a tap was seen, so a second tap does nothing.
 
 # Builds the screen. Called once by ScreenBase when the screen opens.
 func _build() -> void:
-	Audio.play_music("menu")  # Calm menu music.
+	Audio.play_music("menu")  # Main menu area music (D-020).
 	add_spacer(1.0)  # Space above the logo.
 	var logo := TextureRect.new()  # The logo picture.
 	logo.texture = SpriteSheet.logo()  # Big yellow bubble with a ÷ sign.
@@ -32,16 +32,17 @@ func _build() -> void:
 
 
 # Runs for every input event: the first tap or click anywhere opens the Main menu.
-# This uses _input, not _unhandled_input, because the layout containers take taps first,
-# and this screen has no buttons that need them.
+# This uses _input, not _unhandled_input, because the layout containers take taps first.
+# While the "Leave DiviRush?" card is open, taps belong to its buttons, so they are left alone (D-021).
 func _input(event: InputEvent) -> void:
 	var mouse := event as InputEventMouseButton  # Taps arrive as mouse clicks.
-	if mouse != null and mouse.pressed and not _leaving:  # A first tap ...
+	if mouse != null and mouse.pressed and not _leaving and not is_exit_card_open():  # A first tap, with no card open ...
 		_leaving = true  # ... is used once,
 		Audio.play_sfx("tap")  # ... clicks,
 		Game.go_to("main_menu")  # ... and opens the Main menu.
 
 
-# Back on the Start-up menu closes the game, as Android players expect on a first screen.
+# Back on the Start-up menu would close the game, as Android players expect on a first screen,
+# so it first asks with the "Leave DiviRush?" card (D-021).
 func go_back() -> void:
-	Game.quit_game()  # Save and close.
+	show_exit_card()  # Ask before closing.

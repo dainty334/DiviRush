@@ -18,7 +18,7 @@ var _next_spot := 0  # Which spot the next sparkle uses.
 
 # Builds the screen. Called once by ScreenBase when the screen opens.
 func _build() -> void:
-	Audio.play_music("menu")  # Calm menu music.
+	Audio.play_music("menu")  # Main menu area music (D-020).
 	add_spacer(0.8)  # Space at the top.
 	_add_hero()  # Logo, title, tagline and Stars.
 	add_spacer(1.0)  # Space between the top part and the buttons.
@@ -134,9 +134,9 @@ func _on_settings() -> void:
 	Game.go_to("settings_screen")  # Switches screen.
 
 
-# Exit saves and closes the game.
+# Exit first asks with the "Leave DiviRush?" card; its Exit button saves and closes the game (D-021).
 func _on_exit() -> void:
-	Game.quit_game()  # Save and close.
+	show_exit_card()  # Ask before closing.
 
 
 # Back on the Main menu returns to the Start-up menu.

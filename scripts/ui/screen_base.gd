@@ -7,13 +7,16 @@ const COLUMN_WIDTH := 1000.0  # Content width; the design screen is 1080 wide (D
 const EDGE := 40  # Space kept clear at every screen edge.
 
 var column: VBoxContainer  # The centred column; screens add their content here.
+var background: SkyBackground  # The sky behind the screen.
 var _hint: Label  # Short message line at the bottom, for example why a card is locked.
+var _exit_card: Control  # The "Leave DiviRush?" card, made the first time it is needed (D-021).
 
 
 # Runs when the screen opens: builds the frame, then calls the screen's own _build().
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)  # Fill the whole window.
-	add_child(BubbleBackground.new())  # Sky and floating bubbles behind everything.
+	background = SkyBackground.new(sky_look())  # This screen's sky and floating shapes (D-020) ...
+	add_child(background)  # ... behind everything.
 	var margin := MarginContainer.new()  # Keeps content away from the edges.
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)  # Fill the window.
 	_apply_safe_area(margin)  # Stay clear of notches and rounded corners on phones.
@@ -29,6 +32,11 @@ func _ready() -> void:
 # Each screen fills its column here. Called once from _ready().
 func _build() -> void:
 	pass  # The base frame adds nothing.
+
+
+# Each screen picks its background look (D-020). The Main menu area keeps the default blue bubble sky.
+func sky_look() -> int:
+	return SkyBackground.Look.MENU  # Blue sky with bubbles.
 
 
 # Each screen decides where Back goes (the arrow button, Android Back, or Escape on a PC).
@@ -146,14 +154,78 @@ func show_hint(text: String) -> void:
 	tween.tween_property(_hint, "modulate:a", 0.0, 0.4)  # Fade out.
 
 
-# Catches the Android Back button and sends it to go_back().
+# Makes a hidden card over the whole screen: a dark veil, and a white card with a title and the
+# given buttons under it. Used for the "Paused" card (D-015) and the "Leave DiviRush?" card (D-021),
+# so both look the same. The caller adds the card to the screen and shows it when needed.
+func make_card(title: String, buttons: Array, title_size: int = 110) -> Control:
+	var card := Control.new()  # Holder that fills the screen.
+	card.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)  # Cover everything.
+	card.mouse_filter = Control.MOUSE_FILTER_STOP  # Taps stop here, so nothing behind can be tapped.
+	card.visible = false  # Hidden until needed.
+	var veil := ColorRect.new()  # Dark see-through layer.
+	veil.color = Color(Palette.INK, 0.7)  # Dark ink, 70% strong.
+	veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)  # Fill the screen.
+	veil.mouse_filter = Control.MOUSE_FILTER_IGNORE  # The holder already stops taps.
+	card.add_child(veil)  # Add it.
+	var centre := CenterContainer.new()  # Puts the card in the middle.
+	centre.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)  # Fill the screen.
+	centre.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go to the buttons.
+	card.add_child(centre)  # Add it.
+	var panel := PanelContainer.new()  # The white card.
+	var style := UiKit.box(Palette.WHITE, 70)  # Rounded and outlined, like the item card.
+	style.set_content_margin_all(60)  # Room inside the card.
+	panel.add_theme_stylebox_override("panel", style)  # Use this look.
+	centre.add_child(panel)  # Add it.
+	var lines := VBoxContainer.new()  # Title above the buttons.
+	lines.add_theme_constant_override("separation", 40)  # Space between them.
+	panel.add_child(lines)  # Add it.
+	lines.add_child(UiKit.label(title, title_size, Palette.INK))  # Big dark title.
+	for button: Button in buttons:  # Each button, top to bottom ...
+		lines.add_child(button)  # ... goes under the title.
+	return card  # Hand back the hidden card.
+
+
+# Shows the "Leave DiviRush?" card (D-021). Stay is the big green button and closes the card;
+# Exit saves and closes the game. The card is made the first time it is needed.
+func show_exit_card() -> void:
+	if _exit_card == null:  # Not made yet ...
+		var stay := UiKit.button("Stay", Palette.GREEN, Vector2(600, 150))  # ... the big safe choice,
+		stay.pressed.connect(hide_exit_card)  # ... which closes the card,
+		var leave := UiKit.button("Exit", Palette.PINK, Vector2(600, 140), 60)  # ... the smaller pink choice,
+		leave.pressed.connect(Game.quit_game)  # ... which saves and closes the game,
+		_exit_card = make_card("Leave DiviRush?", [stay, leave], 84)  # ... on one card,
+		add_child(_exit_card)  # ... added last, so it draws on top of the screen.
+	_exit_card.visible = true  # Show it.
+
+
+# Hides the "Leave DiviRush?" card. Called by Stay, and by Back while the card is open.
+func hide_exit_card() -> void:
+	if _exit_card != null:  # The card was made ...
+		_exit_card.visible = false  # ... so hide it.
+
+
+# Returns true while the "Leave DiviRush?" card is showing.
+func is_exit_card_open() -> bool:
+	return _exit_card != null and _exit_card.visible  # Made and showing.
+
+
+# Runs for Android Back and for Escape on a PC. While the Exit card is open, Back is the same as
+# Stay (D-021); otherwise the screen goes back.
+func back_pressed() -> void:
+	if is_exit_card_open():  # The card is showing ...
+		hide_exit_card()  # ... so close it and stay.
+	else:  # No card ...
+		go_back()  # ... so go to the previous screen.
+
+
+# Catches the Android Back button and sends it to back_pressed().
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST:  # Android Back was pressed ...
-		go_back()  # ... so go to the previous screen.
+		back_pressed()  # ... so close the card or go back.
 
 
 # Lets Escape act as Back on a PC, so the game can be tested in the editor.
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"ui_cancel"):  # Escape was pressed ...
 		get_viewport().set_input_as_handled()  # ... handle it here,
-		go_back()  # ... and go back.
+		back_pressed()  # ... and close the card or go back.

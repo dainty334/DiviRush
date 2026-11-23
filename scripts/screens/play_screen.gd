@@ -39,7 +39,7 @@ var _pause_card: Control  # The "Paused" card that covers the screen while pause
 
 # Builds the screen and starts the first item. Called once by ScreenBase when the screen opens.
 func _build() -> void:
-	Audio.play_music("play")  # Faster play music.
+	Audio.play_music("play_%d" % Game.episode)  # This Episode's own play music (D-020).
 	_run = LevelRun.new(Game.level_data().items, Game.difficulty)  # New play with shuffled items (D-010).
 	column.add_theme_constant_override("separation", 22)  # Tighter spacing to fit the sample layout.
 	_build_top_bar()  # Back, labels and score.
@@ -336,37 +336,13 @@ func _finish() -> void:
 # "Paused" and three buttons: Resume, Restart and Levels, styled like the Level end buttons.
 # It starts hidden and blocks taps on the item while it shows (D-015).
 func _build_pause_card() -> void:
-	_pause_card = Control.new()  # Holder that fills the screen.
-	_pause_card.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)  # Cover everything.
-	_pause_card.mouse_filter = Control.MOUSE_FILTER_STOP  # Taps stop here, so no bubble can be tapped.
-	_pause_card.visible = false  # Hidden until the app leaves the screen.
-	var veil := ColorRect.new()  # Dark see-through layer.
-	veil.color = Color(Palette.INK, 0.7)  # Dark ink, 70% strong.
-	veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)  # Fill the screen.
-	veil.mouse_filter = Control.MOUSE_FILTER_IGNORE  # The holder already stops taps.
-	_pause_card.add_child(veil)  # Add it.
-	var centre := CenterContainer.new()  # Puts the card in the middle.
-	centre.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)  # Fill the screen.
-	centre.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go to the button.
-	_pause_card.add_child(centre)  # Add it.
-	var panel := PanelContainer.new()  # The white card.
-	var style := UiKit.box(Palette.WHITE, 70)  # Rounded and outlined, like the item card.
-	style.set_content_margin_all(60)  # Room inside the card.
-	panel.add_theme_stylebox_override("panel", style)  # Use this look.
-	centre.add_child(panel)  # Add it.
-	var lines := VBoxContainer.new()  # Word above button.
-	lines.add_theme_constant_override("separation", 40)  # Space between them.
-	panel.add_child(lines)  # Add it.
-	lines.add_child(UiKit.label("Paused", 110, Palette.INK))  # Big word.
 	var resume := UiKit.button("Resume", Palette.GREEN, Vector2(600, 150))  # Big green button.
 	resume.pressed.connect(resume_level)  # Back to the item, with the time it had left.
-	lines.add_child(resume)  # Add it.
 	var restart := UiKit.button("Restart", Palette.YELLOW, Vector2(600, 140), 60)  # Yellow, like "Play again".
 	restart.pressed.connect(restart_level)  # Start this Level again from item 1.
-	lines.add_child(restart)  # Add it.
 	var levels := UiKit.button("Levels", Palette.WHITE, Vector2(600, 140), 60)  # White, like on the Level end screen.
 	levels.pressed.connect(leave_level)  # Back to Level select.
-	lines.add_child(levels)  # Add it.
+	_pause_card = make_card("Paused", [resume, restart, levels])  # The same card look as the Exit card; it stops taps on the bubbles.
 	add_child(_pause_card)  # Added last, so it draws on top of the screen.
 
 
@@ -428,3 +404,8 @@ func is_paused() -> bool:
 func go_back() -> void:
 	_stop_play()  # Stop the timer and cancel a feedback pause, so no next item starts while the screen fades out.
 	Game.go_to("level_select")  # Level select.
+
+
+# This screen shows the chosen Episode's world: day, meadow, sunset or night (D-020).
+func sky_look() -> int:
+	return SkyBackground.for_episode(Game.episode)  # The chosen Episode's look.

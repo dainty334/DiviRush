@@ -10,7 +10,7 @@ const ROWS := [  # [save key, icon, label]
 
 # Builds the screen. Called once by ScreenBase when the screen opens.
 func _build() -> void:
-	Audio.play_music("menu")  # Menu music (so the Music switch can be heard working).
+	Audio.play_music("menu")  # Main menu area music (D-020), so the Music switch can be heard working.
 	add_header("Settings")  # Back button and title.
 	add_spacer(0.2)  # A little space.
 	var delay := 0.05  # Pop-in delay, growing per row.

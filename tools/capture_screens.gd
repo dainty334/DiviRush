@@ -25,6 +25,9 @@ func _capture_all() -> void:
 	save.progress.record(1, 0, 2, 2, 198, 61.0)  # Level 2 passed with 2 Stars.
 	await _shot("start_screen", "01_start_up_menu")  # Start-up menu.
 	await _shot("main_menu", "02_main_menu")  # Main menu.
+	current_scene.show_exit_card()  # As if Exit was tapped (D-021).
+	await _wait(0.3)  # Let the card draw.
+	_save_picture("29_exit_confirm")  # The "Leave DiviRush?" card.
 	await _shot("how_to_play", "03_how_to_play")  # Rules screen.
 	await _shot("settings_screen", "04_settings")  # Settings.
 	await _shot("episode_select", "05_episode_select")  # Episodes 2-4 locked.

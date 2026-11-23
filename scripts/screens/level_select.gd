@@ -4,7 +4,7 @@ extends ScreenBase  # Shared background, margins and column.
 
 # Builds the screen. Called once by ScreenBase when the screen opens.
 func _build() -> void:
-	Audio.play_music("menu")  # Menu music.
+	Audio.play_music("select")  # Selection music (D-020).
 	var data := Game.episode_data()  # The chosen Episode.
 	add_header("%s Levels" % Difficulty.name_of(Game.difficulty), "Episode %d · %s" % [Game.episode, data.title])  # Back button and title.
 	add_spacer(0.3)  # A little space.
@@ -94,3 +94,8 @@ func _on_level(number: int, card: Button) -> void:
 # Back returns to Difficulty select.
 func go_back() -> void:
 	Game.go_to("difficulty_select")  # Difficulty select.
+
+
+# This screen shows the chosen Episode's world: day, meadow, sunset or night (D-020).
+func sky_look() -> int:
+	return SkyBackground.for_episode(Game.episode)  # The chosen Episode's look.

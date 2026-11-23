@@ -14,9 +14,9 @@ func _build() -> void:
 		_result = {"correct": 0, "total": 10, "stars": 0, "score": 0, "time": 0.0, "passed": false, "new_best": false}  # ... show an empty result.
 	var passed: bool = _result.passed  # Did the learner pass?
 	if passed:  # Passed ...
-		Audio.play_music("win", "menu")  # ... win jingle, then the menu loop.
+		Audio.play_music("win", "select")  # ... win jingle, then the selection music (D-020).
 	else:  # Not passed ...
-		Audio.play_music("menu")  # ... calm menu music.
+		Audio.play_music("select")  # ... the selection music (D-020).
 	add_spacer(0.5)  # Space at the top.
 	column.add_child(UiKit.label("Level passed!" if passed else "Try again!", 110, Palette.YELLOW if passed else Palette.WHITE, 26))  # Big heading.
 	column.add_child(UiKit.label("Episode %d · %s · Level %d" % [Game.episode, Difficulty.name_of(Game.difficulty), Game.level], 42, Palette.WHITE, 10))  # Which Level.
@@ -135,3 +135,8 @@ func _on_again() -> void:
 # Back and the Levels button return to Level select.
 func go_back() -> void:
 	Game.go_to("level_select")  # Level select.
+
+
+# This screen shows the chosen Episode's world: day, meadow, sunset or night (D-020).
+func sky_look() -> int:
+	return SkyBackground.for_episode(Game.episode)  # The chosen Episode's look.
