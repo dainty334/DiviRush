@@ -72,7 +72,11 @@ func test_records_tab_shows_the_records() -> void:
 	assert_true(screen._pages[1].visible)  # Records show ...
 	assert_false(screen._pages[0].visible)  # ... instead of the Trophies.
 	var texts := _texts(screen._pages[1])  # Every text on the Records tab.
-	for expected: String in ["4 of 180", "2 of 60", "7", "63", "8 in a row", "12 min"]:  # Stars, Levels passed, played, correct, streak, time ...
+	var view: RecordsView = screen._pages[1].find_children("*", "RecordsView", true, false)[0]  # The Records.
+	assert_eq(view.tiles.size(), 6)  # Six colour tiles (D-032).
+	for expected: String in ["4", "of 180", "2", "of 60", "7", "63", "8", "12 min"]:  # Stars, Levels passed, played, right, streak, time ...
+		assert_has(texts, expected, expected)  # ... each shows as a big number.
+	for expected: String in ["Stars", "Levels passed", "Levels played", "Right answers", "Best streak", "Time played"]:  # The tile names ...
 		assert_has(texts, expected, expected)  # ... each shows.
 	for expected: String in ["3/45", "1/45", "0/45"]:  # Stars in Episodes 1, 2 and 3 (and 4) ...
 		assert_has(texts, expected, expected)  # ... show next to their bars.
@@ -90,6 +94,34 @@ func test_each_trophy_has_its_own_picture() -> void:
 	var locked_picture := _picture_of(screen._cards[1], pictures[1])  # "Perfect 10", not earned.
 	assert_null(earned_picture.material)  # Earned: in colour.
 	assert_not_null(locked_picture.material)  # Not earned: grey.
+
+
+# The Trophies come 12 to a page, with arrows and "1 / 3" under them (D-032).
+func test_trophy_pages() -> void:
+	var screen := _open("trophies_screen")  # The Trophies screen.
+	assert_eq(screen._pager.count, 3)  # 26 Trophies make 3 pages.
+	assert_eq(screen._pager.label_text(), "1 / 3")  # Page 1 first.
+	assert_true(screen._pager._prev.disabled)  # No page before it.
+	assert_true(screen._cards[0].is_visible_in_tree())  # The first Trophy shows ...
+	assert_true(screen._cards[11].is_visible_in_tree())  # ... to the 12th,
+	assert_false(screen._cards[12].is_visible_in_tree())  # ... but not the 13th.
+	screen._pager.next()  # The right arrow.
+	assert_eq(screen._pager.label_text(), "2 / 3")  # Page 2.
+	assert_false(screen._cards[0].is_visible_in_tree())  # Page 1 is hidden ...
+	assert_true(screen._cards[12].is_visible_in_tree())  # ... and Trophies 13 to 24 show.
+	screen._pager.swipe(-300.0)  # A swipe to the left.
+	assert_eq(screen._pager.label_text(), "3 / 3")  # The last page ...
+	assert_true(screen._cards[25].is_visible_in_tree())  # ... with the last two Trophies.
+	assert_true(screen._pager._next.disabled)  # No page after it.
+	screen._pager.swipe(300.0)  # A swipe to the right ...
+	assert_eq(screen._pager.label_text(), "2 / 3")  # ... goes back a page.
+
+
+# The arrows and "1 / 3" belong to the Trophies tab, so the Records tab hides them.
+func test_records_tab_hides_the_pages() -> void:
+	var screen := _open("trophies_screen")  # The Trophies screen.
+	screen.show_tab(1)  # The Records tab.
+	assert_false(screen._pager.is_visible_in_tree())  # No arrows there.
 
 
 # Returns the picture node showing a texture inside a card.

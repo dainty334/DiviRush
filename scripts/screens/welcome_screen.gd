@@ -1,6 +1,6 @@
-# Welcome screen (D-030): shown once, after "Tap to Start", to a first-time player, and to a learner
+# Welcome screen (D-030, D-032): shown once, after "Tap to Start", to a first-time player, and to a learner
 # whose save from an older version has no Nickname yet. Ana and Migo say hello; the learner types a
-# Nickname and picks a Buddy; Next saves both and opens the Main menu.
+# Nickname and picks a Buddy; Next saves both and opens the How to Play lessons, then the Main menu.
 extends ScreenBase  # Shared background, margins and column.
 
 var _nickname: NicknameBox  # Where the Nickname is typed.
@@ -67,7 +67,13 @@ func _on_next() -> void:
 	if not _nickname.is_ready():  # No Nickname yet ...
 		return  # ... so stay (Next is off anyway).
 	save_choices()  # Keep them.
-	Game.go_to("main_menu")  # On to the Main menu.
+	Game.go_to(next_screen())  # On to the lessons.
+
+
+# Returns the screen after Welcome: the How to Play lessons, once, which then go on to the Main
+# menu (D-032). The Welcome screen shows only once, so the lessons open by themselves only once.
+func next_screen() -> String:
+	return "how_to_play"  # The picture lessons.
 
 
 # Back returns to the Start-up menu; the Welcome screen shows again next time.

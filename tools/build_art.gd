@@ -186,7 +186,7 @@ func _star_frames() -> Array:
 	return frames  # Hand back all six.
 
 
-# Fifteen small 96 x 96 icons, in this order:
+# Seventeen small 96 x 96 icons, in this order (15 tick and 16 flame for the Records tiles, D-032):
 # 0 back arrow, 1 gold Star, 2 empty Star, 3 clock, 4 lock, 5 music note, 6 speaker, 7 vibrating phone,
 # 8 play arrow, 9 question mark, 10 gear, 11 door (for the Main menu, D-017), 12 Trophy, 13 bar chart (D-022, D-023),
 # 14 pencil (D-030).
@@ -215,7 +215,13 @@ func _icon_frames() -> Array:
 	frames.append_array(_menu_icon_frames())  # 8-11: the Main menu button icons (D-017).
 	frames.append_array(_progress_icon_frames())  # 12-13: Trophy and Records icons (D-022, D-023).
 	frames.append(_pencil_icon())  # 14: pencil, to change the Nickname (D-030).
-	return frames  # Hand back all fifteen.
+	var tick := _circle(48, 48, 40, GREEN, 7.0)  # 15: a green circle ...
+	tick += "<path d=\"M28 50 L42 64 L68 34\" fill=\"none\" stroke=\"%s\" stroke-width=\"11\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>" % WHITE  # ... with a white tick, for right answers (D-032).
+	frames.append(tick)  # 15: tick.
+	var flame := "<path d=\"M48 8 C64 30 78 42 76 62 C74 80 62 88 48 88 C34 88 22 80 20 62 C18 46 30 36 34 22 C40 34 44 38 48 40 C50 28 50 18 48 8 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % [ORANGE, INK]  # 16: an orange flame ...
+	flame += "<path d=\"M48 50 C58 60 62 66 60 74 C58 82 52 84 48 84 C44 84 38 82 36 74 C34 66 42 60 48 50 Z\" fill=\"%s\"/>" % YELLOW  # ... with a yellow middle, for the best streak (D-032).
+	frames.append(flame)  # 16: flame.
+	return frames  # Hand back all seventeen.
 
 
 # One 200 x 200 picture for each Trophy (D-031), in Trophies.ALL order: a ring in its group's colour

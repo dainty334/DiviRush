@@ -3,7 +3,7 @@
 class_name UiKit  # Lets any script write UiKit.button(...).
 extends RefCounted  # Only its static functions are used.
 
-enum Icon { BACK, STAR, STAR_EMPTY, CLOCK, LOCK, MUSIC, SOUND, VIBRATION, PLAY, HELP, GEAR, EXIT, TROPHY, CHART, PENCIL }  # Frame order in icons_96x96_15f.png.
+enum Icon { BACK, STAR, STAR_EMPTY, CLOCK, LOCK, MUSIC, SOUND, VIBRATION, PLAY, HELP, GEAR, EXIT, TROPHY, CHART, PENCIL, TICK, FLAME }  # Frame order in icons_96x96_17f.png.
 
 const FONT_PATH := "res://assets/fonts/Fredoka-Variable.ttf"  # Rounded font (OFL licence, D-010).
 const BORDER := 10  # Thick dark outline width, as in the style sample.

@@ -43,6 +43,7 @@ const DROP_SECONDS := 0.8  # How long the drop takes, bounce included.
 
 var mascot_name: String  # "Ana" or "Migo".
 var lines: Array[String] = []  # Everything the mascot says, in order.
+var bubble_hidden := false  # true when a screen shows the words in its own bubble; the mouth still moves (D-032).
 var line_index := -1  # Which line is showing now (-1: none yet, so the first tap says the greeting).
 var _frames: Array[Texture2D] = []  # The nine parts, in Part order.
 var _rig: Control  # Holds every part; it drops in, breathes and sways as one.
@@ -104,6 +105,7 @@ func _ready() -> void:
 	_brows = _add_part(_head_rig, Part.BROWS, Vector2.ZERO)  # Eyebrows.
 	_mouth = _add_part(_head_rig, Part.MOUTH, Vector2.ZERO)  # Smile.
 	add_child(_make_bubble())  # The speech bubble, hidden until a tap, in front of the mascot.
+	_bubble.visible = not bubble_hidden  # A screen with its own bubble keeps this one hidden (D-032).
 	_next_blink = randf_range(BLINK_GAP_MIN, BLINK_GAP_MAX)  # When the first blink comes.
 	_drop_in()  # Drop in with a bounce (D-027).
 	_start_idle()  # Breathe, sway and swing the arms while nobody taps (D-026, D-027).

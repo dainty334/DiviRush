@@ -89,9 +89,10 @@ func appear(delay: float) -> void:
 # Correct answer: turns green, shows a tick, bounces and sparkles.
 func mark_correct() -> void:
 	reveal()  # Green with a tick.
+	var base := scale  # Its own size: full on the Play screen, smaller in the lessons (D-032).
 	var tween := create_tween()  # A tween on this bubble.
-	tween.tween_property(self, "scale", Vector2(1.18, 1.18), 0.12).set_trans(Tween.TRANS_QUAD)  # Grow quickly.
-	tween.tween_property(self, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)  # Spring back.
+	tween.tween_property(self, "scale", base * 1.18, 0.12).set_trans(Tween.TRANS_QUAD)  # Grow quickly.
+	tween.tween_property(self, "scale", base, 0.3).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)  # Spring back to its own size.
 	for offset in [Vector2(-20, -30), Vector2(190, -10), Vector2(90, 200)]:  # Three sparkles around the bubble ...
 		var sparkle := Sparkle.new()  # ... each a new burst,
 		sparkle.position = offset  # ... at its own spot,

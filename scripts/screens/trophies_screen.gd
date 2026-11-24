@@ -2,10 +2,12 @@
 #   Trophies  all 26 Trophies, each with its own picture (D-031). Earned ones show in colour; ones not
 #             yet earned show their picture in grey with a small lock, and their goal. Tapping one opens
 #             its card: its name, its goal, and the day it was earned, or how far along the learner is.
+#             They come 12 to a page, turned with the arrows and "1 / 3" under the grid (D-032).
 #   Records   the learner's game records (before D-030, the My Records screen).
 extends ScreenBase  # Shared background, margins and column.
 
-const CARD_SIZE := Vector2(310, 300)  # Each Trophy card, so three fit side by side.
+const CARD_SIZE := Vector2(310, 280)  # Each Trophy card, so three fit side by side and four rows fit the screen (D-032).
+const PER_PAGE := 12  # Trophies on one page: three columns and four rows (D-032).
 const TAB_NAMES: Array[String] = ["Trophies", "Records"]  # The two tabs, in order.
 const TAB_SIZE := Vector2(440, 120)  # Each tab button.
 
@@ -14,6 +16,8 @@ var _tabs: Array[Button] = []  # The Trophies and Records tab buttons.
 var _pages: Array[Control] = []  # What each tab shows: the Trophy grid, then the Records.
 var _trophy_card: Control  # The card of the Trophy tapped last; made when a Trophy is tapped.
 var _trophy_ok: Button  # The OK button that closes that card.
+var _grids: Array[GridContainer] = []  # One grid of up to 12 Trophies per page (D-032).
+var _pager: Pager  # The arrows and "1 / 3" under the grid.
 
 
 # Builds the screen. Called once by ScreenBase when the screen opens.
@@ -56,24 +60,43 @@ func _make_page(content: Control) -> ScrollContainer:
 	return scroll  # Hand it back.
 
 
-# Makes the Trophies page: the twelve cards in a grid of three columns.
-func _make_trophy_page() -> ScrollContainer:
+# Makes the Trophies page (D-032): the Trophies 12 at a time, in a grid of three columns and four
+# rows, with the arrows and "1 / 3" under it. All the cards are made at once; the arrows show one grid.
+func _make_trophy_page() -> VBoxContainer:
+	var page := VBoxContainer.new()  # The grids above the arrows.
+	page.size_flags_vertical = Control.SIZE_EXPAND_FILL  # Take the rest of the screen.
+	page.add_theme_constant_override("separation", 24)  # Space above the arrows.
+	column.add_child(page)  # Show it.
 	var centre := CenterContainer.new()  # Keeps the grid in the middle.
-	centre.size_flags_horizontal = Control.SIZE_EXPAND_FILL  # As wide as the screen.
-	var page := _make_page(centre)  # In its scroll area.
-	var grid := GridContainer.new()  # Three cards per row.
-	grid.columns = 3  # Three columns.
-	grid.add_theme_constant_override("h_separation", 24)  # Space between the columns.
-	grid.add_theme_constant_override("v_separation", 24)  # Space between the rows.
-	centre.add_child(grid)  # Put the grid in the middle.
+	centre.size_flags_vertical = Control.SIZE_EXPAND_FILL  # The arrows sit at the bottom.
+	page.add_child(centre)  # Add it.
+	var page_count := ceili(Trophies.ALL.size() / float(PER_PAGE))  # 26 Trophies make 3 pages.
+	for p in range(page_count):  # Each page ...
+		var grid := GridContainer.new()  # ... its own grid,
+		grid.columns = 3  # ... of three columns,
+		grid.add_theme_constant_override("h_separation", 24)  # ... with space between the columns,
+		grid.add_theme_constant_override("v_separation", 24)  # ... and between the rows.
+		grid.size_flags_vertical = Control.SIZE_SHRINK_BEGIN  # Stay at the top when a page is short.
+		centre.add_child(grid)  # All grids share the same place; one shows at a time.
+		_grids.append(grid)  # Remember it.
 	for i in range(Trophies.ALL.size()):  # Each Trophy, in order ...
 		var trophy: Dictionary = Trophies.ALL[i]  # ... its id, name and goal,
 		var card := _make_card(trophy, Save.records.has_trophy(trophy.id))  # ... earned or not,
 		card.pressed.connect(_open_trophy.bind(i))  # ... opens its card when tapped,
-		grid.add_child(card)  # ... shown in the grid,
+		_grids[floori(i / float(PER_PAGE))].add_child(card)  # ... shown in its page's grid,
 		_cards.append(card)  # ... and remembered.
-		UiKit.pop_in(card, 0.04 * i)  # Cards pop in one after another.
+		UiKit.pop_in(card, 0.04 * (i % PER_PAGE))  # Cards pop in one after another on each page.
+	_pager = Pager.new(page_count)  # The arrows and "1 / 3".
+	_pager.page_changed.connect(_show_trophy_page)  # Show the page they choose.
+	page.add_child(_pager)  # Under the grid.
+	_show_trophy_page(0)  # Start on page 1.
 	return page  # Hand back the page.
+
+
+# Shows one page of Trophies and hides the others.
+func _show_trophy_page(index: int) -> void:
+	for p in range(_grids.size()):  # Each page's grid ...
+		_grids[p].visible = p == index  # ... shows only when chosen.
 
 
 # Makes one Trophy card button: earned = white with a gold Trophy; not yet earned = grey with a lock.

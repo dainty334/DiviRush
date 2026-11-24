@@ -48,7 +48,7 @@ static func star() -> Array[Texture2D]:
 
 # The 14 small icons; use UiKit.Icon to pick one.
 static func icons() -> Array[Texture2D]:
-	return frames("icons_96x96_15f.png", Vector2i(96, 96), 15)  # Back, Stars, clock, lock, music, sound, vibration, play, help, gear, door (D-017), Trophy, chart (D-023), pencil (D-030).
+	return frames("icons_96x96_17f.png", Vector2i(96, 96), 17)  # Back, Stars, clock, lock, music, sound, vibration, play, help, gear, door (D-017), Trophy, chart (D-023), pencil (D-030), tick, flame (D-032).
 
 
 # The title logo (one frame).

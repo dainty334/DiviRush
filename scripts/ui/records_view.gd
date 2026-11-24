@@ -1,84 +1,110 @@
-# The Records tab of the Trophies screen (D-023, D-030): the learner's game records as plain numbers
-# and bars. They are records of play, not grades, so there are no percentages or marks (Chapter 1).
-# Before D-030 this was the My Records screen.
+# The Records tab of the Trophies screen (D-023, D-030, D-032): the learner's game records as six
+# big colour tiles (an icon, a big number and a short name each), and "Stars in each Episode", one
+# row per Episode in its world colour. They are records of play, not grades, so there are no
+# percentages or marks (Chapter 1). Before D-030 this was the My Records screen.
 class_name RecordsView  # Lets the Trophies screen write RecordsView.new().
-extends VBoxContainer  # The two white cards, top to bottom.
+extends VBoxContainer  # The tiles above the Episode card.
 
 const EPISODE_STARS := 45  # Stars in one Episode: 3 Difficulties x 5 Levels x 3 Stars.
+const TILE_SIZE := Vector2(310, 280)  # Each tile, so three fit side by side.
+const EPISODE_COLOURS := [Color("#4FA8F5"), Color("#4CB050"), Color("#EE5A7A"), Color("#3F2A9C")]  # Each Episode's sky colour (D-020): day, meadow, sunset, night.
+
+var tiles: Array[PanelContainer] = []  # The six tiles, in order.
 
 
-# Builds both cards from the learner's saved progress and records.
+# Builds the tiles and the Episode card from the learner's saved progress and records.
 func _init() -> void:
-	add_theme_constant_override("separation", 32)  # Space between the cards.
+	add_theme_constant_override("separation", 32)  # Space between the tiles and the card.
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL  # As wide as the column.
 	var records: Records = Save.records  # The learner's records.
-	var rows := _make_card()  # The first white card.
-	_add_row(rows, UiKit.Icon.STAR, "Stars earned", "%d of %d" % [Save.progress.total_stars(), Progress.MAX_STARS])  # Stars.
-	_add_row(rows, UiKit.Icon.CHART, "Levels passed", "%d of %d" % [Save.progress.levels_passed(), Progress.LEVEL_TOTAL])  # Levels passed.
-	_add_row(rows, UiKit.Icon.PLAY, "Levels played", str(records.levels_played))  # Levels played.
-	_add_row(rows, UiKit.Icon.HELP, "Correct answers", str(records.correct_total))  # Correct answers.
-	_add_row(rows, UiKit.Icon.TROPHY, "Best streak", "%d in a row" % records.best_streak)  # Best streak.
-	_add_row(rows, UiKit.Icon.CLOCK, "Time played", _time_text(records.seconds_played))  # Time played.
-	var bars := _make_card()  # The second white card.
-	bars.add_child(UiKit.label("Stars in each Episode", 44, Palette.INK))  # Its title.
-	for episode in range(1, Progress.EPISODE_COUNT + 1):  # Each Episode ...
-		_add_bar(bars, episode)  # ... gets a bar.
+	var grid := GridContainer.new()  # Two rows of three tiles.
+	grid.columns = 3  # Three across.
+	grid.add_theme_constant_override("h_separation", 24)  # Space between the columns.
+	grid.add_theme_constant_override("v_separation", 24)  # Space between the rows.
+	grid.size_flags_horizontal = Control.SIZE_SHRINK_CENTER  # Centred.
+	add_child(grid)  # Show it.
+	_add_tile(grid, UiKit.Icon.STAR, str(Save.progress.total_stars()), "of %d" % Progress.MAX_STARS, "Stars", Palette.YELLOW)  # Stars earned.
+	_add_tile(grid, UiKit.Icon.CHART, str(Save.progress.levels_passed()), "of %d" % Progress.LEVEL_TOTAL, "Levels passed", Palette.GREEN)  # Levels passed.
+	_add_tile(grid, UiKit.Icon.PLAY, str(records.levels_played), "", "Levels played", Palette.SKY_TOP)  # Levels played.
+	_add_tile(grid, UiKit.Icon.TICK, str(records.correct_total), "", "Right answers", Color("#FF9EBB"))  # Right answers, on soft pink.
+	_add_tile(grid, UiKit.Icon.FLAME, str(records.best_streak), "in a row", "Best streak", Palette.ORANGE)  # Best streak.
+	_add_tile(grid, UiKit.Icon.CLOCK, _time_text(records.seconds_played), "", "Time played", Color("#C6B6FF"))  # Time played, on soft lavender.
+	add_child(_make_episode_card())  # Stars in each Episode.
 
 
-# Adds a white card and returns the list inside it, for rows to go in.
-func _make_card() -> VBoxContainer:
+# Adds one colour tile: the icon, the big number, an optional small line under it (such as
+# "of 180"), and the tile's name.
+func _add_tile(grid: GridContainer, which: int, value: String, under: String, what: String, colour: Color) -> void:
+	var tile := PanelContainer.new()  # The tile.
+	var style := UiKit.box(colour, 44)  # Its colour, round and outlined.
+	style.set_content_margin_all(14)  # Room inside.
+	tile.add_theme_stylebox_override("panel", style)  # Use this look.
+	tile.custom_minimum_size = TILE_SIZE  # Its size.
+	tile.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Not a button.
+	var lines := VBoxContainer.new()  # Icon, number and name, top to bottom.
+	lines.alignment = BoxContainer.ALIGNMENT_CENTER  # Centred up and down.
+	lines.add_theme_constant_override("separation", 0)  # Close together.
+	tile.add_child(lines)  # Put them on the tile.
+	var picture := UiKit.icon(which, 76)  # The icon.
+	picture.size_flags_horizontal = Control.SIZE_SHRINK_CENTER  # Centred.
+	lines.add_child(picture)  # Add it.
+	lines.add_child(UiKit.label(value, 76, Palette.INK))  # The big number.
+	if under != "":  # A small line goes under the number ...
+		lines.add_child(UiKit.label(under, 30, Palette.INK))  # ... such as "of 180".
+	var name_label := UiKit.label(what, 34, Palette.INK)  # The tile's name.
+	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART  # Long names wrap.
+	name_label.custom_minimum_size.x = TILE_SIZE.x - 40.0  # As wide as the tile's inside.
+	lines.add_child(name_label)  # Add it.
+	grid.add_child(tile)  # Show the tile.
+	tiles.append(tile)  # Remember it.
+
+
+# Makes the white "Stars in each Episode" card: one row per Episode.
+func _make_episode_card() -> PanelContainer:
 	var card := PanelContainer.new()  # The card.
 	var style := UiKit.box(Palette.WHITE, 48)  # White, round and outlined.
-	style.set_content_margin_all(30)  # Room inside the card.
+	style.set_content_margin_all(28)  # Room inside.
 	card.add_theme_stylebox_override("panel", style)  # Use this look.
 	card.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Not a button.
-	add_child(card)  # Show it.
-	var lines := VBoxContainer.new()  # The rows, top to bottom.
-	lines.add_theme_constant_override("separation", 14)  # Space between rows.
+	var lines := VBoxContainer.new()  # The title and the rows.
+	lines.add_theme_constant_override("separation", 18)  # Space between rows.
 	card.add_child(lines)  # Put them on the card.
-	return lines  # Hand back the list.
+	lines.add_child(UiKit.label("Stars in each Episode", 46, Palette.INK))  # The title.
+	for episode in range(1, Progress.EPISODE_COUNT + 1):  # Each Episode ...
+		lines.add_child(_episode_row(episode))  # ... gets a row.
+	return card  # Hand back the card.
 
 
-# Adds one record row: an icon, what it is, and its value on the right.
-func _add_row(lines: VBoxContainer, which: int, what: String, value: String) -> void:
-	var row := HBoxContainer.new()  # Icon, words and value side by side.
-	row.add_theme_constant_override("separation", 20)  # Space between them.
-	row.add_child(UiKit.icon(which, 64))  # The icon.
-	var name_label := UiKit.label(what, 44, Palette.INK)  # What the record is.
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT  # Lined up on the left.
-	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL  # Take the free width.
-	row.add_child(name_label)  # Add it.
-	var value_label := UiKit.label(value, 44, Palette.BLUE)  # The record itself.
-	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT  # Lined up on the right.
-	row.add_child(value_label)  # Add it.
-	lines.add_child(row)  # Add the row to the card.
-
-
-# Adds one Episode's Stars as a bar: "Episode 1", a yellow bar, and "5/45".
-func _add_bar(lines: VBoxContainer, episode: int) -> void:
+# Makes one Episode row: a badge with its number in its world colour, a Star bar, and "5/45" with a Star.
+func _episode_row(episode: int) -> HBoxContainer:
 	var stars := 0  # Stars in this Episode ...
 	for difficulty: int in Difficulty.Kind.values():  # ... over Easy, Medium and Hard.
 		stars += Save.progress.stars_in(episode, difficulty)  # Add each Difficulty's Stars.
-	var row := HBoxContainer.new()  # Name, bar and count side by side.
+	var row := HBoxContainer.new()  # Badge, bar and count side by side.
 	row.add_theme_constant_override("separation", 20)  # Space between them.
-	var name_label := UiKit.label("Episode %d" % episode, 40, Palette.INK)  # Which Episode.
-	name_label.custom_minimum_size.x = 210.0  # Same width for every Episode, so the bars line up.
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT  # Lined up on the left.
-	row.add_child(name_label)  # Add it.
+	var badge := PanelContainer.new()  # The Episode badge.
+	var badge_style := UiKit.box(EPISODE_COLOURS[episode - 1], 24, 6)  # In the Episode's colour.
+	badge_style.set_content_margin_all(4)  # A little room inside.
+	badge.add_theme_stylebox_override("panel", badge_style)  # Use this look.
+	badge.custom_minimum_size = Vector2(86, 86)  # A square badge.
+	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Not a button.
+	badge.add_child(UiKit.label(str(episode), 52, Palette.WHITE, 10))  # The Episode number, white with a dark outline.
+	row.add_child(badge)  # On the left.
 	var bar := ProgressBar.new()  # The bar.
 	bar.max_value = EPISODE_STARS  # Full at 45 Stars.
 	bar.value = stars  # Filled to this Episode's Stars.
 	bar.show_percentage = false  # Records, not percentages.
-	bar.custom_minimum_size = Vector2(0, 40)  # Its height.
+	bar.custom_minimum_size = Vector2(0, 46)  # Its height.
 	bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL  # Take the free width.
 	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER  # Centred up and down.
-	bar.add_theme_stylebox_override("background", UiKit.box(Palette.LOCKED, 20, 4))  # Grey track.
-	bar.add_theme_stylebox_override("fill", UiKit.box(Palette.YELLOW, 20, 4))  # Gold fill, like the Stars.
-	row.add_child(bar)  # Add it.
-	var count := UiKit.label("%d/%d" % [stars, EPISODE_STARS], 40, Palette.BLUE)  # For example "5/45".
-	count.custom_minimum_size.x = 120.0  # Same width for every Episode.
+	bar.add_theme_stylebox_override("background", UiKit.box(Palette.LOCKED, 22, 4))  # Grey track.
+	bar.add_theme_stylebox_override("fill", UiKit.box(Palette.YELLOW, 22, 4))  # Gold fill, like the Stars.
+	row.add_child(bar)  # In the middle.
+	var count := UiKit.label("%d/%d" % [stars, EPISODE_STARS], 42, Palette.BLUE)  # For example "5/45".
+	count.custom_minimum_size.x = 130.0  # Same width for every Episode, so the bars line up.
 	row.add_child(count)  # Add it.
-	lines.add_child(row)  # Add the row to the card.
+	row.add_child(UiKit.icon(UiKit.Icon.STAR, 52))  # A Star after the count.
+	return row  # Hand back the row.
 
 
 # Turns seconds into short words: "45 s" under a minute, then whole minutes ("12 min").

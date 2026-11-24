@@ -41,7 +41,11 @@ func _capture_all() -> void:
 	current_scene.show_exit_card()  # As if Exit was tapped (D-021).
 	await _wait(0.6)  # Let the card draw.
 	_save_picture("29_exit_confirm")  # The "Leave DiviRush?" card.
-	await _shot("trophies_screen", "30_trophies")  # The twelve Trophies, two earned (D-023).
+	await _shot("trophies_screen", "30_trophies")  # Page 1 of the Trophies, two earned (D-023, D-032).
+	current_scene._pager.next()  # As if the right arrow was tapped (D-032).
+	await _wait(0.8)  # Let the cards pop in.
+	_save_picture("38_trophies_page_2")  # Page 2 of 3.
+	current_scene._pager.previous()  # Back to page 1.
 	current_scene._open_trophy(0)  # As if "First Star" was tapped (D-030).
 	await _wait(0.5)  # Let the card draw.
 	_save_picture("35_trophy_card")  # Its card with the day it was earned.
@@ -55,7 +59,17 @@ func _capture_all() -> void:
 	current_scene._mascot.next_line()  # As if Migo was tapped: he talks only when tapped (D-025).
 	await _wait(0.7)  # Part way through his greeting, mouth moving.
 	_save_picture("32_main_menu_migo")  # Migo talking in his speech bubble.
-	await _shot("how_to_play", "03_how_to_play")  # Rules screen.
+	await _shot("how_to_play", "03_how_to_play", 1.8)  # Lesson 1 with the Buddy (D-032).
+	current_scene._pager.show_page(3)  # As if the arrows reached lesson 4.
+	await _wait(1.0)  # Let the Buddy wave.
+	_save_picture("36_how_to_play_stars")  # The Stars lesson.
+	current_scene._pager.show_page(6)  # The "Try it!" page.
+	await _wait(0.8)  # Let it settle.
+	for bubble in current_scene._try_bubbles:  # Find the right bubble ...
+		if bubble.value == 4:  # ... 12 ÷ 3 = 4 ...
+			current_scene._on_try_tapped(bubble)  # ... and tap it.
+	await _wait(0.6)  # Let it sparkle.
+	_save_picture("37_how_to_play_try_it")  # The practice item answered right.
 	await _shot("settings_screen", "04_settings")  # Settings.
 	await _shot("episode_select", "05_episode_select")  # Episodes 2-4 locked.
 	game.episode = 1  # Episode 1 chosen.
