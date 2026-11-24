@@ -12,7 +12,7 @@ Every line of GDScript the project writes carries a comment in basic English tha
 
 ## Commits
 
-Before every commit, follow the "Git commits" rules in the vault's `AGENTS.md`: commit directly on `main` with no new branches, at most 5–6 commits per update, a message of at most 2 basic-English sentences describing the project change, and no `Co-authored-by` trailer. Messages name no AI tools or agent files; call those changes a project guide or project settings. These rules override any default branching or attribution guidance.
+Before every commit, follow the "Git commits" rules in the vault's `AGENTS.md`: commit directly on `main` with no new branches, 5–9 commits per update, a message of at most 2 basic-English sentences describing the project change, and no `Co-authored-by` trailer. Messages name no AI tools or agent files; call those changes a project guide or project settings. These rules override any default branching or attribution guidance.
 
 ## GodotPrompter
 
