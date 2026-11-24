@@ -108,7 +108,7 @@ func test_profile_shows_the_learner() -> void:
 	assert_has(texts, "Your buddy")  # The Buddy heading.
 	assert_eq(screen._picker.selected, "Ana")  # Ana is picked.
 	assert_eq(screen._face().buddy, "Ana")  # Ana's face shows.
-	for expected: String in ["3/180", "2/12", "1/60"]:  # Stars, Trophies and Levels passed ...
+	for expected: String in ["3/180", "2/26", "1/60"]:  # Stars, Trophies and Levels passed ...
 		assert_has(texts, expected, expected)  # ... each shows.
 
 
@@ -136,6 +136,33 @@ func test_profile_changes_the_nickname() -> void:
 	assert_eq(Save.profile.nickname, "Bianca")  # Kept.
 	assert_has(_texts(screen), "Bianca")  # Shown.
 	assert_false(screen._edit_card.visible)  # The card closes.
+
+
+# Before any Trophy is earned, the Featured Trophy place says how to fill it (D-031).
+func test_featured_trophy_before_any_trophy() -> void:
+	Save.profile.nickname = "Bea"  # A Nickname, no Trophies.
+	var screen := _open("profile_screen")  # The Profile.
+	assert_has(_texts(screen), "Featured Trophy")  # The heading.
+	assert_has(_texts(screen), "Earn a Trophy to show it here.")  # What to do.
+	assert_true(screen._featured_button.disabled)  # Nothing to pick yet.
+
+
+# Picking a Featured Trophy saves it and shows it big on the Profile; None takes it away (D-031).
+func test_pick_a_featured_trophy() -> void:
+	Save.profile.nickname = "Bea"  # A Nickname.
+	Save.records.trophies.assign(["first_star", "perfect_10"])  # Two Trophies earned.
+	var screen := _open("profile_screen")  # The Profile.
+	assert_has(_texts(screen), "Tap to pick a Trophy")  # None picked yet.
+	screen._featured_button.pressed.emit()  # Tap the Featured Trophy place.
+	assert_true(screen._featured_card.visible)  # The picker shows ...
+	assert_eq(screen._featured_choices.size(), 2)  # ... with the two earned Trophies.
+	screen._featured_choices[1].pressed.emit()  # Pick "Perfect 10".
+	assert_eq(Save.profile.featured, "perfect_10")  # Saved.
+	assert_false(screen._featured_card.visible)  # The picker closes.
+	assert_has(_texts(screen), "Perfect 10")  # Its name shows on the Profile.
+	screen._featured_button.pressed.emit()  # Open the picker again ...
+	screen._featured_none.pressed.emit()  # ... and pick None.
+	assert_eq(Save.profile.featured, "")  # Nothing featured.
 
 
 # Back while the Nickname card is open closes the card instead of leaving the Profile.

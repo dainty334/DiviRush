@@ -18,11 +18,18 @@ func _ready() -> void:
 
 
 # Saves one finished play: its bests, its game records, and any Trophies it earns (D-023).
+# `lead` and `tail` are the right answers in a row at the start and at the end of the Level, and
+# `total` its number of items, for the streak that carries across Levels (D-031); -1 skips it.
 # Returns which bests are new, plus "new_trophies", the ids of the Trophies just earned.
 # Called by the Play screen at the end of a Level.
-func record_result(episode: int, difficulty: int, level: int, stars: int, score: int, time: float, correct: int = 0, streak: int = 0) -> Dictionary:
+func record_result(episode: int, difficulty: int, level: int, stars: int, score: int, time: float, correct: int = 0, streak: int = 0, lead: int = -1, tail: int = -1, total: int = 0) -> Dictionary:
+	var passed_before := progress.is_passed(episode, difficulty, level)  # Was this Level passed before this play?
 	var flags := progress.record(episode, difficulty, level, stars, score, time)  # Update the bests.
 	records.add_play(correct, streak, time)  # Add the play to the records.
+	records.note_day(Time.get_date_string_from_system())  # Count today, once, for "Three Days" (D-031).
+	records.note_result(Progress.level_key(episode, difficulty, level), stars >= 1, passed_before)  # Passed means at least one Star; for "Try Again".
+	if lead >= 0:  # The Play screen gave the streaks ...
+		records.carry_streak(lead, tail, correct, total)  # ... so carry the streak on, for "Super Streak".
 	flags["new_trophies"] = Trophies.award(progress, records)  # Give any Trophies now earned.
 	save_now()  # Write everything to the device straight away.
 	return flags  # Tell the Level end screen what is new.
@@ -53,6 +60,14 @@ func set_nickname(nickname: String) -> void:
 func set_buddy(buddy: String) -> void:
 	if Profile.BUDDIES.has(buddy):  # Ana, Migo or Both ...
 		profile.buddy = buddy  # ... is kept,
+		save_now()  # ... and written to the device.
+
+
+# Picks the Featured Trophy from the Profile screen and saves it (D-031). Only an earned Trophy, or
+# "" for None, can be picked.
+func set_featured(id: String) -> void:
+	if id == "" or records.has_trophy(id):  # None, or an earned Trophy ...
+		profile.featured = id  # ... is kept,
 		save_now()  # ... and written to the device.
 
 

@@ -9,6 +9,7 @@ const FONT_PATH := "res://assets/fonts/Fredoka-Variable.ttf"  # Rounded font (OF
 const BORDER := 10  # Thick dark outline width, as in the style sample.
 
 static var _font: FontVariation  # The bold Fredoka font, made once.
+static var _grey: ShaderMaterial  # The grey look for Trophies not yet earned, made once (D-031).
 
 
 # Returns Fredoka at a bold weight. Fredoka is a variable font, so the weight is set here.
@@ -227,6 +228,43 @@ static func count_pill(which: int, earned: int, total: int) -> PanelContainer:
 	row.add_child(label("%d/%d" % [earned, total], 46, Palette.INK))  # The count.
 	pill.add_child(row)  # Put them in the pill.
 	return pill  # Hand back the pill.
+
+
+# Makes one Trophy's own picture, `size` pixels square (D-031). A Trophy not yet earned shows its
+# picture in grey with a small lock in the corner, so the learner sees what they are working towards.
+static func trophy_picture(id: String, size: float, earned: bool) -> Control:
+	var holder := Control.new()  # Holds the picture and, when locked, the lock.
+	holder.custom_minimum_size = Vector2(size, size)  # Its size.
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go to the card around it.
+	var picture := TextureRect.new()  # The Trophy's picture.
+	picture.texture = SpriteSheet.trophies()[maxi(Trophies.index_of(id), 0)]  # Its own frame.
+	picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE  # Any size.
+	picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED  # Keep its shape.
+	picture.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)  # Fill the holder.
+	picture.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go through.
+	holder.add_child(picture)  # Show it.
+	if not earned:  # Not earned yet ...
+		picture.material = _grey_material()  # ... so grey,
+		var lock := icon(Icon.LOCK, size * 0.38)  # ... with a small lock,
+		lock.anchor_left = 1.0  # ... hung from the right ...
+		lock.anchor_right = 1.0  # ... edge,
+		lock.anchor_top = 1.0  # ... and the bottom ...
+		lock.anchor_bottom = 1.0  # ... edge,
+		lock.offset_left = -size * 0.38  # ... in the corner.
+		lock.offset_top = -size * 0.38  # Its top edge.
+		holder.add_child(lock)  # Show it.
+	return holder  # Hand back the picture.
+
+
+# Returns the grey look for pictures of Trophies not yet earned: it keeps each picture's shape but
+# turns its colours to soft grey (D-031). Made once, in code, so no shader file is needed.
+static func _grey_material() -> ShaderMaterial:
+	if _grey == null:  # Not made yet ...
+		var shader := Shader.new()  # ... a small shader,
+		shader.code = "shader_type canvas_item;\nvoid fragment() {\n\tvec4 c = texture(TEXTURE, UV);\n\tfloat g = dot(c.rgb, vec3(0.3, 0.59, 0.11));\n\tCOLOR = vec4(vec3(g * 0.55 + 0.35), c.a * 0.9);\n}\n"  # ... that mixes each colour to a light grey,
+		_grey = ShaderMaterial.new()  # ... in a material,
+		_grey.shader = shader  # ... using it.
+	return _grey  # Hand back the material.
 
 
 # Makes a control pop in from nothing with a bounce, after a delay. Used when screens open.

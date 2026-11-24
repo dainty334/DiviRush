@@ -63,6 +63,11 @@ static func mascot(who: String) -> Array[Texture2D]:
 	return frames("mascot_%s_450x780_10f.png" % who.to_lower(), Vector2i(450, 780), 10)  # Each part on a whole-mascot frame; file names are lower case, as Android needs.
 
 
+# The 26 Trophy pictures, one per Trophy in Trophies.ALL order (D-031).
+static func trophies() -> Array[Texture2D]:
+	return frames("trophies_200x200_26f.png", Vector2i(200, 200), 26)  # Each Trophy's own picture in its group's ring.
+
+
 # Returns a mascot's small face for the Profile (D-030): the head, open eyes, eyebrows and smile,
 # each cut to the square around the head, to be stacked in this order.
 static func mascot_face(who: String) -> Array[Texture2D]:

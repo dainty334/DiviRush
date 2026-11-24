@@ -85,6 +85,18 @@ func test_profile_pill() -> void:
 	assert_true(pill.size.x >= pill.get_child(0).get_combined_minimum_size().x)  # Wide enough for its face and Nickname.
 
 
+# The Featured Trophy shows small on the Profile pill, after the Nickname (D-031).
+func test_featured_trophy_on_the_pill() -> void:
+	var trophy: Texture2D = SpriteSheet.trophies()[0]  # "First Star"'s picture, earned in before_each.
+	var before: Array = screen._profile_button.find_children("*", "TextureRect", true, false).map(func(n: Node) -> Texture2D: return (n as TextureRect).texture)  # Pictures on the pill now.
+	assert_does_not_have(before, trophy)  # None featured: no Trophy on the pill.
+	Save.profile.featured = "first_star"  # Featured now.
+	var menu: Node = load(MAIN_MENU).instantiate()  # A new Main menu ...
+	add_child_autofree(menu)  # ... built.
+	var after: Array = menu._profile_button.find_children("*", "TextureRect", true, false).map(func(n: Node) -> Texture2D: return (n as TextureRect).texture)  # Its pill's pictures.
+	assert_has(after, trophy)  # The Trophy shows.
+
+
 # A learner who picked one Buddy sees only that mascot, every visit (D-030).
 func test_only_the_chosen_buddy_shows() -> void:
 	Save.profile.buddy = "Migo"  # Only Migo.

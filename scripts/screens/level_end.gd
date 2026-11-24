@@ -126,7 +126,9 @@ func _build_trophy_banner(trophies: Array) -> PanelContainer:
 	var row := HBoxContainer.new()  # Picture beside the words.
 	row.add_theme_constant_override("separation", 20)  # Space between them.
 	banner.add_child(row)  # Put it on the banner.
-	row.add_child(UiKit.icon(UiKit.Icon.TROPHY, 96))  # The gold Trophy.
+	var picture := UiKit.trophy_picture(trophies[0], 110, true)  # The first new Trophy's own picture (D-031).
+	picture.size_flags_vertical = Control.SIZE_SHRINK_CENTER  # Centred up and down.
+	row.add_child(picture)  # Add it.
 	var words := VBoxContainer.new()  # Heading above the names.
 	words.add_theme_constant_override("separation", 0)  # Close together.
 	row.add_child(words)  # Add it.

@@ -11,6 +11,7 @@ static var _not_allowed: RegEx  # Finds every sign that is not a letter, a numbe
 
 var nickname := ""  # The Nickname; empty until the Welcome screen is filled in.
 var buddy := BOTH  # Which mascot shows on the Main menu: "Ana", "Migo" or "Both".
+var featured := ""  # The id of the Featured Trophy the learner shows, or "" for None (D-031).
 
 
 # Returns the text with every sign that is not a letter, a number or a space taken out, cut to

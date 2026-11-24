@@ -10,7 +10,9 @@ var index: int = 0  # Which item is showing now, 0 to 9.
 var score: int = 0  # Points so far; it only goes up.
 var correct_count: int = 0  # Correct answers so far.
 var streak: int = 0  # Correct answers in a row right now.
-var best_streak: int = 0  # Most correct answers in a row in this play, for My Records and "On a Roll" (D-023).
+var best_streak: int = 0  # Most correct answers in a row in this play, for the Records and "On a Roll" (D-023).
+var lead_streak: int = 0  # Correct answers in a row from the first item, for "Super Streak" (D-031).
+var _lead_open := true  # true until the first wrong answer or time-out ends the opening run.
 var total_time: float = 0.0  # Seconds used on all items so far.
 var results: Array[bool] = []  # true or false for each answered item, for the progress dots.
 var _rng: RandomNumberGenerator  # Random number maker for shuffling.
@@ -79,8 +81,11 @@ func _finish_item(is_correct: bool, seconds_left: float, used: float, answer: in
 		correct_count += 1  # ... counts towards Stars ...
 		streak += 1  # ... and grows the streak,
 		best_streak = maxi(best_streak, streak)  # ... which may be this play's best.
+		if _lead_open:  # Still right from the first item ...
+			lead_streak += 1  # ... so the opening run grows too (D-031).
 	else:  # A wrong answer or time-out ...
-		streak = 0  # ... ends the streak.
+		streak = 0  # ... ends the streak,
+		_lead_open = false  # ... and the opening run.
 	var points := Scoring.points_for(is_correct, seconds_left, streak)  # Points for this item (D-008).
 	score += points  # Add them; points are never taken away.
 	total_time += used  # Add the seconds used.

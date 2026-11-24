@@ -50,6 +50,11 @@ func _add_top_row() -> void:
 	face.size_flags_vertical = Control.SIZE_SHRINK_CENTER  # Centred up and down.
 	inside.add_child(face)  # Add it.
 	inside.add_child(UiKit.label(Save.profile.nickname, 46, Palette.INK))  # The Nickname.
+	var featured := Save.profile.featured  # The Featured Trophy, if one was picked (D-031).
+	if featured != "" and Save.records.has_trophy(featured):  # One is picked and earned ...
+		var trophy := UiKit.trophy_picture(featured, 70, true)  # ... its small picture,
+		trophy.size_flags_vertical = Control.SIZE_SHRINK_CENTER  # ... centred up and down,
+		inside.add_child(trophy)  # ... after the Nickname.
 	_profile_button.add_child(inside)  # Put them on the pill.
 	inside.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)  # Fill the pill ...
 	inside.offset_left = 16  # ... with room at the left,

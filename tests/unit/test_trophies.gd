@@ -63,12 +63,11 @@ func test_levels_passed() -> void:
 	assert_eq(Progress.LEVEL_TOTAL, 60)  # 4 Episodes x 3 Difficulties x 5 Levels.
 
 
-# There are twelve Trophies, each with a name and a goal to show.
-func test_twelve_trophies() -> void:
-	assert_eq(Trophies.ALL.size(), 12)  # Twelve Trophies (D-023).
-	for trophy: Dictionary in Trophies.ALL:  # Each one ...
-		assert_ne(trophy.name, "", trophy.id)  # ... has a name,
-		assert_ne(trophy.goal, "", trophy.id)  # ... and a goal.
+# The first twelve Trophies (D-023) keep their ids, in order; D-031 adds fourteen after them.
+func test_first_twelve_trophies() -> void:
+	var first := ["first_star", "perfect_10", "on_a_roll", "easy_facts", "middle_facts", "hard_facts", "fact_families", "medium_ready", "hard_hero", "star_collector", "practice_pro", "division_champion"]  # The D-023 order.
+	for i in range(first.size()):  # Each of the first twelve ...
+		assert_eq(Trophies.ALL[i].id, first[i])  # ... is in its old place.
 
 
 # Nothing is earned at the start; the first Star earns "First Star" once, and only once.
@@ -107,7 +106,11 @@ func test_big_goals() -> void:
 	assert_has(earned, "star_collector")  # 50 Stars or more.
 	assert_has(earned, "practice_pro")  # 25 Levels played.
 	assert_has(earned, "division_champion")  # All 180 Stars.
-	assert_eq(records.trophies.size(), 12)  # Every Trophy earned.
+	for i in range(12):  # Every one of the first twelve ...
+		assert_has(earned, Trophies.ALL[i].id)  # ... is earned.
+	for id: String in ["five_hundred", "try_again", "three_days", "super_streak"]:  # Goals these plays do not meet (D-031) ...
+		assert_does_not_have(earned, id)  # ... are not earned.
+	assert_eq(records.trophies.size(), 22)  # The other 22 of the 26 are.
 
 
 # Records and earned Trophies are saved on the device and come back after a restart, and the

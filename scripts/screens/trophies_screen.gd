@@ -1,7 +1,7 @@
 # Trophies screen (D-023, D-030), with two tabs:
-#   Trophies  all twelve Trophies. Earned ones show in colour with a gold Trophy; ones not yet earned
-#             show grey with a lock and their goal. Tapping one opens its card: its name, its goal,
-#             and the day it was earned, or how far along the learner is.
+#   Trophies  all 26 Trophies, each with its own picture (D-031). Earned ones show in colour; ones not
+#             yet earned show their picture in grey with a small lock, and their goal. Tapping one opens
+#             its card: its name, its goal, and the day it was earned, or how far along the learner is.
 #   Records   the learner's game records (before D-030, the My Records screen).
 extends ScreenBase  # Shared background, margins and column.
 
@@ -88,7 +88,7 @@ func _make_card(trophy: Dictionary, earned: bool) -> Button:
 	lines.add_theme_constant_override("separation", 4)  # Close together.
 	lines.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go to the card.
 	card.add_child(lines)  # Put them on the card.
-	var picture := UiKit.icon(UiKit.Icon.TROPHY if earned else UiKit.Icon.LOCK, 100)  # A gold Trophy, or a lock.
+	var picture := UiKit.trophy_picture(trophy.id, 104, earned)  # Its own picture; grey with a lock until earned (D-031).
 	picture.size_flags_horizontal = Control.SIZE_SHRINK_CENTER  # Centred.
 	lines.add_child(picture)  # Add it.
 	lines.add_child(_wrapped(trophy.name, 38, Palette.INK, CARD_SIZE.x - 36.0))  # The Trophy's name.
@@ -101,7 +101,7 @@ func _make_card(trophy: Dictionary, earned: bool) -> Button:
 func _open_trophy(index: int) -> void:
 	var trophy: Dictionary = Trophies.ALL[index]  # The tapped Trophy.
 	var earned := Save.records.has_trophy(trophy.id)  # Earned or not.
-	var picture := UiKit.icon(UiKit.Icon.TROPHY if earned else UiKit.Icon.LOCK, 180)  # A big gold Trophy, or a lock.
+	var picture := UiKit.trophy_picture(trophy.id, 220, earned)  # Its own picture, big; grey with a lock until earned (D-031).
 	picture.size_flags_horizontal = Control.SIZE_SHRINK_CENTER  # Centred.
 	var goal := _wrapped(trophy.goal, 52, Palette.BLUE, 700.0)  # What earns it.
 	var status_text := Trophies.date_text(Save.records.earned_date(trophy.id)) if earned else Trophies.progress_text(trophy.id, Save.progress, Save.records)  # The day, or how far along.

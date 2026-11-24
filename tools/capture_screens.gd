@@ -36,6 +36,7 @@ func _capture_all() -> void:
 	await _wait(0.3)  # Let it redraw.
 	_save_picture("33_welcome")  # The Welcome screen, filled in.
 	save.profile.nickname = "Bea"  # The example Nickname for the other screens.
+	save.profile.featured = "first_star"  # The example Featured Trophy, on the Main menu pill and the Profile (D-031).
 	await _shot("main_menu", "02_main_menu", 2.5)  # Main menu; extra time, since its first opening loads the mascot and fonts.
 	current_scene.show_exit_card()  # As if Exit was tapped (D-021).
 	await _wait(0.6)  # Let the card draw.

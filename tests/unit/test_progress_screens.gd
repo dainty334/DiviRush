@@ -41,9 +41,9 @@ func _texts(node: Node) -> Array[String]:
 func test_trophies_screen_shows_all_twelve() -> void:
 	Save.records.trophies.assign(["first_star"])  # One Trophy earned.
 	var screen := _open("trophies_screen")  # The Trophies screen.
-	assert_eq(screen._cards.size(), 12)  # Twelve cards.
-	assert_has(_texts(screen), "1 of 12 earned")  # How many are earned.
-	for i in range(12):  # Each card ...
+	assert_eq(screen._cards.size(), 26)  # 26 cards (D-031).
+	assert_has(_texts(screen), "1 of 26 earned")  # How many are earned.
+	for i in range(26):  # Each card ...
 		assert_has(_texts(screen._cards[i]), Trophies.ALL[i].name)  # ... shows its Trophy's name, in order.
 
 
@@ -76,6 +76,28 @@ func test_records_tab_shows_the_records() -> void:
 		assert_has(texts, expected, expected)  # ... each shows.
 	for expected: String in ["3/45", "1/45", "0/45"]:  # Stars in Episodes 1, 2 and 3 (and 4) ...
 		assert_has(texts, expected, expected)  # ... show next to their bars.
+
+
+# Each Trophy card shows its own picture (D-031): in colour when earned, grey with a small lock when not.
+func test_each_trophy_has_its_own_picture() -> void:
+	Save.records.trophies.assign(["first_star"])  # Only "First Star" earned.
+	var screen := _open("trophies_screen")  # The Trophies screen.
+	var pictures := SpriteSheet.trophies()  # Every Trophy picture.
+	for i in range(26):  # Each card ...
+		var shown: Array = screen._cards[i].find_children("*", "TextureRect", true, false).map(func(n: Node) -> Texture2D: return (n as TextureRect).texture)  # ... its pictures,
+		assert_has(shown, pictures[i], Trophies.ALL[i].id)  # ... include its own.
+	var earned_picture := _picture_of(screen._cards[0], pictures[0])  # "First Star", earned.
+	var locked_picture := _picture_of(screen._cards[1], pictures[1])  # "Perfect 10", not earned.
+	assert_null(earned_picture.material)  # Earned: in colour.
+	assert_not_null(locked_picture.material)  # Not earned: grey.
+
+
+# Returns the picture node showing a texture inside a card.
+func _picture_of(card: Node, texture: Texture2D) -> TextureRect:
+	for node in card.find_children("*", "TextureRect", true, false):  # Each picture on the card ...
+		if (node as TextureRect).texture == texture:  # ... the one with this texture ...
+			return node  # ... is handed back.
+	return null  # Not found.
 
 
 # The Trophies screen opens on the Trophies tab, and its two tabs are called Trophies and Records.

@@ -8,7 +8,7 @@ const SETTINGS_SECTION := "settings"  # Section name for the Settings switches.
 const META_SECTION := "meta"  # Section name for facts about the file itself.
 const RECORDS_SECTION := "records"  # Section name for the game records and earned Trophies (D-023).
 const PROFILE_SECTION := "profile"  # Section name for the Nickname and the Buddy (D-030).
-const VERSION := 3  # Save layout version: 2 added the records, 3 the profile and Trophy dates. Older files still load.
+const VERSION := 4  # Save layout version: 2 added the records, 3 the profile and Trophy dates, 4 the facts for the new Trophies and the Featured Trophy. Older files still load.
 
 var path: String  # Which file this store reads and writes.
 
@@ -30,14 +30,21 @@ func save(progress: Progress, settings: Dictionary, records: Records = null, pro
 	config.set_value(META_SECTION, "version", VERSION)  # Mark which save layout this is.
 	if profile != null:  # A Profile was given ...
 		config.set_value(PROFILE_SECTION, "nickname", profile.nickname)  # ... the Nickname,
-		config.set_value(PROFILE_SECTION, "buddy", profile.buddy)  # ... and the Buddy.
+		config.set_value(PROFILE_SECTION, "buddy", profile.buddy)  # ... the Buddy,
+		config.set_value(PROFILE_SECTION, "featured", profile.featured)  # ... and the Featured Trophy (D-031).
 	if records != null:  # Records were given ...
 		config.set_value(RECORDS_SECTION, "levels_played", records.levels_played)  # ... Levels played,
 		config.set_value(RECORDS_SECTION, "correct_total", records.correct_total)  # ... correct answers,
 		config.set_value(RECORDS_SECTION, "best_streak", records.best_streak)  # ... best streak,
 		config.set_value(RECORDS_SECTION, "seconds_played", records.seconds_played)  # ... time played,
 		config.set_value(RECORDS_SECTION, "trophies", records.trophies)  # ... the Trophies earned,
-		config.set_value(RECORDS_SECTION, "trophy_dates", records.trophy_dates)  # ... and the day each was earned (D-030).
+		config.set_value(RECORDS_SECTION, "trophy_dates", records.trophy_dates)  # ... the day each was earned (D-030),
+		config.set_value(RECORDS_SECTION, "failed_levels", records.failed_levels)  # ... Levels not passed yet (D-031),
+		config.set_value(RECORDS_SECTION, "comebacks", records.comebacks)  # ... comebacks,
+		config.set_value(RECORDS_SECTION, "days_played", records.days_played)  # ... days played,
+		config.set_value(RECORDS_SECTION, "last_day", records.last_day)  # ... the last day,
+		config.set_value(RECORDS_SECTION, "run_streak", records.run_streak)  # ... the carried streak,
+		config.set_value(RECORDS_SECTION, "best_run_streak", records.best_run_streak)  # ... and the longest one.
 	for key in settings:  # Each Setting ...
 		config.set_value(SETTINGS_SECTION, key, settings[key])  # ... goes into the settings section.
 	for level_key in progress.bests:  # Each played Level ...
@@ -61,7 +68,8 @@ func load_into(progress: Progress, settings: Dictionary, records: Records = null
 			if profile != null:  # ... read them when asked,
 				profile.nickname = Profile.clean(str(config.get_value(section, "nickname", "")))  # ... the Nickname, with only allowed characters,
 				var buddy := str(config.get_value(section, "buddy", Profile.BOTH))  # ... and the Buddy,
-				profile.buddy = buddy if Profile.BUDDIES.has(buddy) else Profile.BOTH  # ... or Both if it is not a known Buddy.
+				profile.buddy = buddy if Profile.BUDDIES.has(buddy) else Profile.BOTH  # ... or Both if it is not a known Buddy,
+				profile.featured = str(config.get_value(section, "featured", ""))  # ... and the Featured Trophy, none in older files (D-031).
 			continue  # Never read it as a Level's bests.
 		if section == RECORDS_SECTION:  # The game records, not a Level ...
 			if records != null:  # ... read them when asked,
@@ -70,7 +78,13 @@ func load_into(progress: Progress, settings: Dictionary, records: Records = null
 				records.best_streak = int(config.get_value(section, "best_streak", 0))  # ... best streak,
 				records.seconds_played = float(config.get_value(section, "seconds_played", 0.0))  # ... time played,
 				records.trophies.assign(config.get_value(section, "trophies", []))  # ... the Trophies earned,
-				records.trophy_dates = config.get_value(section, "trophy_dates", {})  # ... and their days, none in older files (D-030).
+				records.trophy_dates = config.get_value(section, "trophy_dates", {})  # ... their days, none in older files (D-030),
+				records.failed_levels.assign(config.get_value(section, "failed_levels", []))  # ... Levels not passed yet (D-031),
+				records.comebacks = int(config.get_value(section, "comebacks", 0))  # ... comebacks,
+				records.days_played = int(config.get_value(section, "days_played", 0))  # ... days played,
+				records.last_day = str(config.get_value(section, "last_day", ""))  # ... the last day,
+				records.run_streak = int(config.get_value(section, "run_streak", 0))  # ... the carried streak,
+				records.best_run_streak = int(config.get_value(section, "best_run_streak", 0))  # ... and the longest one.
 			continue  # Never read it as a Level's bests.
 		if section == SETTINGS_SECTION:  # The Settings section ...
 			for key in settings:  # ... sets each known switch,

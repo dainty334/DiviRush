@@ -19,6 +19,22 @@ const GREY := "#B8C0D9"  # Locked / empty grey-blue.
 const NAVY := "#2B3A78"  # Navy blue school skirt and shorts (D-026).
 const SHOE := "#2A2A33"  # Black school shoes (D-026).
 const PENCIL_WOOD := "#F6D7A7"  # Light wood at the pencil's tip (D-030).
+const ORANGE := "#FFA94D"  # Warm orange for the Medium Ready rosette (D-031).
+const SILVER := "#C9D1E6"  # Silver for the Medium Master rosette (D-031).
+const PALE_SKY := "#E3F6FF"  # Pale blue glass for the jar and the magnifier (D-031).
+const TROPHY_RINGS := {  # Each Trophy group's ring colour and the pale colour inside the ring (D-031).
+	"progress": [YELLOW, "#FFF4D6"],  # Gold ring for progress.
+	"accuracy": [BLUE, "#E4E9FF"],  # Blue ring for accuracy.
+	"practice": [GREEN, "#D9F7EE"],  # Green ring for practice.
+}  # End of the list.
+const DIGITS := {  # Each digit as one stroke, in a box 0.6 wide and 1 tall, for numbers on the Trophy pictures.
+	"0": "M0.3 0 C0.66 0 0.66 1 0.3 1 C-0.06 1 -0.06 0 0.3 0 Z",  # An oval.
+	"1": "M0.1 0.22 L0.34 0 V1",  # A flag and a stem.
+	"2": "M0.04 0.24 C0.08 -0.06 0.58 -0.06 0.56 0.27 C0.54 0.5 0.12 0.68 0.02 1 H0.6",  # A hook and a base.
+	"3": "M0.04 0.1 C0.25 -0.06 0.58 0 0.55 0.25 C0.53 0.42 0.38 0.47 0.22 0.47 C0.42 0.47 0.6 0.55 0.58 0.75 C0.55 1.04 0.16 1.04 0.02 0.9",  # Two bumps.
+	"4": "M0.44 1 V0 L0.02 0.66 H0.6",  # A stem, a slant and a bar.
+	"5": "M0.56 0 H0.1 L0.06 0.43 C0.3 0.32 0.6 0.4 0.59 0.68 C0.58 1.02 0.16 1.04 0.02 0.9",  # A top bar and a belly.
+}  # End of the list.
 const ART_DIR := "res://assets/art/"  # Where the SVG sources go.
 const SPRITE_DIR := "res://assets/sprites/"  # Where the PNG sheets go.
 
@@ -36,6 +52,7 @@ func _init() -> void:
 	_save_sheet("mascot_ana", 450, 780, _mascot_parts(true))  # Ana from head to toe, in ten parts (D-026 to D-028).
 	_save_sheet("mascot_migo", 450, 780, _mascot_parts(false))  # Migo from head to toe, in ten parts (D-026 to D-028).
 	_save_sheet("mascot_wave", SpriteSheet.MASCOT_WAVE_SIZE.x, SpriteSheet.MASCOT_WAVE_SIZE.y, _mascot_wave_frames())  # Both students use the same open hand and bent arm.
+	_save_sheet("trophies", 200, 200, _trophy_frames())  # A picture for each of the 26 Trophies, in Trophies.ALL order (D-031).
 	_save_icon_svg()  # The app icon (icon.svg in the project folder).
 	quit()  # Close the tool when done.
 
@@ -199,6 +216,187 @@ func _icon_frames() -> Array:
 	frames.append_array(_progress_icon_frames())  # 12-13: Trophy and Records icons (D-022, D-023).
 	frames.append(_pencil_icon())  # 14: pencil, to change the Nickname (D-030).
 	return frames  # Hand back all fifteen.
+
+
+# One 200 x 200 picture for each Trophy (D-031), in Trophies.ALL order: a ring in its group's colour
+# (gold progress, blue accuracy, green practice) around its own emblem.
+func _trophy_frames() -> Array:
+	var frames := []  # The finished pictures.
+	for trophy: Dictionary in Trophies.ALL:  # Each Trophy, in screen order ...
+		var ring: Array = TROPHY_RINGS[trophy.group]  # ... its ring colours,
+		var picture := _circle(100, 100, 90, ring[0], 8.0)  # ... the coloured ring,
+		picture += _circle(100, 100, 72, ring[1], 6.0)  # ... the pale middle,
+		picture += _trophy_emblem(trophy.id)  # ... and its own emblem.
+		frames.append(picture)  # Keep it.
+	return frames  # Hand back all 26.
+
+
+# Returns the emblem drawn inside one Trophy's ring, kept within the middle of the 200 x 200 frame.
+func _trophy_emblem(id: String) -> String:
+	match id:  # Each Trophy has its own picture.
+		"first_star":  # A big gold Star.
+			return "<polygon points=\"%s\" fill=\"%s\" stroke=\"%s\" stroke-width=\"8\" stroke-linejoin=\"round\"/>" % [_star_points(100, 106, 50), YELLOW, INK]  # The Star.
+		"perfect_10":  # A gold medal with "10".
+			return _medal("10", YELLOW)  # Medal.
+		"on_a_roll":  # A rolling ball with a dotted trail.
+			var ball := _circle(48, 120, 6, PINK, 0.0) + _circle(64, 116, 8, PINK, 0.0)  # Trail dots, small ...
+			ball += _circle(112, 104, 40, PINK, 8.0)  # ... then the ball,
+			ball += "<path d=\"M88 92 A28 28 0 0 1 124 76\" fill=\"none\" stroke=\"%s\" stroke-width=\"8\" stroke-linecap=\"round\"/>" % WHITE  # ... with a shine.
+			ball += "<path d=\"M44 150 H156\" stroke=\"%s\" stroke-width=\"8\" stroke-linecap=\"round\"/>" % INK  # The ground.
+			return ball  # Ball.
+		"easy_facts":  # A cup with 1 on a sky-blue base.
+			return _cup("1", SKY)  # Cup.
+		"middle_facts":  # A cup with 2 on a green base.
+			return _cup("2", GREEN)  # Cup.
+		"hard_facts":  # A cup with 3 on an orange base.
+			return _cup("3", ORANGE)  # Cup.
+		"fact_families":  # A cup with 4 on a navy base.
+			return _cup("4", NAVY)  # Cup.
+		"medium_ready":  # An orange rosette.
+			return _rosette(ORANGE, YELLOW)  # Rosette.
+		"hard_hero":  # A pink shield with a white Star.
+			return _shield(PINK, "<polygon points=\"%s\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % [_star_points(100, 102, 24), WHITE, INK])  # Shield.
+		"star_collector":  # A glass jar of Stars.
+			var jar := "<path d=\"M64 72 H136 V146 Q136 160 122 160 H78 Q64 160 64 146 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"8\" stroke-linejoin=\"round\"/>" % [PALE_SKY, INK]  # The jar ...
+			jar += "<rect x=\"58\" y=\"48\" width=\"84\" height=\"24\" rx=\"7\" fill=\"%s\" stroke=\"%s\" stroke-width=\"8\"/>" % [PINK, INK]  # ... its lid,
+			for spot: Vector2 in [Vector2(84, 132), Vector2(116, 136), Vector2(100, 104)]:  # ... and three Stars inside.
+				jar += "<polygon points=\"%s\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\" stroke-linejoin=\"round\"/>" % [_star_points(spot.x, spot.y, 16), YELLOW, INK]  # One Star.
+			return jar  # Jar.
+		"practice_pro":  # A blue notebook with rings.
+			var book := "<rect x=\"62\" y=\"46\" width=\"80\" height=\"110\" rx=\"10\" fill=\"%s\" stroke=\"%s\" stroke-width=\"8\"/>" % [BLUE, INK]  # The cover ...
+			book += "<rect x=\"82\" y=\"70\" width=\"44\" height=\"20\" rx=\"5\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\"/>" % [WHITE, INK]  # ... its label,
+			for y in [64, 92, 120, 148]:  # ... and four rings down the side.
+				book += "<rect x=\"54\" y=\"%d\" width=\"18\" height=\"8\" rx=\"4\" fill=\"%s\" stroke=\"%s\" stroke-width=\"4\"/>" % [y - 8, WHITE, INK]  # One ring.
+			return book  # Notebook.
+		"division_champion":  # A gold crown with ÷ on it.
+			var crown := "<polygon points=\"52,140 52,72 78,102 100,58 122,102 148,72 148,140\" fill=\"%s\" stroke=\"%s\" stroke-width=\"8\" stroke-linejoin=\"round\"/>" % [YELLOW, INK]  # The crown ...
+			for tip: Vector2 in [Vector2(52, 72), Vector2(100, 58), Vector2(148, 72)]:  # ... jewels on its points,
+				crown += _circle(tip.x, tip.y, 8, PINK, 5.0)  # ... one jewel.
+			crown += _circle(100, 104, 6, INK, 0.0) + _circle(100, 130, 6, INK, 0.0)  # ... and the ÷ dots,
+			crown += "<path d=\"M84 117 H116\" stroke=\"%s\" stroke-width=\"8\" stroke-linecap=\"round\"/>" % INK  # ... with its bar.
+			return crown  # Crown.
+		"easy_explorer":  # A compass.
+			var compass := _circle(100, 100, 52, WHITE, 8.0)  # The face ...
+			compass += "<polygon points=\"100,56 114,100 86,100\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\" stroke-linejoin=\"round\"/>" % [PINK, INK]  # ... the pink needle up,
+			compass += "<polygon points=\"86,100 114,100 100,144\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\" stroke-linejoin=\"round\"/>" % [SILVER, INK]  # ... the grey needle down,
+			compass += _circle(100, 100, 6, INK, 0.0)  # ... the middle pin,
+			compass += "<path d=\"M100 52 V60 M100 140 V148 M52 100 H60 M140 100 H148\" stroke=\"%s\" stroke-width=\"5\" stroke-linecap=\"round\"/>" % INK  # ... and four marks.
+			return compass  # Compass.
+		"medium_master":  # A silver rosette.
+			return _rosette(SILVER, WHITE)  # Rosette.
+		"hard_master":  # A gold shield with a chevron.
+			return _shield(YELLOW, "<path d=\"M76 92 L100 116 L124 92\" fill=\"none\" stroke=\"%s\" stroke-width=\"10\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>" % INK)  # Shield.
+		"episode_star":  # A Star with a ring around it.
+			var planet := "<ellipse cx=\"100\" cy=\"104\" rx=\"62\" ry=\"20\" fill=\"none\" stroke=\"%s\" stroke-width=\"16\" transform=\"rotate(-18 100 104)\"/>" % INK  # The ring's outline ...
+			planet += "<ellipse cx=\"100\" cy=\"104\" rx=\"62\" ry=\"20\" fill=\"none\" stroke=\"%s\" stroke-width=\"8\" transform=\"rotate(-18 100 104)\"/>" % SKY  # ... the ring,
+			planet += "<polygon points=\"%s\" fill=\"%s\" stroke=\"%s\" stroke-width=\"8\" stroke-linejoin=\"round\"/>" % [_star_points(100, 102, 40), YELLOW, INK]  # ... and the Star in front.
+			return planet  # Star with a ring.
+		"perfect_five":  # A sky-blue medal with "5".
+			return _medal("5", SKY)  # Medal.
+		"perfect_twenty":  # A green medal with "20".
+			return _medal("20", GREEN)  # Medal.
+		"hard_perfect":  # A diamond.
+			var gem := "<polygon points=\"60,84 80,56 120,56 140,84 100,150\" fill=\"%s\" stroke=\"%s\" stroke-width=\"8\" stroke-linejoin=\"round\"/>" % [SKY, INK]  # The diamond ...
+			gem += "<path d=\"M60 84 H140 M80 56 L92 84 L100 150 M120 56 L108 84 L100 150\" fill=\"none\" stroke=\"%s\" stroke-width=\"4\" stroke-linejoin=\"round\"/>" % INK  # ... its cut faces,
+			gem += "<path d=\"M86 66 L80 78\" stroke=\"%s\" stroke-width=\"6\" stroke-linecap=\"round\"/>" % WHITE  # ... and a shine.
+			return gem  # Diamond.
+		"missing_number":  # A magnifier over an empty box.
+			var look := "<rect x=\"50\" y=\"52\" width=\"58\" height=\"58\" rx=\"8\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\" stroke-dasharray=\"10 7\"/>" % [WHITE, INK]  # The empty box ...
+			look += "<path d=\"M134 132 L154 152\" stroke=\"%s\" stroke-width=\"20\" stroke-linecap=\"round\"/>" % INK  # ... the handle's outline,
+			look += "<path d=\"M134 132 L154 152\" stroke=\"%s\" stroke-width=\"10\" stroke-linecap=\"round\"/>" % YELLOW  # ... the handle,
+			look += "<circle cx=\"114\" cy=\"112\" r=\"30\" fill=\"%s\" fill-opacity=\"0.45\" stroke=\"%s\" stroke-width=\"8\"/>" % [SKY, INK]  # ... and the see-through glass over the box's corner.
+			return look  # Magnifier.
+		"hundred_right":  # A green tick with "100".
+			return _tick("100", GREEN)  # Tick.
+		"five_hundred":  # A gold tick with "500".
+			return _tick("500", YELLOW)  # Tick.
+		"try_again":  # A loop arrow.
+			var loop := "<path d=\"M70 104 A34 34 0 1 0 104 70\" fill=\"none\" stroke=\"%s\" stroke-width=\"24\" stroke-linecap=\"round\"/>" % INK  # The loop's outline ...
+			loop += "<path d=\"M70 104 A34 34 0 1 0 104 70\" fill=\"none\" stroke=\"%s\" stroke-width=\"12\" stroke-linecap=\"round\"/>" % GREEN  # ... the loop,
+			loop += "<polygon points=\"98,46 126,70 98,94\" fill=\"%s\" stroke=\"%s\" stroke-width=\"7\" stroke-linejoin=\"round\"/>" % [GREEN, INK]  # ... and its arrow head.
+			return loop  # Loop arrow.
+		"three_days":  # A calendar with three ticks.
+			var calendar := "<rect x=\"54\" y=\"56\" width=\"92\" height=\"92\" rx=\"10\" fill=\"%s\" stroke=\"%s\" stroke-width=\"8\"/>" % [WHITE, INK]  # The page ...
+			calendar += "<path d=\"M58 82 H142 V66 Q142 60 136 60 H64 Q58 60 58 66 Z\" fill=\"%s\"/>" % PINK  # ... its pink top,
+			calendar += "<path d=\"M54 84 H146\" stroke=\"%s\" stroke-width=\"6\"/>" % INK  # ... a line under it,
+			calendar += "<rect x=\"74\" y=\"44\" width=\"10\" height=\"24\" rx=\"5\" fill=\"%s\"/><rect x=\"116\" y=\"44\" width=\"10\" height=\"24\" rx=\"5\" fill=\"%s\"/>" % [INK, INK]  # ... two rings,
+			for x in [76, 100, 124]:  # ... and three ticked days.
+				calendar += "<path d=\"M%d 114 L%d 122 L%d 104\" fill=\"none\" stroke=\"%s\" stroke-width=\"6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>" % [x - 9, x - 3, x + 9, GREEN]  # One tick.
+			return calendar  # Calendar.
+		"super_streak":  # A chain of three links.
+			var chain := ""  # The links, drawn left to right.
+			for i in range(3):  # Three links ...
+				var colour: String = PINK if i == 1 else YELLOW  # ... the middle one pink,
+				chain += "<ellipse cx=\"%d\" cy=\"100\" rx=\"26\" ry=\"16\" fill=\"none\" stroke=\"%s\" stroke-width=\"18\"/>" % [64 + i * 36, INK]  # ... an outline,
+				chain += "<ellipse cx=\"%d\" cy=\"100\" rx=\"26\" ry=\"16\" fill=\"none\" stroke=\"%s\" stroke-width=\"8\"/>" % [64 + i * 36, colour]  # ... and the link.
+			return chain  # Chain.
+		"perfect_run":  # A ribbon with five ticks and a Star.
+			var ribbon := "<polygon points=\"52,94 38,104 52,114\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % [BLUE, INK]  # The left tail ...
+			ribbon += "<polygon points=\"148,94 162,104 148,114\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % [BLUE, INK]  # ... the right tail,
+			ribbon += "<rect x=\"46\" y=\"84\" width=\"108\" height=\"40\" rx=\"8\" fill=\"%s\" stroke=\"%s\" stroke-width=\"7\"/>" % [BLUE, INK]  # ... the band,
+			for i in range(5):  # ... five ticks on it,
+				var x := 62 + i * 19  # ... spread along the band,
+				ribbon += "<path d=\"M%d 104 L%d 110 L%d 96\" fill=\"none\" stroke=\"%s\" stroke-width=\"5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>" % [x - 6, x - 1, x + 7, WHITE]  # ... one tick,
+			ribbon += "<polygon points=\"%s\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % [_star_points(100, 62, 20), YELLOW, INK]  # ... and a Star on top.
+			return ribbon  # Ribbon.
+	return ""  # An unknown Trophy has no emblem.
+
+
+# A cup with a number on it and a coloured base, for the four Episode Trophies (D-031).
+func _cup(number: String, base: String) -> String:
+	var cup := "<path d=\"M60 56 A18 18 0 0 0 60 92 M140 56 A18 18 0 0 1 140 92\" fill=\"none\" stroke=\"%s\" stroke-width=\"8\" stroke-linecap=\"round\"/>" % INK  # The two handles ...
+	cup += "<path d=\"M56 46 H144 V82 A44 44 0 0 1 56 82 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"8\" stroke-linejoin=\"round\"/>" % [YELLOW, INK]  # ... the gold cup,
+	cup += "<rect x=\"90\" y=\"124\" width=\"20\" height=\"18\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [YELLOW, INK]  # ... its stem,
+	cup += "<rect x=\"66\" y=\"140\" width=\"68\" height=\"20\" rx=\"6\" fill=\"%s\" stroke=\"%s\" stroke-width=\"7\"/>" % [base, INK]  # ... its coloured base,
+	cup += _number(number, 100, 80, 34, INK, 8.0)  # ... and the Episode number.
+	return cup  # Hand back the cup.
+
+
+# A medal on two ribbons with a number on it, for the "10 of 10" Trophies (D-031).
+func _medal(number: String, fill: String) -> String:
+	var medal := "<polygon points=\"70,36 94,36 108,84 88,88\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % [PINK, INK]  # The left ribbon ...
+	medal += "<polygon points=\"130,36 106,36 92,84 112,88\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % [BLUE, INK]  # ... the right ribbon,
+	medal += _circle(100, 118, 40, fill, 8.0)  # ... the medal,
+	medal += _number(number, 100, 118, 34, INK, 8.0)  # ... and its number.
+	return medal  # Hand back the medal.
+
+
+# A rosette: ten round petals, a middle with a Star, and two ribbon tails (D-031).
+func _rosette(petal: String, middle: String) -> String:
+	var rosette := "<polygon points=\"84,110 98,110 92,160 78,148\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % [petal, INK]  # The left tail ...
+	rosette += "<polygon points=\"116,110 102,110 108,160 122,148\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % [petal, INK]  # ... the right tail,
+	for i in range(10):  # ... ten petals around the middle,
+		var angle := TAU * i / 10.0  # ... spread evenly,
+		rosette += _circle(100 + cos(angle) * 30, 88 + sin(angle) * 30, 15, petal, 5.0)  # ... one petal,
+	rosette += _circle(100, 88, 28, middle, 6.0)  # ... the middle,
+	rosette += "<polygon points=\"%s\" fill=\"%s\" stroke=\"%s\" stroke-width=\"5\" stroke-linejoin=\"round\"/>" % [_star_points(100, 90, 16), YELLOW, INK]  # ... with a Star.
+	return rosette  # Hand back the rosette.
+
+
+# A shield in a colour with something drawn on it (D-031).
+func _shield(fill: String, inside: String) -> String:
+	var shield := "<path d=\"M100 42 L148 58 V100 C148 132 126 152 100 162 C74 152 52 132 52 100 V58 Z\" fill=\"%s\" stroke=\"%s\" stroke-width=\"8\" stroke-linejoin=\"round\"/>" % [fill, INK]  # The shield ...
+	return shield + inside  # ... and what is on it.
+
+
+# A big tick with a number under it, for the right-answer Trophies (D-031).
+func _tick(number: String, colour: String) -> String:
+	var tick := "<path d=\"M58 82 L86 110 L142 52\" fill=\"none\" stroke=\"%s\" stroke-width=\"28\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>" % INK  # The tick's outline ...
+	tick += "<path d=\"M58 82 L86 110 L142 52\" fill=\"none\" stroke=\"%s\" stroke-width=\"16\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>" % colour  # ... the tick,
+	tick += _number(number, 100, 142, 30, INK, 8.0)  # ... and the number.
+	return tick  # Hand back the tick.
+
+
+# Draws a number with one stroke per digit (no font needed), centred on (cx, cy), `height` tall.
+func _number(text: String, cx: float, cy: float, height: float, colour: String, width: float) -> String:
+	var digit_w := height * 0.6  # Each digit's width.
+	var gap := height * 0.22  # Space between digits.
+	var total := text.length() * digit_w + (text.length() - 1) * gap  # The whole number's width.
+	var svg := ""  # The digits.
+	for i in range(text.length()):  # Each digit, left to right ...
+		var x := cx - total / 2.0 + i * (digit_w + gap)  # ... its left edge,
+		svg += "<path d=\"%s\" transform=\"translate(%.1f %.1f) scale(%.1f)\" fill=\"none\" stroke=\"%s\" stroke-width=\"%.3f\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>" % [DIGITS[text[i]], x, cy - height / 2.0, height, colour, width / height]  # ... drawn to size.
+	return svg  # Hand back the digits.
 
 
 # The pencil icon (D-030), leaning so its tip points down to the left: a yellow body, a pink
