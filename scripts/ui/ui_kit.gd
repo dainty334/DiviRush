@@ -3,7 +3,7 @@
 class_name UiKit  # Lets any script write UiKit.button(...).
 extends RefCounted  # Only its static functions are used.
 
-enum Icon { BACK, STAR, STAR_EMPTY, CLOCK, LOCK, MUSIC, SOUND, VIBRATION, PLAY, HELP, GEAR, EXIT, TROPHY, CHART }  # Frame order in icons_96x96_14f.png.
+enum Icon { BACK, STAR, STAR_EMPTY, CLOCK, LOCK, MUSIC, SOUND, VIBRATION, PLAY, HELP, GEAR, EXIT, TROPHY, CHART, PENCIL }  # Frame order in icons_96x96_15f.png.
 
 const FONT_PATH := "res://assets/fonts/Fredoka-Variable.ttf"  # Rounded font (OFL licence, D-010).
 const BORDER := 10  # Thick dark outline width, as in the style sample.
@@ -207,6 +207,26 @@ static func icon(which: int, size: float = 96.0) -> TextureRect:
 	node.custom_minimum_size = Vector2(size, size)  # Its size on screen.
 	node.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go through.
 	return node  # Hand back the icon.
+
+
+# Makes one small white count pill: an icon and "earned/total", for example "5/180".
+# Used on the Profile screen for Stars, Trophies and Levels passed (D-030).
+static func count_pill(which: int, earned: int, total: int) -> PanelContainer:
+	var pill := PanelContainer.new()  # The pill.
+	var style := box(Palette.WHITE, 40, 5)  # White, round, with a thin dark outline.
+	style.set_content_margin_all(8)  # A little space inside ...
+	style.content_margin_left = 16  # ... more at the ends,
+	style.content_margin_right = 22  # ... so it looks round.
+	pill.add_theme_stylebox_override("panel", style)  # Use this look.
+	pill.size_flags_vertical = Control.SIZE_SHRINK_CENTER  # Not stretched tall.
+	pill.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Not a button.
+	var row := HBoxContainer.new()  # Icon beside the number.
+	row.add_theme_constant_override("separation", 8)  # Close together.
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Taps go through.
+	row.add_child(icon(which, 60))  # The icon.
+	row.add_child(label("%d/%d" % [earned, total], 46, Palette.INK))  # The count.
+	pill.add_child(row)  # Put them in the pill.
+	return pill  # Hand back the pill.
 
 
 # Makes a control pop in from nothing with a bounce, after a delay. Used when screens open.

@@ -18,6 +18,7 @@ const BLUE := "#4361EE"  # Deep sky blue.
 const GREY := "#B8C0D9"  # Locked / empty grey-blue.
 const NAVY := "#2B3A78"  # Navy blue school skirt and shorts (D-026).
 const SHOE := "#2A2A33"  # Black school shoes (D-026).
+const PENCIL_WOOD := "#F6D7A7"  # Light wood at the pencil's tip (D-030).
 const ART_DIR := "res://assets/art/"  # Where the SVG sources go.
 const SPRITE_DIR := "res://assets/sprites/"  # Where the PNG sheets go.
 
@@ -168,9 +169,10 @@ func _star_frames() -> Array:
 	return frames  # Hand back all six.
 
 
-# Fourteen small 96 x 96 icons, in this order:
+# Fifteen small 96 x 96 icons, in this order:
 # 0 back arrow, 1 gold Star, 2 empty Star, 3 clock, 4 lock, 5 music note, 6 speaker, 7 vibrating phone,
-# 8 play arrow, 9 question mark, 10 gear, 11 door (for the Main menu, D-017), 12 Trophy, 13 bar chart (D-022, D-023).
+# 8 play arrow, 9 question mark, 10 gear, 11 door (for the Main menu, D-017), 12 Trophy, 13 bar chart (D-022, D-023),
+# 14 pencil (D-030).
 func _icon_frames() -> Array:
 	var frames := []  # The finished icons.
 	frames.append("<path d=\"M60 20 L30 48 L60 76\" fill=\"none\" stroke=\"%s\" stroke-width=\"14\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>" % INK)  # 0: back arrow.
@@ -194,8 +196,21 @@ func _icon_frames() -> Array:
 	phone += "<path d=\"M16 34 L10 42 L16 50 L10 58 M80 34 L86 42 L80 50 L86 58\" fill=\"none\" stroke=\"%s\" stroke-width=\"6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>" % INK  # Shake lines.
 	frames.append(phone)  # 7: vibrating phone.
 	frames.append_array(_menu_icon_frames())  # 8-11: the Main menu button icons (D-017).
-	frames.append_array(_progress_icon_frames())  # 12-13: Trophy and My Records icons (D-022, D-023).
-	return frames  # Hand back all fourteen.
+	frames.append_array(_progress_icon_frames())  # 12-13: Trophy and Records icons (D-022, D-023).
+	frames.append(_pencil_icon())  # 14: pencil, to change the Nickname (D-030).
+	return frames  # Hand back all fifteen.
+
+
+# The pencil icon (D-030), leaning so its tip points down to the left: a yellow body, a pink
+# eraser at the top, a light wooden tip and a dark point, all with a dark outline.
+func _pencil_icon() -> String:
+	var pencil := "<g transform=\"rotate(45 48 48)\">"  # Lean the whole pencil.
+	pencil += "<rect x=\"37\" y=\"8\" width=\"22\" height=\"60\" rx=\"4\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [YELLOW, INK]  # Yellow body.
+	pencil += "<rect x=\"37\" y=\"8\" width=\"22\" height=\"14\" rx=\"4\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\"/>" % [PINK, INK]  # Pink eraser on top.
+	pencil += "<polygon points=\"37,68 59,68 48,90\" fill=\"%s\" stroke=\"%s\" stroke-width=\"6\" stroke-linejoin=\"round\"/>" % [PENCIL_WOOD, INK]  # Wooden tip.
+	pencil += "<polygon points=\"44,82 52,82 48,90\" fill=\"%s\" stroke=\"%s\" stroke-width=\"4\" stroke-linejoin=\"round\"/>" % [INK, INK]  # Dark point.
+	pencil += "</g>"  # End of the leaning group.
+	return pencil  # Hand back the icon.
 
 
 # Two icons for the progress screens (D-022, D-023): 12 a gold Trophy cup, 13 a bar chart for My Records.

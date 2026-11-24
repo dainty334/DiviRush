@@ -10,6 +10,8 @@ const MASCOT_WAVE_SIZE := Vector2i(210, 330)  # Leave room for the extended arm 
 const MASCOT_WAVE_COUNT := 19  # The number of steps from a relaxed elbow to a fully bent elbow.
 const MASCOT_CUFF_OUTER := Vector2(239, 229)  # The outside end of the right sleeve hem in the art plan.
 const MASCOT_CUFF_INNER := Vector2(208, 235)  # The end of the same hem nearest the shirt.
+const MASCOT_FACE_CROP := Rect2(65, 0, 320, 320)  # The square around both heads, pigtails included, in a 450 x 780 frame (D-030).
+const MASCOT_FACE_PARTS := [4, 5, 7, 8]  # Head, open eyes, eyebrows and smile: Mascot.Part numbers, written as plain numbers so the art tool can still load this file.
 
 static var _cache: Dictionary = {}  # Sheets already cut, so each is cut only once.
 
@@ -46,7 +48,7 @@ static func star() -> Array[Texture2D]:
 
 # The 14 small icons; use UiKit.Icon to pick one.
 static func icons() -> Array[Texture2D]:
-	return frames("icons_96x96_14f.png", Vector2i(96, 96), 14)  # Back, Stars, clock, lock, music, sound, vibration, play, help, gear, door (D-017), Trophy, chart (D-023).
+	return frames("icons_96x96_15f.png", Vector2i(96, 96), 15)  # Back, Stars, clock, lock, music, sound, vibration, play, help, gear, door (D-017), Trophy, chart (D-023), pencil (D-030).
 
 
 # The title logo (one frame).
@@ -58,7 +60,21 @@ static func logo() -> Texture2D:
 # Frames follow Mascot.Part: body, two arms, the waving arm, head, eyes open and closed, eyebrows,
 # two mouths.
 static func mascot(who: String) -> Array[Texture2D]:
-	return frames("mascot_%s_450x780_10f.png" % who, Vector2i(450, 780), 10)  # Each part on a whole-mascot frame.
+	return frames("mascot_%s_450x780_10f.png" % who.to_lower(), Vector2i(450, 780), 10)  # Each part on a whole-mascot frame; file names are lower case, as Android needs.
+
+
+# Returns a mascot's small face for the Profile (D-030): the head, open eyes, eyebrows and smile,
+# each cut to the square around the head, to be stacked in this order.
+static func mascot_face(who: String) -> Array[Texture2D]:
+	var whole := mascot(who)  # The whole-mascot frames.
+	var parts: Array[Texture2D] = []  # The cut face pictures.
+	for part: int in MASCOT_FACE_PARTS:  # Back to front ...
+		var source := whole[part] as AtlasTexture  # ... the part's frame in the sheet,
+		var face := AtlasTexture.new()  # ... a smaller window into the same sheet,
+		face.atlas = source.atlas  # ... looking at the same picture,
+		face.region = Rect2(source.region.position + MASCOT_FACE_CROP.position, MASCOT_FACE_CROP.size)  # ... only around the head.
+		parts.append(face)  # Keep it.
+	return parts  # Hand back the four pictures.
 
 
 # Returns the shared arm frames for a wave, in order from the least to the most bent elbow.

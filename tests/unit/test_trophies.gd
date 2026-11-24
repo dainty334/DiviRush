@@ -127,3 +127,47 @@ func test_records_survive_a_restart() -> void:
 	assert_almost_eq(loaded_records.seconds_played, 61.5, 0.001)  # Time played came back.
 	assert_eq(loaded_records.trophies, ["first_star"] as Array[String])  # Earned Trophies came back.
 	assert_eq(loaded_progress.bests.size(), 1)  # Only the one Level's bests, not a "records" Level.
+
+
+# A Trophy earned now keeps the day it was earned (D-030); a Trophy earned before keeps its own day.
+func test_trophy_keeps_the_day_it_was_earned() -> void:
+	_record_pass(1, EASY, 1)  # Earns "First Star" ...
+	Trophies.award(progress, records, "2026-11-24")  # ... on 24 November 2026.
+	assert_eq(records.earned_date("first_star"), "2026-11-24")  # Its day is kept.
+	_record_pass(1, EASY, 2, 3)  # Later, "Perfect 10" ...
+	Trophies.award(progress, records, "2026-11-30")  # ... on 30 November.
+	assert_eq(records.earned_date("perfect_10"), "2026-11-30")  # Its own day.
+	assert_eq(records.earned_date("first_star"), "2026-11-24")  # The first day does not change.
+
+
+# With no day given, the phone's own date is used.
+func test_trophy_date_comes_from_the_phone() -> void:
+	_record_pass(1, EASY, 1)  # Earns "First Star".
+	Trophies.award(progress, records)  # No day given.
+	assert_eq(records.earned_date("first_star"), Time.get_date_string_from_system())  # Today's date.
+
+
+# The earned day is written in words for the Trophy card.
+func test_date_in_words() -> void:
+	assert_eq(Trophies.date_text("2026-11-24"), "Earned on 24 Nov 2026")  # A kept day.
+	assert_eq(Trophies.date_text("2027-01-05"), "Earned on 5 Jan 2027")  # No leading zero.
+	assert_eq(Trophies.date_text(""), "Earned before dates were kept")  # Earned before this version kept days.
+
+
+# A Trophy not yet earned shows how far along the learner is, never more than its goal.
+func test_progress_towards_each_goal() -> void:
+	assert_eq(Trophies.progress_text("first_star", progress, records), "0 of 1 Star")  # Nothing yet.
+	_record_pass(1, EASY, 1)  # 1 Star, Level 1 of Episode 1 Easy passed.
+	_record_pass(1, EASY, 2)  # 1 more Star, Level 2 passed.
+	records.add_play(7, 3, 50.0)  # A play with 3 in a row.
+	assert_eq(Trophies.progress_text("star_collector", progress, records), "2 of 50 Stars")  # Stars so far.
+	assert_eq(Trophies.progress_text("division_champion", progress, records), "2 of 180 Stars")  # All Stars.
+	assert_eq(Trophies.progress_text("on_a_roll", progress, records), "3 of 5 right in a row")  # Best streak.
+	assert_eq(Trophies.progress_text("practice_pro", progress, records), "1 of 25 Levels played")  # Plays.
+	assert_eq(Trophies.progress_text("easy_facts", progress, records), "2 of 5 Levels passed")  # Episode 1 Easy.
+	assert_eq(Trophies.progress_text("middle_facts", progress, records), "0 of 5 Levels passed")  # Episode 2 Easy.
+	assert_eq(Trophies.progress_text("perfect_10", progress, records), "0 of 1 Level with 10 of 10")  # No 3 Stars yet.
+	assert_eq(Trophies.progress_text("medium_ready", progress, records), "0 of 1 Medium Level passed")  # No Medium pass.
+	assert_eq(Trophies.progress_text("hard_hero", progress, records), "0 of 1 Hard Level passed")  # No Hard pass.
+	records.best_streak = 9  # A longer streak than the goal ...
+	assert_eq(Trophies.progress_text("on_a_roll", progress, records), "5 of 5 right in a row")  # ... shows the goal, not more.

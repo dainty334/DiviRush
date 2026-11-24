@@ -1,15 +1,16 @@
-# My Records: the learner's game records (D-023), as plain numbers and bars. They are records of
-# play, not grades, so there are no percentages or marks (Chapter 1).
-extends ScreenBase  # Shared background, margins and column.
+# The Records tab of the Trophies screen (D-023, D-030): the learner's game records as plain numbers
+# and bars. They are records of play, not grades, so there are no percentages or marks (Chapter 1).
+# Before D-030 this was the My Records screen.
+class_name RecordsView  # Lets the Trophies screen write RecordsView.new().
+extends VBoxContainer  # The two white cards, top to bottom.
 
 const EPISODE_STARS := 45  # Stars in one Episode: 3 Difficulties x 5 Levels x 3 Stars.
 
 
-# Builds the screen. Called once by ScreenBase when the screen opens.
-func _build() -> void:
-	Audio.play_music("menu")  # Main menu area music (D-020).
-	add_header("My Records", "Your game so far")  # Back button and title.
-	add_spacer(0.2)  # A little space under the title.
+# Builds both cards from the learner's saved progress and records.
+func _init() -> void:
+	add_theme_constant_override("separation", 32)  # Space between the cards.
+	size_flags_horizontal = Control.SIZE_EXPAND_FILL  # As wide as the column.
 	var records: Records = Save.records  # The learner's records.
 	var rows := _make_card()  # The first white card.
 	_add_row(rows, UiKit.Icon.STAR, "Stars earned", "%d of %d" % [Save.progress.total_stars(), Progress.MAX_STARS])  # Stars.
@@ -22,18 +23,16 @@ func _build() -> void:
 	bars.add_child(UiKit.label("Stars in each Episode", 44, Palette.INK))  # Its title.
 	for episode in range(1, Progress.EPISODE_COUNT + 1):  # Each Episode ...
 		_add_bar(bars, episode)  # ... gets a bar.
-	add_spacer(1.0)  # Space at the bottom.
 
 
-# Adds a white card to the column and returns the list inside it, for rows to go in.
+# Adds a white card and returns the list inside it, for rows to go in.
 func _make_card() -> VBoxContainer:
 	var card := PanelContainer.new()  # The card.
 	var style := UiKit.box(Palette.WHITE, 48)  # White, round and outlined.
 	style.set_content_margin_all(30)  # Room inside the card.
 	card.add_theme_stylebox_override("panel", style)  # Use this look.
 	card.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Not a button.
-	column.add_child(card)  # Show it.
-	UiKit.pop_in(card, 0.05)  # Bounce in.
+	add_child(card)  # Show it.
 	var lines := VBoxContainer.new()  # The rows, top to bottom.
 	lines.add_theme_constant_override("separation", 14)  # Space between rows.
 	card.add_child(lines)  # Put them on the card.
@@ -87,8 +86,3 @@ func _time_text(seconds: float) -> String:
 	if seconds < 60.0:  # Under a minute ...
 		return "%d s" % int(seconds)  # ... in seconds.
 	return "%d min" % int(seconds / 60.0)  # Whole minutes.
-
-
-# Back returns to the Main menu.
-func go_back() -> void:
-	Game.go_to("main_menu")  # Main menu.

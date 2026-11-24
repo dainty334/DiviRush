@@ -1,5 +1,5 @@
 # Start-up menu: the first screen. Shows the DiviRush logo and title and a pulsing "Tap to Start".
-# Tapping anywhere goes to the Main menu (Game Spec, Screens).
+# Tapping anywhere goes to the Main menu, or the first time to the Welcome screen (Game Spec, Screens; D-030).
 extends ScreenBase  # Shared background, margins and column.
 
 var _leaving := false  # true once a tap was seen, so a second tap does nothing.
@@ -31,7 +31,7 @@ func _build() -> void:
 	add_spacer(0.5)  # Space at the bottom.
 
 
-# Runs for every input event: the first tap or click anywhere opens the Main menu.
+# Runs for every input event: the first tap or click anywhere opens the next screen (D-030).
 # This uses _input, not _unhandled_input, because the layout containers take taps first.
 # While the "Leave DiviRush?" card is open, taps belong to its buttons, so they are left alone (D-021).
 func _input(event: InputEvent) -> void:
@@ -39,7 +39,13 @@ func _input(event: InputEvent) -> void:
 	if mouse != null and mouse.pressed and not _leaving and not is_exit_card_open():  # A first tap, with no card open ...
 		_leaving = true  # ... is used once,
 		Audio.play_sfx("tap")  # ... clicks,
-		Game.go_to("main_menu")  # ... and opens the Main menu.
+		Game.go_to(next_screen())  # ... and opens the Welcome screen or the Main menu.
+
+
+# Returns the screen after "Tap to Start": the Welcome screen until the learner has a Nickname,
+# then always the Main menu (D-030).
+func next_screen() -> String:
+	return "main_menu" if Save.profile.has_nickname() else "welcome_screen"  # Welcome only the first time.
 
 
 # Back on the Start-up menu would close the game, as Android players expect on a first screen,

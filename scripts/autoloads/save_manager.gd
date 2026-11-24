@@ -6,13 +6,14 @@ signal setting_changed(key: String, value: bool)  # Sent when a Settings switch 
 
 var progress := Progress.new()  # Best results and unlocking.
 var settings: Dictionary = SaveStore.default_settings()  # Music, sound effects and vibration switches.
-var records := Records.new()  # Game records for My Records, and the Trophies earned (D-023).
-var _store := SaveStore.new()  # Reads and writes the real save file.
+var records := Records.new()  # Game records for the Records tab, and the Trophies earned (D-023, D-030).
+var profile := Profile.new()  # The learner's Nickname and Buddy (D-030).
+var _store := SaveStore.new()  # Reads and writes the real save file; tests swap in their own file.
 
 
 # Runs once when the game starts: loads the save file, if there is one.
 func _ready() -> void:
-	_store.load_into(progress, settings, records)  # A missing file keeps the defaults.
+	_store.load_into(progress, settings, records, profile)  # A missing file keeps the defaults.
 	Trophies.award(progress, records)  # Give, quietly, any Trophies that bests saved before Trophies existed already earn (D-023).
 
 
@@ -34,9 +35,30 @@ func set_setting(key: String, on: bool) -> void:
 	setting_changed.emit(key, on)  # Tell anyone listening (the Audio autoload).
 
 
+# Keeps the Nickname and the Buddy from the Welcome screen and saves them (D-030).
+func set_profile(nickname: String, buddy: String) -> void:
+	profile.nickname = Profile.clean(nickname).strip_edges()  # The Nickname, without spaces at the ends.
+	profile.buddy = buddy if Profile.BUDDIES.has(buddy) else Profile.BOTH  # A known Buddy, or Both.
+	save_now()  # Write it to the device.
+
+
+# Changes the Nickname from the Profile screen and saves it. A Nickname that breaks the rules is ignored.
+func set_nickname(nickname: String) -> void:
+	if Profile.is_valid(nickname):  # 1 to 12 allowed characters ...
+		profile.nickname = nickname.strip_edges()  # ... kept without spaces at the ends,
+		save_now()  # ... and written to the device.
+
+
+# Changes the Buddy from the Profile screen and saves it.
+func set_buddy(buddy: String) -> void:
+	if Profile.BUDDIES.has(buddy):  # Ana, Migo or Both ...
+		profile.buddy = buddy  # ... is kept,
+		save_now()  # ... and written to the device.
+
+
 # Writes everything to user://save.cfg, and reports a problem if writing fails.
 func save_now() -> void:
-	var error := _store.save(progress, settings, records)  # Try to write the file.
+	var error := _store.save(progress, settings, records, profile)  # Try to write the file.
 	if error != OK:  # Writing failed ...
 		push_error("DiviRush could not save (error %d)" % error)  # ... so report it.
 

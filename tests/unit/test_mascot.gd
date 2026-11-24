@@ -187,11 +187,14 @@ func test_each_tap_brings_the_next_line_then_the_bubble_goes() -> void:
 	assert_eq(mascot._words.text, "Two.")  # ... and no new line came by itself.
 
 
-# Ana and Migo take turns: each time the Main menu opens, the other one is there.
+# With the Buddy "Both", Ana and Migo take turns: each time the Main menu opens, the other one is there (D-030).
 func test_mascots_take_turns_on_the_main_menu() -> void:
+	var real_profile: Profile = Save.profile  # Keep the game's Profile safe.
+	Save.profile = Profile.new()  # A Profile in memory with the Buddy "Both".
 	var first: Node = load(MAIN_MENU).instantiate()  # The Main menu opens ...
 	add_child_autofree(first)  # ... once,
 	var second: Node = load(MAIN_MENU).instantiate()  # ... and again.
 	add_child_autofree(second)  # In the tree.
 	assert_has(MascotLines.NAMES, first._mascot.mascot_name)  # Ana or Migo ...
 	assert_ne(first._mascot.mascot_name, second._mascot.mascot_name)  # ... and the other one next time.
+	Save.profile = real_profile  # Put the game's Profile back.

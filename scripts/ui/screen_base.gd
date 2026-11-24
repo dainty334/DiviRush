@@ -155,8 +155,9 @@ func show_hint(text: String) -> void:
 
 
 # Makes a hidden card over the whole screen: a dark veil, and a white card with a title and the
-# given buttons under it. Used for the "Paused" card (D-015) and the "Leave DiviRush?" card (D-021),
-# so both look the same. The caller adds the card to the screen and shows it when needed.
+# given buttons (or other parts, such as a picture or a text box) under it. Used for the "Paused"
+# card (D-015), the "Leave DiviRush?" card (D-021), the Trophy card and the Nickname card (D-030),
+# so all look the same. The caller adds the card to the screen and shows it when needed.
 func make_card(title: String, buttons: Array, title_size: int = 110) -> Control:
 	var card := Control.new()  # Holder that fills the screen.
 	card.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)  # Cover everything.
@@ -180,8 +181,8 @@ func make_card(title: String, buttons: Array, title_size: int = 110) -> Control:
 	lines.add_theme_constant_override("separation", 40)  # Space between them.
 	panel.add_child(lines)  # Add it.
 	lines.add_child(UiKit.label(title, title_size, Palette.INK))  # Big dark title.
-	for button: Button in buttons:  # Each button, top to bottom ...
-		lines.add_child(button)  # ... goes under the title.
+	for part: Control in buttons:  # Each button or other part, top to bottom ...
+		lines.add_child(part)  # ... goes under the title.
 	return card  # Hand back the hidden card.
 
 

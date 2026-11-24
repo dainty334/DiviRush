@@ -1,4 +1,5 @@
-# Tests for the Trophies screen, the My Records screen and the Trophy banner on Level end (D-023).
+# Tests for the Trophies screen with its Trophies and Records tabs, the Trophy card, and the
+# Trophy banner on Level end (D-023, D-030).
 extends GutTest  # GUT gives this script its assert_* checks.
 
 const SCREEN := "res://scenes/screens/%s.tscn"  # Screen scene paths.
@@ -58,19 +59,77 @@ func test_locked_trophies_show_their_goal() -> void:
 	assert_has(_texts(screen._cards[1]), Trophies.ALL[1].goal)  # ... and its goal.
 
 
-# My Records shows the game records as plain numbers, not grades.
-func test_records_screen_shows_the_records() -> void:
+# The Records tab shows the game records as plain numbers, not grades (D-030).
+func test_records_tab_shows_the_records() -> void:
 	Save.progress.record(1, Difficulty.Kind.EASY, 1, 3, 250, 50.0)  # 3 Stars in Episode 1.
 	Save.progress.record(2, Difficulty.Kind.EASY, 1, 1, 120, 70.0)  # 1 Star in Episode 2.
 	Save.records.levels_played = 7  # 7 Levels played.
 	Save.records.correct_total = 63  # 63 correct answers.
 	Save.records.best_streak = 8  # 8 in a row.
 	Save.records.seconds_played = 750.0  # 12 minutes 30 seconds.
-	var texts := _texts(_open("records_screen"))  # Every text on My Records.
+	var screen := _open("trophies_screen")  # The Trophies screen.
+	screen.show_tab(1)  # The Records tab.
+	assert_true(screen._pages[1].visible)  # Records show ...
+	assert_false(screen._pages[0].visible)  # ... instead of the Trophies.
+	var texts := _texts(screen._pages[1])  # Every text on the Records tab.
 	for expected: String in ["4 of 180", "2 of 60", "7", "63", "8 in a row", "12 min"]:  # Stars, Levels passed, played, correct, streak, time ...
 		assert_has(texts, expected, expected)  # ... each shows.
 	for expected: String in ["3/45", "1/45", "0/45"]:  # Stars in Episodes 1, 2 and 3 (and 4) ...
 		assert_has(texts, expected, expected)  # ... show next to their bars.
+
+
+# The Trophies screen opens on the Trophies tab, and its two tabs are called Trophies and Records.
+func test_two_tabs() -> void:
+	var screen := _open("trophies_screen")  # The Trophies screen.
+	var names: Array[String] = []  # The tab words.
+	for tab: Button in screen._tabs:  # Each tab ...
+		names.append(tab.text)  # ... adds its word.
+	assert_eq(names, ["Trophies", "Records"] as Array[String])  # Trophies, then Records.
+	assert_true(screen._pages[0].visible)  # The Trophies show first.
+	assert_false(screen._pages[1].visible)  # The Records wait.
+
+
+# Tapping an earned Trophy opens its card with its name, goal and the day it was earned.
+func test_tap_an_earned_trophy() -> void:
+	Save.records.trophies.assign(["first_star"])  # "First Star" earned ...
+	Save.records.trophy_dates["first_star"] = "2026-11-24"  # ... on 24 November 2026.
+	var screen := _open("trophies_screen")  # The Trophies screen.
+	screen._cards[0].pressed.emit()  # Tap "First Star".
+	assert_true(screen.is_trophy_card_open())  # Its card shows ...
+	var texts := _texts(screen._trophy_card)  # ... with:
+	assert_has(texts, "First Star")  # ... its name,
+	assert_has(texts, "Earn your first Star")  # ... its goal,
+	assert_has(texts, "Earned on 24 Nov 2026")  # ... and its day.
+
+
+# A Trophy earned before days were kept says so, truthfully.
+func test_tap_an_older_trophy() -> void:
+	Save.records.trophies.assign(["first_star"])  # Earned, with no day kept.
+	var screen := _open("trophies_screen")  # The Trophies screen.
+	screen._cards[0].pressed.emit()  # Tap "First Star".
+	assert_has(_texts(screen._trophy_card), "Earned before dates were kept")  # No made-up day.
+
+
+# Tapping a Trophy not yet earned shows its goal and how far along the learner is.
+func test_tap_a_locked_trophy() -> void:
+	Save.progress.record(1, Difficulty.Kind.EASY, 1, 2, 200, 60.0)  # 2 Stars so far.
+	var screen := _open("trophies_screen")  # The Trophies screen.
+	screen._cards[9].pressed.emit()  # Tap "Star Collector".
+	var texts := _texts(screen._trophy_card)  # Its card's words:
+	assert_has(texts, "Star Collector")  # ... its name,
+	assert_has(texts, "Earn 50 Stars")  # ... its goal,
+	assert_has(texts, "2 of 50 Stars")  # ... and how far along.
+
+
+# OK, and Android Back, close the Trophy card without leaving the screen.
+func test_close_the_trophy_card() -> void:
+	var screen := _open("trophies_screen")  # The Trophies screen.
+	screen._cards[0].pressed.emit()  # Open a card.
+	screen.back_pressed()  # Android Back ...
+	assert_false(screen.is_trophy_card_open())  # ... closes it.
+	screen._cards[1].pressed.emit()  # Open another.
+	screen._trophy_ok.pressed.emit()  # OK ...
+	assert_false(screen.is_trophy_card_open())  # ... closes it too.
 
 
 # A play that earns Trophies shows the banner with their names on Level end; a play that earns none does not.
